@@ -8,9 +8,20 @@
   with_items: pacemaker_rpms
   tags: pcs
 
-- name: set password for the hacluster user
-  user: name=hacluster password={{ pcs_cluster_pass_encoded }} update_password=always
+#- name: set password for the hacluster user
+#  user: name=hacluster password={{ pcs_cluster_pass_encoded }} update_password=always
+#  tags: pcs
+#  Short term fix for password and user creation.
+#
+- name: setup hacluster passwd
+  user: name=hacluster comment='pacemkaers user'
   tags: pcs
+
+- name: create password for hacluster
+  shell: echo {{ pcs_cluster_pass }} | passwd hacluster --stdin
+  tags: pcs
+
+
 
 - name: start pcsd
   service: name=pcsd enabled=yes state=started
@@ -23,18 +34,20 @@
   tags: pcs
 
 - name: set pcs cluster auth
-  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ controller_node_names | join(' ') }}
+  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ controller_node_names | join(' ') }} --force
   when: ansible_distribution_major_version|int == 7
+  run_once: true
+  #when: {{hostname}}=='{{[groups['openstack_controller'][0]].hostname}}' 
   tags: pcs
 
 - name: setup pacemaker cluster
-  command: creates=/etc/corosync/corosync.conf pcs cluster setup --name {{ pcs_cluster_name }} {{ controller_node_names | join(' ') }}
+  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ controller_node_names | join(' ') }} --enable --start --force
   run_once: true
   when: ansible_distribution_major_version|int == 7
   tags: pcs
 
 - name: setup pacemaker cluster
-  command: creates=/etc/cluster/cluster.conf pcs cluster setup --name {{ pcs_cluster_name }} {{ controller_node_names | join(' ') }}
+  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ controller_node_names | join(' ') }} --enable --start --force
   run_once: true
   when: ansible_distribution_major_version|int == 6
   tags: pcs
@@ -56,13 +69,13 @@
   when: ansible_distribution_major_version|int == 6
   tags: pcs
 
-- name: start pacemaker cluster
-  command: creates=/var/lib/cluster/cluster.rng pcs cluster start
-  tags: pcs
+#- name: start pacemaker cluster
+#  command: creates=/var/lib/cluster/cluster.rng pcs cluster start
+#  tags: pcs
 
-- name: enable pacemaker service
-  service: name=pacemaker enabled=yes state=started
-  tags: pcs
+#- name: enable pacemaker service
+#  service: name=pacemaker enabled=yes state=started
+#  tags: pcs
 
 - name: pause to let pacemaker initialize resources
   pause: seconds=30

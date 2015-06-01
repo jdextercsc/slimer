@@ -1,4 +1,12 @@
 ---
+- name: ifdown network after bond creation
+  shell: ifdown bond0 && ifup bond0
+  tags: network
+
+#- name: ifup network after bond creation
+#  command: ifup bond0
+#  tags: network
+
 - include: "RedHat-rpms.yml"
   when: ansible_os_family == "RedHat"
   tags: common
@@ -39,6 +47,20 @@
 - name: deploy resolv.conf
   copy: src=files/resolv.conf dest=/etc/resolv.conf
   tags: dns
+
+- name: debug
+  tags: dns
+  debug: var=hostvars[inventory_hostname].int_if
+
+- name: create /etc/hosts with all nodes
+  tags: dns
+  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].int_if.ipaddr }} {{item}}" state=present
+  when: hostvars[item].int_if.ipaddr is defined
+  with_items: groups['all']
+
+#- name: create /etc/hosts with all nodes
+#  template: src=hosts.j2 dest=/etc/hosts
+#  tags: dns
 
 - name: set hostname in /etc/hostname
   template: src=hostname.j2 dest=/etc/hostname

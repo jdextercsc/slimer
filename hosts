@@ -1,7 +1,7 @@
 [controller]
-controller-01 ansible_ssh_host=172.16.22.23
-controller-02 ansible_ssh_host=172.16.22.24
-controller-03 ansible_ssh_host=172.16.22.25
+wiley-ctlr-1 ansible_ssh_host=172.17.16.70
+wiley-ctlr-2 ansible_ssh_host=172.17.16.71
+wiley-ctlr-3 ansible_ssh_host=172.17.16.72
 
 [compute]
 compute-01 ansible_ssh_host=172.16.22.26
@@ -18,9 +18,9 @@ ceph-04 ansible_ssh_host=172.30.0.39
 #db-01 ansible_ssh_host=172.27.0.214
 
 [mongodb]
-controller-01 ansible_ssh_host=172.16.22.23
-controller-02 ansible_ssh_host=172.16.22.24
-controller-03 ansible_ssh_host=172.16.22.25
+wiley-ctlr-1 ansible_ssh_host=172.17.16.70
+wiley-ctlr-2 ansible_ssh_host=172.17.16.71
+wiley-ctlr-3 ansible_ssh_host=172.17.16.72
 
 [osp:children]
 controller

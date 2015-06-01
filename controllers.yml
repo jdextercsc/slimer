@@ -1,15 +1,16 @@
 ---
 - hosts: controller
   roles:
-    - { role: iface, device: p4p1, params: { type: Ethernet, bootproto: none, onboot: '"yes"', master: bond0, slave: '"yes"' } }
-    - { role: iface, device: p4p2, params: { type: Ethernet, bootproto: none, onboot: '"yes"', master: bond0, slave: '"yes"' } }
+    - { role: iface, device: p3p1, params: { type: Ethernet, bootproto: none, onboot: '"yes"', master: bond0, slave: '"yes"' } }
+    - { role: iface, device: p3p2, params: { type: Ethernet, bootproto: none, onboot: '"yes"', master: bond0, slave: '"yes"' } }
 
     - role: iface
       device: bond0
       params:
         nozeroconf: '"yes"'
         bootproto: none
-        bonding_opts: '"mode=4 miimon=100 lacp_rate=1"'
+        #bonding_opts: '"mode=4 miimon=100 lacp_rate=1"'
+        bonding_opts: '"miimon=100 mode=802.3ad"'
         onboot: '"yes"'
 
     - role: iface
