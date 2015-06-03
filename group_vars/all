@@ -2,8 +2,7 @@
 ### OpenStack control plane configuration
 
 # Subscription manager
-sm_username:  
-sm_password:
+sm_pool=
 
 # select OpenStack release: havana, icehouse
 openstack_release: icehouse
