@@ -8,7 +8,7 @@
 #  tags: network
 
 - name: copy and load 99-sysctl.conf
-  copy: src=/etc/sysctl.d/sysctl.conf dest=/etc/sysctl.d/99-sysctl.conf owner=root group=root mode=0644 force
+  copy: src=99-sysctl.conf dest=/etc/sysctl.d/99-sysctl.conf owner=root group=root mode=0644 force
   tags: sysctl
 
 - name: reload the sysctl file
