@@ -45,7 +45,7 @@
   tags: ntp
 
 - name: deploy resolv.conf
-  copy: src=files/resolv.conf dest=/etc/resolv.conf
+  template: src=resolv.conf.j2 dest=/etc/resolv.conf
   tags: dns
 
 - name: debug
