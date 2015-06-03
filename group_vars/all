@@ -36,6 +36,12 @@ primary_if: bond0.1805
 private_if: bond0.1801
 tunnel_if: bond0.1802
 
+search_domain: ".lordbusiness"
+nameservers:
+ - 172.17.10.22
+ - 192.168.70.3
+ - 192.168.70.4
+
 
 ### NTP servers
 ntp: 172.27.0.200
@@ -92,8 +98,8 @@ lb_db_vip: 172.17.17.100
 # Galera cluster parameters
 wsrep_cluster_name: galera_cluster
 wsrep_cluster_address: "gcomm://{{ controller_node_names | join(',') }}"
-clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
-
+#clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
+clustercheck_db_pass: password
 # Passwords for database special users
 db_root_password: "{{ lookup('password', inventory_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
 keystone_db_pass: "{{ lookup('password', inventory_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
