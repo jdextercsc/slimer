@@ -1,0 +1,20 @@
+---
+int_if:
+  ipaddr: 172.17.17.76
+  netmask: 255.255.255.0
+  gateway: 172.17.17.1
+  dns1: 172.17.10.22
+  vlan: 1801
+
+storage_if:
+  ipaddr: 172.17.19.76
+  netmask: 255.255.255.0
+  vlan: 1803
+
+swift_if:
+  ipaddr: 172.17.20.76
+  netmask: 255.255.255.0
+  vlan: 1804
+  
+snbios_uuid:
+
