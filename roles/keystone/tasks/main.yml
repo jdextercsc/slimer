@@ -1,10 +1,10 @@
 ---
-- name: run icehouse/havana keystone configuration
-  include: keystone_icehouse_havana.yml
-  when: openstack_release == 'icehouse' || openstack_release == 'havana'
-  tags: keystone
+#- name: run icehouse/havana keystone configuration
+#  include: keystone_icehouse_havana.yml
+#  when: openstack_release == 'icehouse' || openstack_release == 'havana'
+#  tags: keystone
 
 - name: run juno keystone configuration
   include: keystone_juno.yml
-  when: openstack_release == 'juno'
+#  when: openstack_release == 'juno'
   tags: keystone

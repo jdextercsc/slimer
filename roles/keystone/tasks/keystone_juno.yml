@@ -1,4 +1,3 @@
---- 
 ---
 - name: install keystone components
   yum: pkg={{item}} state=present
@@ -9,17 +8,17 @@
   tags: keystone
 
 - name: set keystone configuration
-  command: openstack-config --set /etc/keystone/keystone.con {{ item }}
+  command: openstack-config {{ item }}
   with_items:
-    - "DEFAULT admin_token {{keystone_admin_token}}"
-    - "DEFAULT rabbit_hosts {{rabbit_hosts}}"
-    - "DEFAULT rabbit_ha_queues true"
-    - "DEFAULT admin_endpoint 'http://{{keystone_admin_vip}}:{{keystone_admin_port}}'"
-    - "DEFAULT public_endpoint 'http://{{keystone_public_vip}}:{{keystone_public_port}}'"
-    - "DEFAULT database connection mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip/}}/keystone"
-    - "database max_retries -1"
-    - "DEFAULT public_bind_host {{ext_if}}"
-    - "DEFAULT admin_bind_host {{int_if}}"
+    - " --set /etc/keystone/keystone.conf DEFAULT admin_token {{keystone_admin_token}}"
+    - " --set /etc/keystone/keystone.conf DEFAULT rabbit_hosts {{rabbit_hosts}}"
+    - " --set /etc/keystone/keystone.conf DEFAULT rabbit_ha_queues true"
+    - " --set /etc/keystone/keystone.conf DEFAULT admin_endpoint http://{{ keystone_vip }}:35357"
+    - " --set /etc/keystone/keystone.conf DEFAULT public_endpoint http://{{ keystone_public_vip }}:{{keystone_public_port}}"
+    - " --set /etc/keystone/keystone.conf DEFAULT database connection mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"
+    - " --set /etc/keystone/keystone.conf database max_retries -1"
+    - " --set /etc/keystone/keystone.conf DEFAULT public_bind_host {{internal_ipaddr}}"
+    - " --set /etc/keystone/keystone.conf DEFAULT admin_bind_host {{internal_ipaddr}}"
   tags: keystone
 
 # create ssl cert if using sha key for token
@@ -42,15 +41,15 @@
   when: ansible_distribution_major_version|int == 7
   tags: keystone
 
-- name: create pcs constraints for keystone
-  command: pcs constraint order start {{item}}
-  with_items:
-    - haproxy-clone then keystone-clone
-    - galera-master then keystone-clone
-    - rabbitmq-clone then keystone-clone
-    - memcached-clone then keystone-clone
-  run_once: true
-  tags: keystone
+#- name: create pcs constraints for keystone
+#  command: pcs constraint order start {{item}}
+#  with_items:
+#    - lb-haproxy-clone then keystone-clone
+#    - galera-master then keystone-clone
+#    - rabbitmq-clone then keystone-clone
+#    - memcached-clone then keystone-clone
+#  run_once: true
+#  tags: keystone
 
 # configure keystone user and roles.
 - name: create admin tenant
