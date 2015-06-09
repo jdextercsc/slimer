@@ -16,5 +16,5 @@ scale_if:
   netmask: 255.255.255.0
   vlan: 1804
   
-snbios_uuid:
+smbios_uuid:
 
