@@ -2,7 +2,7 @@
 ### OpenStack control plane configuration
 
 # select OpenStack release: havana, icehouse
-openstack_release: icehouse
+openstack_release: juno
 use_ha_controller: true
 use_rabbit: true
 use_ha_db: true
@@ -44,11 +44,14 @@ nameservers:
 
 
 ### NTP servers
-ntp: 172.27.0.200
-#  - 0.rhel.pool.ntp.org
-#  - 1.rhel.pool.ntp.org
-#  - 2.rhel.pool.ntp.org
+ntp:
+  - 0.rhel.pool.ntp.org
+  - 1.rhel.pool.ntp.org
+  - 2.rhel.pool.ntp.org
 
+mongo_replSet:
+ - wiley-ctlr-2
+ - wiley-ctlr-3 
 
 ### Pacemaker cluster
 pcs_cluster_name: SOME_CLUSTER_NAME
@@ -87,13 +90,14 @@ controller_nodes:
 
 
 ### Messaging
-rabbit_host: 172.17.17.70
+rabbit_host: 172.17.17.99
+rabbit_hosts: 172.17.17.70:5672,172.17.17.71:5672,172.17.17.72:5672
 rabbit_port: 5672
 rabbit_node_names: "{{ controller_node_names }}"
 rabbitmq_limit_nofile: 102400
 
 ### Database
-lb_db_vip: 172.17.17.100
+lb_db_vip: 172.17.17.101
 
 # Galera cluster parameters
 wsrep_cluster_name: galera_cluster
@@ -228,7 +232,7 @@ vip_addresses:
     addr: 172.17.17.101
 
   - name: vip-msg
-    addr: 172.17.17.102
+    addr: 172.17.17.99
 
   - name: vip-keystone-int
     addr: 172.17.17.103
@@ -254,29 +258,29 @@ vip_addresses:
   - name: vip-ceilometer-int
     addr: 172.17.17.110
 
-  - name: vip-keystone-pub
-    addr: 172.17.20.103
+#  - name: vip-keystone-pub
+#    addr: 172.17.20.103
 
-  - name: vip-glance-pub
-    addr: 172.17.20.104
+#  - name: vip-glance-pub
+#    addr: 172.17.20.104
 
-  - name: vip-cinder-pub
-    addr: 172.17.20.105
+#  - name: vip-cinder-pub
+#    addr: 172.17.20.105
 
-  - name: vip-nova-pub
-    addr: 172.17.20.106
+#  - name: vip-nova-pub
+#    addr: 172.17.20.106
 
-  - name: vip-neutron-pub
-    addr: 172.17.20.107
+#  - name: vip-neutron-pub
+#    addr: 172.17.20.107
 
-  - name: vip-horizon-pub
-    addr: 172.17.20.108
+#  - name: vip-horizon-pub
+#    addr: 172.17.20.108
 
-  - name: vip-heat-pub
-    addr: 172.17.20.109
+#  - name: vip-heat-pub
+#    addr: 172.17.20.109
 
-  - name: vip-ceilometer-pub
-    addr: 172.17.20.110
+#  - name: vip-ceilometer-pub
+#    addr: 172.17.20.110
 
 
 keystone_vip: 172.17.17.103
@@ -288,34 +292,34 @@ horizon_vip: 172.17.17.108
 heat_vip: 172.17.17.109
 ceilometer_vip: 172.17.17.110
 
-keystone_public_vip: "vip-keystone-pub.business"
+keystone_public_vip: "{{keystone_vip}}"
 keystone_admin_vip: "{{ keystone_vip }}"
 keystone_private_vip: "{{ keystone_vip }}"
 
-glance_public_vip: "vip-glance-pub.business"
+glance_public_vip: "{{glance_vip}}"
 glance_admin_vip: "{{ glance_vip }}"
 glance_private_vip: "{{ glance_vip }}"
 
-cinder_public_vip: "vip-cinder-pub.business"
+cinder_public_vip: "{{ cinder_vip }}"
 cinder_admin_vip: "{{ cinder_vip }}"
 cinder_private_vip: "{{ cinder_vip }}"
 
-nova_public_vip: "vip-nova-pub.business"
+nova_public_vip: "{{nova_vip}}"
 nova_admin_vip: "{{ nova_vip }}"
 nova_private_vip: "{{ nova_vip }}"
 
-neutron_public_vip: "vip-neutron-pub.business"
+neutron_public_vip: "{{ neutron_vip}}"
 neutron_admin_vip: "{{ neutron_vip }}"
 neutron_private_vip: "{{ neutron_vip }}"
 
-horizon_public_vip: "vip-horizon-pub.business"
+horizon_public_vip: "{{ horizon_vip }}"
 horizon_private_vip: "{{ horizon_vip }}"
 
-heat_public_vip: "vip-heat-pub.business"
+heat_public_vip: "{{ heat_vip }}"
 heat_admin_vip: "{{ heat_vip }}"
 heat_private_vip: "{{ heat_vip }}"
 
-ceilometer_public_vip: "vip-ceilometer-pub.business"
+ceilometer_public_vip: "{{ ceilometer_vip}}"
 ceilometer_admin_vip: "{{ ceilometer_vip }}"
 ceilometer_private_vip: "{{ ceilometer_vip }}"
 
