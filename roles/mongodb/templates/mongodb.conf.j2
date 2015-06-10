@@ -1,10 +1,13 @@
-bind_ip = {{ mongodb_bind_host }}
-port = {{ mongodb_port | default(27017) }}
-fork = true
-pidfilepath = /var/run/mongodb/mongodb.pid
+#bind_ip = {{ mongodb_bind_host }}
+#port = {{ mongodb_port | default(27017) }}
+
+bind_ip = 0.0.0.0
+port = 27017
+quiet = false
+pidfilepath = /var/run/mongodb/mongod.pid
 logpath = /var/log/mongodb/mongodb.log
-dbpath =/var/lib/mongodb/data
+dbpath =/var/lib/mongodb
 journal = true
-logappend=true
-#keyFile=/var/lib/mongodb/secret
+#logappend=true
 replSet=ceilometer
+nohttpinterface = true
