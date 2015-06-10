@@ -2,7 +2,7 @@
 ### OpenStack control plane configuration
 
 # select OpenStack release: havana, icehouse
-openstack_release: icehouse
+openstack_release: juno
 use_ha_controller: true
 use_rabbit: true
 use_ha_db: true
@@ -49,6 +49,9 @@ ntp:
   - 1.rhel.pool.ntp.org
   - 2.rhel.pool.ntp.org
 
+mongo_replSet:
+ - wiley-ctlr-2
+ - wiley-ctlr-3 
 
 ### Pacemaker cluster
 pcs_cluster_name: SOME_CLUSTER_NAME

@@ -7,8 +7,10 @@
     - httpd
   tags: keystone
 
+# following requires that crudini .5-1 be installed from epel or it will fail.
+
 - name: set keystone configuration
-  command: openstack-config {{ item }}
+  command: openstack-config --verbose {{ item }}
   with_items:
     - " --set /etc/keystone/keystone.conf DEFAULT admin_token {{keystone_admin_token}}"
     - " --set /etc/keystone/keystone.conf DEFAULT rabbit_hosts {{rabbit_hosts}}"
@@ -19,6 +21,8 @@
     - " --set /etc/keystone/keystone.conf database max_retries -1"
     - " --set /etc/keystone/keystone.conf DEFAULT public_bind_host {{internal_ipaddr}}"
     - " --set /etc/keystone/keystone.conf DEFAULT admin_bind_host {{internal_ipaddr}}"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
   tags: keystone
 
 # create ssl cert if using sha key for token
@@ -33,10 +37,10 @@
 - name: create pacemaker resources for keystone
   pcs_resource: command=create name=keystone type=systemd:openstack-keystone clone=yes
   args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
+   operations:
+      - action: interleave
+        options: true
+         
   run_once: true
   when: ansible_distribution_major_version|int == 7
   tags: keystone
