@@ -1,7 +1,6 @@
 rs.initiate()
 sleep(13000)
-{% for host in mongodb_servers %}
+{% for host in mongo_replSet  %}
 rs.add("{{ host }}:{{ mongodb_port | default(27017) }}")
-sleep(8000)
 {% endfor %}
 printjson(rs.status())
