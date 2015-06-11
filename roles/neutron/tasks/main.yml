@@ -6,22 +6,8 @@
     - openstack-utils
     - openstack-selinux
     - openvswitch
+    - openstack-neutron-ml2
   when: use_neutron
-  tags: neutron
-
-- name: install ml2 plugin
-  yum: pkg=openstack-neutron-ml2 state=present
-  when: use_neutron_ml2
-  tags: neutron
-
-- name: install openvswitch plugin
-  yum: pkg=openstack-neutron-openvswitch state=present
-  when: use_neutron_ovs
-  tags: neutron
-
-- name: install cisco plugin
-  yum: pkg=openstack-neutron-cisco state=present
-  when: use_neutron_cisco
   tags: neutron
 
 - name: start openvswitch
@@ -35,88 +21,200 @@
   when: use_neutron
   tags: neutron
 
-- name: deploy Havana specific Neutron config files
-  template: src=havana/{{ item }}.j2
-            dest=/etc/neutron/{{ item }}
-            mode=0640 owner=root group=neutron
-  with_items:
-    - agent_watch.ini
-    - api-paste.ini
-  when: use_neutron and openstack_release == 'havana'
-  tags: neutron
+- name: openstack-command set bind_host
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT bind_host {{ neutron_bind_host }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: set custom Neutron policy
-  copy: src=files/neutron/policy.json
-        dest=/etc/neutron/policy.json
-        mode=0640 owner=root group=neutron
-  when: use_neutron_custom_policy
-  tags: neutron
+- name: openstack-command set auth_strategy
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT auth_strategy {{ neutron_auth_strategy }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: deploy the neutron.conf file
-  template: src={{ openstack_release }}/neutron.conf.j2
-            dest=/etc/neutron/neutron.conf
-            mode=0640 owner=root group=neutron
-  when: use_neutron
-  tags: neutron
+- name: openstack-command set admin_tenant_name
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf keystone_authtoken admin_tenant_name services
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: deploy the metadata_agent.ini file
-  template: src={{ openstack_release }}/metadata_agent.ini.j2
-            dest=/etc/neutron/metadata_agent.ini
-            mode=0640 owner=root group=neutron
-  when: use_neutron
-  tags: neutron
+- name: openstack-command set admin_user
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf keystone_authtoken admin_user neutron
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: deploy the dhcp_agent.ini file
-  template: src={{ openstack_release }}/dhcp_agent.ini.j2
-            dest=/etc/neutron/dhcp_agent.ini
-            mode=0640 owner=root group=neutron
-  when: use_neutron
-  tags: neutron
+- name: openstack-command set admin_password
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf keystone_authtoken admin_password {{ neutron_pass }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: deploy the lbaas_agent.ini file
-  template: src={{ openstack_release }}/lbaas_agent.ini.j2
-            dest=/etc/neutron/lbaas_agent.ini
-            mode=0640 owner=root group=neutron
-  when: use_lbaas
-  tags: neutron
+- name: openstack-command set auth_uri
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf keystone_authtoken auth_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: deploy the l3_agent.ini file
-  template: src={{ openstack_release }}/l3_agent.ini.j2
-            dest=/etc/neutron/l3_agent.ini
-            mode=0640 owner=root group=neutron
-  when: use_neutron
-  tags: neutron
+- name: openstack-command set identity_uri
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf keystone_authtoken identity_uri  {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ default(5000) }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: deploy the ml2_conf.ini file
-  template: src={{ openstack_release }}/ml2_conf.ini.j2
-            dest=/etc/neutron/plugins/ml2/ml2_conf.ini
-            mode=0640 owner=root group=neutron
-  when: use_neutron_ml2
-  tags: neutron
+- name: openstack-command set connection
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf database connection mysql://neutron:{{ neutron_db_pass }}@{{ lb_db_vip }}/neutron
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: deploy the ovs_neutron_plugin.ini file
-  template: src={{ openstack_release }}/ovs_neutron_plugin.ini.j2
-            dest=/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
-            mode=0640 owner=root group=neutron
-  when: use_neutron_ovs
-  tags: neutron
+- name: openstack-command set max_retries
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf database max_retries -1
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: deploy the cisco_plugins.ini file
-  template: src={{ openstack_release }}/cisco_plugins.ini.j2
-            dest=/etc/neutron/plugins/cisco/cisco_plugins.ini
-            mode=0640 owner=root group=neutron
-  when: use_neutron_cisco
-  tags: neutron
+- name: openstack-command set rabbit_hosts
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_hosts {{ rabbit_host }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: link plugin.ini to the ml2 plugin config file
-  file: src=/etc/neutron/plugins/ml2/ml2_conf.ini dest=/etc/neutron/plugin.ini state=link
-  when: use_neutron_ml2
-  tags: neutron
+- name: openstack-command set rabbit_ha_queues
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_ha_queues true
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
-- name: link plugin.ini to the ovs plugin config file
-  file: src=/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini dest=/etc/neutron/plugin.ini state=link
-  when: use_neutron_ovs and not use_neutron_ml2
-  tags: neutron
+- name: openstack-command set notification_driver
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT notification_driver {{ neutron_notification_driver }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set nova_url
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT nova_url http://{{ nova_private_vip | default('127.0.0.1') }}:{{ nova_osapi_compute_listen_port | default(8774) }}/v2
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set notify_nova_on_port_status_changes
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT notify_nova_on_port_status_changes {{ neutron_notify_nova_on_port_status_changes }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set notify_nova_on_port_data_changes
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT notify_nova_on_port_data_changes {{ neutron_notify_nova_on_port_data_changes }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set auth_url
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf nova auth_url {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set auth_plugin
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf nova auth_plugin password
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set project_domain_id
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf nova project_domain_id default
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set user_domain_id
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf nova user_domain_id default
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set region_name
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf nova region_name {{ nova_region_name | default('regionOne') }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set project_name
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf nova project_name services
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set username
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf nova username compute
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set password
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf nova password {{ nova_pass }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set core_plugin
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT core_plugin {{ neutron_core_plugin }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set service_plugins
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT service_plugins {{ neutron_service_plugins | join(',') }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set router_scheduler_driver
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT router_scheduler_driver {{ neutron_router_scheduler_driver }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set local,gre,flat,vxlan,vlan
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini type_drivers {{ neutron_ml2_type_drivers }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set tenant_network_types
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 tenant_network_types {{ neutron_ml2_tenant_network_types }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set mechanism_drivers
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers openvswitch
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set flat_networks
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_flat flat_networks "*"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set tunnel_id_ranges
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_gre tunnel_id_ranges {{ neutron_gre_tunnel_id_ranges }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set vni_ranges
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_vxlan vni_ranges {{ neutron_vxlan_vni_ranges }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set vxlan_group
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_vxlan vxlan_group {{ neutron_vxlan_group }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set enable_security_group
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup enable_security_group {{ neutron_enable_security_group }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set firewall_driver
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup firewall_driver True
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set l3_ha
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT l3_ha True
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set max_l3_agents_per_router
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT max_l3_agents_per_router 0
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set min_l3_agents_per_router
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT min_l3_agents_per_router 2
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+
+- name: openstack-command set dhcp_agents_per_network
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf DEFAULT dhcp_agents_per_network {{ neutron_dhcp_agents_per_network }}
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
 
 - name: create integration bridge
   openvswitch_bridge: bridge=br-int state=present
@@ -145,16 +243,6 @@
   when: neutron_ovs_bridges is defined
   tags: neutron
 
-- name: create a directory for the cisco nexus ssh keys
-  file: dest=/var/lib/neutron/.ssh mode=0700 owner=neutron group=neutron state=directory
-  when: use_neutron_cisco
-  tags: neutron
-
-- name: make cisco nexus switch ssh keys known
-  copy: src=special/cisco_nexus.keys dest=/var/lib/neutron/.ssh/known_hosts mode=0644 owner=neutron group=neutron
-  when: use_neutron_cisco
-  tags: neutron
-
 - name: stamp neutron database
   command: /usr/bin/neutron-db-manage --config-file /usr/share/neutron/neutron-dist.conf --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugin.ini stamp "{{ openstack_release }}"
   run_once: true
@@ -174,34 +262,6 @@
 - name: disable neutron-openvswitch-agent
   service: name=neutron-openvswitch-agent enabled=no 
   when: use_neutron_ovs and use_ha_controller
-  tags: neutron
-
-- name: enable neutron services
-  service: name={{ item }} enabled=yes state=started
-  with_items:
-    - neutron-server
-    - neutron-dhcp-agent
-    - neutron-metadata-agent
-    - neutron-l3-agent
-    - neutron-lbaas-agent
-  when: use_neutron and not use_ha_controller
-  tags: neutron
-
-- name: enable neutron-openvswitch-agent
-  service: name=neutron-openvswitch-agent enabled=yes state=started
-  when: use_neutron_ovs and not use_ha_controller
-  tags: neutron
-
-- include: rhel7-icehouse-cluster-resources.yml
-  when: openstack_release == 'icehouse' and ansible_distribution_major_version|int == 7
-  tags: neutron
-
-- include: rhel6-icehouse-cluster-resources.yml
-  when: openstack_release == 'icehouse' and ansible_distribution_major_version|int == 6
-  tags: neutron
-
-- include: rhel6-havana-cluster-resources.yml
-  when: openstack_release == 'havana' and ansible_distribution_major_version|int == 6
   tags: neutron
 
 - include: cluster-constraints.yml
