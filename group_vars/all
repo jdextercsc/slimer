@@ -87,9 +87,7 @@ controller_nodes:
 
 
 ### Messaging
-rabbit_host1: 172.17.17.70
-rabbit_host2: 172.17.17.71
-rabbit_host3: 172.17.17.72
+rabbit_host: 172.17.17.70
 rabbit_port: 5672
 rabbit_node_names: "{{ controller_node_names }}"
 rabbitmq_limit_nofile: 102400

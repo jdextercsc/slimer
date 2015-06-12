@@ -8,7 +8,7 @@ wiley-cmp-1 ansible_ssh_host=172.17.16.73
 #wiley-cmp-2 ansible_ssh_host=172.17.16.
 #wiley-cmp-3 ansible_ssh_host=172.17.16.
 
-[ceph]
+[swift]
 wiley-swift-1 ansible_ssh_host=172.17.16.74
 wiley-swift-2 ansible_ssh_host=172.17.16.75
 wiley-swift-3 ansible_ssh_host=172.17.16.76
