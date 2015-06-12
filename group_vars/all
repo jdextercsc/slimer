@@ -203,11 +203,13 @@ nova_notify_on_state_change: vm_and_task_state
 ### Cinder
 # definition of multi-volume backends
 cinder_enabled_backends:
-  - LVM_iSCSI
-#  - Generic_NFS
+#  - LVM_iSCSI
+  - Generic_NFS
 #  - RBD
 #  - GlusterFS
 #  - NetApp
+
+nfs_path: "/srv"
 
 # ceph backend settings
 #cinder_rbd_user: volumes
