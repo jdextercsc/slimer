@@ -14,41 +14,43 @@
   tags: cinder
 
 - name: configure base cinder via openstack-config utility
-  command: openstack-config --set --verbose {{item}}
+  command: openstack-config --set --verbose /etc/cinder/cinder.conf {{item}}
   with_items:
-    - "/etc/cinder/cinder.conf database connection mysql://cinder:{{ cinder_db_pass }}@{{ lb_db_vip}}/cinder"
-    - "/etc/cinder/cinder.conf database max_retries -1"
-    - "/etc/cinder/cinder.conf DEFAULT auth_strategy keystone"
-    - "/etc/cinder/cinder.conf keystone_authtoken identity_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/"
-    - "/etc/cinder/cinder.conf keystone_authtoken auth_uri{{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
-    - "/etc/cinder/cinder.conf keystone_authtoken admin_tenant_name services"
-    - "/etc/cinder/cinder.conf keystone_authtoken admin_user cinder"
-    - "/etc/cinder/cinder.conf keystone_authtoken admin_password {{ cinder_pass }}"
-    - "/etc/cinder/cinder.conf DEFAULT notification_driver messaging"
-    - "/etc/cinder/cinder.conf DEFAULT control_exchange cinder"
-    - "/etc/cinder/cinder.conf DEFAULT glance_host {{ glance_private_vip }}"
-    - "/etc/cinder/cinder.conf DEFAULT memcache_servers {{ memcache_list }}"
-    - "/etc/cinder/cinder.conf DEFAULT rabbit_hosts {{ rabbit_hosts }}"
-    - "/etc/cinder/cinder.conf DEFAULT rabbit_ha_queues true"
+    - " database connection mysql://cinder:{{ cinder_db_pass }}@{{ lb_db_vip}}/cinder"
+    - " database max_retries -1"
+    - " DEFAULT auth_strategy keystone"
+    - " keystone_authtoken identity_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/"
+    - " keystone_authtoken auth_uri{{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
+    - " keystone_authtoken admin_tenant_name services"
+    - " keystone_authtoken admin_user cinder"
+    - " keystone_authtoken admin_password {{ cinder_pass }}"
+    - " DEFAULT notification_driver messaging"
+    - " DEFAULT control_exchange cinder"
+    - " DEFAULT glance_host {{ glance_private_vip }}"
+    - " DEFAULT memcache_servers {{ memcache_list }}"
+    - " DEFAULT rabbit_hosts {{ rabbit_hosts }}"
+    - " DEFAULT rabbit_ha_queues true"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: cinder
 
 - name: configure cinder nfs driver via openstack-config utility
-  command: openstack-config --set --verbose {{item}}
+  command: openstack-config --set --verbose /etc/cinder/cinder.conf {{item}}
   with_items:
-    - "/etc/cinder/cinder.conf DEFAULT host rhos6-cinder"
-    - "/etc/cinder/cinder.conf DEFAULT osapi_volume_listen {{ cinder_osapi_volume_listen }}"
-    - "/etc/cinder/cinder.conf DEFAULT osapi_volume_listen_port {{ cinder_osapi_volume_listen_port }}"
-    - "/etc/cinder/cinder.conf DEFAULT nfs_shares_config /etc/cinder/nfs_exports"
-    - "/etc/cinder/cinder.conf DEFAULT nfs_sparsed_volumes true"
-    - "/etc/cinder/cinder.conf DEFAULT nfs_mount_options v3"
-    - "/etc/cinder/cinder.conf DEFAULT volume_driver cinder.volume.drivers.nfs.NfsDriver"
+    - " DEFAULT host rhos6-cinder"
+    - " DEFAULT osapi_volume_listen {{ cinder_osapi_volume_listen }}"
+    - " DEFAULT osapi_volume_listen_port {{ cinder_osapi_volume_listen_port }}"
+    - " DEFAULT nfs_shares_config /etc/cinder/nfs_exports"
+    - " DEFAULT nfs_sparsed_volumes true"
+    - " DEFAULT nfs_mount_options v3"
+    - " DEFAULT volume_driver cinder.volume.drivers.nfs.NfsDriver"
   register: cmd
   when: use_cinder_nfs_volume_driver
   changed_when: "'unchanged' not in cmd.stderr"
   tags: cinder
-  
+   
+
+ 
 - name: create nfs export directory
   file: state=directory path={{nfs_path}}/cinder owner=root group=cinder mode=0640
   tags: cinder
