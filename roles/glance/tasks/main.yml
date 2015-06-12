@@ -9,6 +9,15 @@
     - python-openstackclient
   tags: glance
 
+- name: deploy glance config files
+  template: src={{ openstack_release }}/{{ item.src }} dest={{ item.dest }} mode=0640 owner=root group=glance
+  with_items:
+    - { src: glance-registry.conf.j2, dest: /etc/glance/glance-registry.conf }
+    - { src: glance-api.conf.j2, dest: /etc/glance/glance-api.conf }
+  notify: restart glance
+  when: openstack_release == 'havanna' or openstack_release == 'icehouse'
+  tags: glance
+
 - name: Update glance-api config file for Juno
   command: openstack-config --verbose --set /etc/glance/glance-api.conf {{ item }}
   with_items:
@@ -57,9 +66,10 @@
 
 - name: create the NFS share mountpoint on the nfs server
   command: mkdir -p {{ glance_datadir }}
+  tags: glance
+
+- name: change properties on glance_datadir
   command: chown glance:nobody {{ glance_datadir }}
-  register: cmd
-  changed_when: “‘unchanged’ not in cmd.stderr"
   tags: glance
 
 - name: enable nfs support services
@@ -96,7 +106,70 @@
   firewalld: port=9191-9192/tcp permanent=true immediate=true state=enabled
   tags: glance
 
-- include: glance-cluster-resources.yml
-  when: openstack_release == 'juno'
+- name: use pacemaker to mount the NFS share as service.
+    pcs_resource: command=create name=glance-fs type=Filesystem clone=yes
+    args:
+       options:
+          device: "{{ wiley-ctlr-1 }}:{{ glance_datadir }}"
+          directory: "{{ glance_datadir }}"
+          fstype: "nfs"
+          options: "v3"
+       operations:
+        - action: monitor
+          options:
+            start-delay: 10s
+    run_once: true
+    when: ansible_distribution_major_version|int == 7
+    tags: glance
+
+- name: create pacemaker cloned resources for glance-registry
+  pcs_resource: command=create name=glance-registry type=systemd:openstack-glance-registry clone=yes
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  when: ansible_distribution_major_version|int == 7
   tags: glance
+
+- name: create pacemaker cloned resources for glance-registry
+  pcs_resource: command=create name=glance-registry type=lsb:openstack-glance-registry clone=yes
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  when: ansible_distribution_major_version|int == 6
+  tags: glance
+
+- name: create pacemaker cloned resources for glance-api
+  pcs_resource: command=create name=glance-api type=systemd:openstack-glance-api clone=yes
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  when: ansible_distribution_major_version|int == 7
+  tags: glance
+
+- name: create pacemaker cloned resources for glance-api
+  pcs_resource: command=create name=glance-api type=lsb:openstack-glance-api clone=yes
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  when: ansible_distribution_major_version|int == 6
+  tags: glance
+
+- name: create pacemaker constraint for glance
+  shell: pcs constraint list --full | grep id:order-glance-registry-clone-glance-api-clone-mandatory || pcs constraint order start glance-registry-clone then glance-api-clone
+  run_once: true
+  tags: glance
+
+
 
