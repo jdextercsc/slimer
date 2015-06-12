@@ -6,8 +6,6 @@
     - openstack-ceilometer-central
     - openstack-ceilometer-collector
     - openstack-ceilometer-alarm
-    - python-ceilometer
-    - python-ceilometerclient
   tags: ceilometer
 
 - name: disable ceilometer services
@@ -22,7 +20,11 @@
 
 - name: disable ceilometer notification service
   service: name=openstack-ceilometer-notification enabled=no
-  when: openstack_release == 'icehouse'
+  when: openstack_release == 'icehouse' or openstack_release == 'juno'
+  tags: ceilometer
+
+- include: juno-cluster-resources.yml
+  when: openstack_release == 'juno'
   tags: ceilometer
 
 - include: rhel7-icehouse-cluster-resources.yml
