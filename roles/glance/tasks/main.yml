@@ -6,6 +6,188 @@
     - openstack-glance
     - openstack-utils
     - openstack-selinux
+    - python-openstackclient
+  tags: glance
+
+- name: openstack-command set connection
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf database connection mysql://glance:{{ glance_pass }}@{{ vip-db }}/glance
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set max_retries
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf database max_retries -1
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set flavor
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf paste_deploy flavor keystone
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set identity_uri
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf keystone_authtoken identity_uri http://{{ keystone_vip }}:35357/
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set auth_uri
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf keystone_authtoken auth_uri http://{{ keystone_vip }}:5000/
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set admin_tenant_name
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf keystone_authtoken admin_tenant_name services
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set admin_user
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf keystone_authtoken admin_user glance
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set admin_password
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf keystone_authtoken admin_password {{ glance_pass }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set glance datadir
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf keystone_authtoken glance_store filesystem_store_datadir {{ glance_datadir }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set rabbit_hosts
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf DEFAULT rabbit_hosts {{ rabbit_host1 }},{{ rabbit_host2 }},{{ rabbit_host3 }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set rabbit_hosts
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf DEFAULT rabbit_port {{ rabbit_port }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set rabbit_ha_queues
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf DEFAULT rabbit_ha_queues true
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set notification_driver
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf DEFAULT notification_driver messaging
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set registry_host
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf DEFAULT registry_host {{ glance_vip }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set bind_host
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf DEFAULT bind_host $(ip addr show dev eth1 scope global | grep dynamic| sed -e 's#.*inet ##g' -e 's#/.*##g')
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set connection
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf database connection mysql://glance:{{ glance_pass }}@{{ vip-db }}/glance
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set max_retries
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf database max_retries -1
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set flavor
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf paste_deploy flavor keystone
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set identity_uri
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf keystone_authtoken identity_uri http://{{ keystone_vip }}:35357/
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set auth_uri
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf keystone_authtoken auth_uri http://{{ keystone_vip }}:5000/
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set admin_tenant_name
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf keystone_authtoken admin_tenant_name services
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set admin_user
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf keystone_authtoken admin_user glance
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set admin_password
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf keystone_authtoken admin_password {{ glance_pass }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set rabbit_hosts
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf DEFAULT rabbit_hosts {{ rabbit_host1 }},{{ rabbit_host2 }},{{ rabbit_host3 }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set rabbit_hosts
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf DEFAULT rabbit_port {{ rabbit_port }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set rabbit_ha_queues
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf DEFAULT rabbit_ha_queues true
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set notification_driver
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf DEFAULT notification_driver messaging
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set registry_host
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf DEFAULT registry_host {{ glance_vip }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: openstack-command set bind_host
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf DEFAULT bind_host $(ip addr show dev eth1 scope global | grep dynamic| sed -e 's#.*inet ##g' -e 's#/.*##g')
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
+- name: create the NFS share mountpoint on the nfs server
+  command: mkdir -p {{ glance_datadir }}
+  command: chown glance:nobody {{ glance_datadir }}
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
   tags: glance
 
 - name: enable nfs support services
@@ -21,26 +203,32 @@
   when: ansible_distribution_major_version|int == 7
   tags: glance
 
+-name: use pacemaker to mount the NFS share as service.
+  shell: pcs resource create glance-fs Filesystem device="172.17.17.70:{{ glance_datadir }}" directory="{{ glance_datadir }}" fstype="nfs" options="v3" --clone
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
+  tags: glance
+
 - name: install rabbitmq driver
   yum: pkg=python-kombu state=present
   when: use_rabbit
   tags: glance
 
-- name: deploy glance config files
-  template: src={{ openstack_release }}/{{ item.src }} dest={{ item.dest }} mode=0640 owner=root group=glance
-  with_items:
-    - { src: glance-registry.conf.j2, dest: /etc/glance/glance-registry.conf }
-    - { src: glance-api.conf.j2, dest: /etc/glance/glance-api.conf }
-  notify: restart glance
-  tags: glance
+#- name: deploy glance config files
+#  template: src={{ openstack_release }}/{{ item.src }} dest={{ item.dest }} mode=0640 owner=root group=glance
+#  with_items:
+#    - { src: glance-registry.conf.j2, dest: /etc/glance/glance-registry.conf }
+#    - { src: glance-api.conf.j2, dest: /etc/glance/glance-api.conf }
+#  notify: restart glance
+#  tags: glance
 
-- name: deploy a site specific glance config file
-  copy: src=files/glance/filesystem_store_metadata.json
-        dest=/etc/glance/filesystem_store_metadata.json
-        mode=0640 owner=root group=glance
-  when: use_netapp_copyoffload
-  notify: restart glance
-  tags: glance
+#- name: deploy a site specific glance config file
+#  copy: src=files/glance/filesystem_store_metadata.json
+#        dest=/etc/glance/filesystem_store_metadata.json
+#        mode=0640 owner=root group=glance
+#  when: use_netapp_copyoffload
+#  notify: restart glance
+#  tags: glance
 
 - name: run db_sync for glance
   shell: runuser glance -s /bin/sh -c '/usr/bin/glance-manage db_sync'
@@ -52,6 +240,15 @@
   with_items:
     - openstack-glance-registry
     - openstack-glance-api
+  tags: glance
+
+- name: open firewall ports
+  command: firewall-cmd --add-port=9191/tcp
+  command: firewall-cmd --add-port=9192/tcp
+  command: firewall-cmd --add-port=9191/tcp --permanent
+  command: firewall-cmd --add-port=9192/tcp --permanent
+  register: cmd
+  changed_when: “‘unchanged’ not in cmd.stderr
   tags: glance
 
 - name: create pacemaker cloned resources for glance-registry
