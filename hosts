@@ -4,18 +4,19 @@ wiley-ctlr-2 ansible_ssh_host=172.17.16.71
 wiley-ctlr-3 ansible_ssh_host=172.17.16.72
 
 [compute]
-compute-01 ansible_ssh_host=172.16.22.26
-compute-02 ansible_ssh_host=172.16.22.27
-compute-03 ansible_ssh_host=172.16.22.28
+wiley-cmp-1 ansible_ssh_host=172.17.16.73
+#wiley-cmp-2 ansible_ssh_host=172.17.16.
+#wiley-cmp-3 ansible_ssh_host=172.17.16.
 
-[ceph]
-ceph-01 ansible_ssh_host=172.30.0.36
-ceph-02 ansible_ssh_host=172.30.0.37
-ceph-03 ansible_ssh_host=172.30.0.38
-ceph-04 ansible_ssh_host=172.30.0.39
+[swift]
+wiley-swift-1 ansible_ssh_host=172.17.16.74
+wiley-swift-2 ansible_ssh_host=172.17.16.75
+wiley-swift-3 ansible_ssh_host=172.17.16.76
 
-[mysql]
-#db-01 ansible_ssh_host=172.27.0.214
+[scaleio]
+wiley-scale-1 ansible_ssh_host=172.17.16.77
+wiley-scale-1 ansible_ssh_host=172.17.16.78
+wiley-scale-1 ansible_ssh_host=172.17.16.79
 
 [mongodb]
 wiley-ctlr-1 ansible_ssh_host=172.17.16.70
@@ -25,6 +26,8 @@ wiley-ctlr-3 ansible_ssh_host=172.17.16.72
 [osp:children]
 controller
 compute
+swift
+scaleio
 
 [local]
 localhost ansible_connection=local

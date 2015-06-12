@@ -6,6 +6,70 @@
     - openstack-glance
     - openstack-utils
     - openstack-selinux
+    - python-openstackclient
+  tags: glance
+
+- name: deploy glance config files
+  template: src={{ openstack_release }}/{{ item.src }} dest={{ item.dest }} mode=0640 owner=root group=glance
+  with_items:
+    - { src: glance-registry.conf.j2, dest: /etc/glance/glance-registry.conf }
+    - { src: glance-api.conf.j2, dest: /etc/glance/glance-api.conf }
+  notify: restart glance
+  when: openstack_release == 'havanna' or openstack_release == 'icehouse'
+  tags: glance
+
+- name: Update glance-api config file for Juno
+  command: openstack-config --verbose --set /etc/glance/glance-api.conf {{ item }}
+  with_items:
+    - "database connection mysql://glance:{{ glance_pass }}@{{ vip-db }}/glance"
+    - "database max_retries -1"
+    - "paste_deploy flavor keystone"
+    - "keystone_authtoken identity_uri http://{{ keystone_vip }}:{{ keystone_auth_port }}"
+    - "keystone_authtoken admin_tenant_name services"
+    - "keystone_authtoken admin_user glance"
+    - "keystone_authtoken admin_password {{ glance_pass }}"
+    - "keystone_authtoken glance_store filesystem_store_datadir {{ glance_datadir }}"
+    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
+    - "DEFAULT rabbit_port {{ rabbit_port }}"
+    - "DEFAULT rabbit_ha_queues true"
+    - "DEFAULT notification_driver messaging"
+    - "DEFAULT registry_host {{ glance_vip }}"
+    - "DEFAULT bind_host {{ glance_bind_host }}"
+    - "DEFAULT bind_port {{ glance_api_port }}"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: glance
+
+- name: Update glance-registry config file for Juno
+  command: openstack-config --verbose --set /etc/glance/glance-registry.conf {{ item }}
+  with_items:
+    - "database connection mysql://glance:{{ glance_pass }}@{{ vip-db }}/glance"
+    - "database max_retries -1"
+    - "paste_deploy flavor keystone"
+    - "keystone_authtoken identity_uri http://{{ keystone_vip }}:{{ keystone_auth_port }}"
+    - "keystone_authtoken admin_tenant_name services"
+    - "keystone_authtoken admin_user glance"
+    - "keystone_authtoken admin_password {{ glance_pass }}"
+    - "keystone_authtoken glance_store filesystem_store_datadir {{ glance_datadir }}"
+    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
+    - "DEFAULT rabbit_port {{ rabbit_port }}"
+    - "DEFAULT rabbit_ha_queues true"
+    - "DEFAULT notification_driver messaging"
+    - "DEFAULT registry_host {{ glance_vip }}"
+    - "DEFAULT bind_host {{ glance_bind_host }}"
+    - "DEFAULT bind_port {{ glance_registry_port }}"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: glance
+
+- name: create the NFS share mountpoint on the nfs server
+  command: mkdir -p {{ glance_datadir }}
+  tags: glance
+
+- name: change properties on glance_datadir
+  command: chown glance:nobody {{ glance_datadir }}
   tags: glance
 
 - name: enable nfs support services
@@ -26,22 +90,6 @@
   when: use_rabbit
   tags: glance
 
-- name: deploy glance config files
-  template: src={{ openstack_release }}/{{ item.src }} dest={{ item.dest }} mode=0640 owner=root group=glance
-  with_items:
-    - { src: glance-registry.conf.j2, dest: /etc/glance/glance-registry.conf }
-    - { src: glance-api.conf.j2, dest: /etc/glance/glance-api.conf }
-  notify: restart glance
-  tags: glance
-
-- name: deploy a site specific glance config file
-  copy: src=files/glance/filesystem_store_metadata.json
-        dest=/etc/glance/filesystem_store_metadata.json
-        mode=0640 owner=root group=glance
-  when: use_netapp_copyoffload
-  notify: restart glance
-  tags: glance
-
 - name: run db_sync for glance
   shell: runuser glance -s /bin/sh -c '/usr/bin/glance-manage db_sync'
   run_once: true
@@ -53,6 +101,26 @@
     - openstack-glance-registry
     - openstack-glance-api
   tags: glance
+
+- name: open firewall ports
+  firewalld: port=9191-9192/tcp permanent=true immediate=true state=enabled
+  tags: glance
+
+- name: use pacemaker to mount the NFS share as service.
+    pcs_resource: command=create name=glance-fs type=Filesystem clone=yes
+    args:
+       options:
+          device: "{{ wiley-ctlr-1 }}:{{ glance_datadir }}"
+          directory: "{{ glance_datadir }}"
+          fstype: "nfs"
+          options: "v3"
+       operations:
+        - action: monitor
+          options:
+            start-delay: 10s
+    run_once: true
+    when: ansible_distribution_major_version|int == 7
+    tags: glance
 
 - name: create pacemaker cloned resources for glance-registry
   pcs_resource: command=create name=glance-registry type=systemd:openstack-glance-registry clone=yes
@@ -102,3 +170,6 @@
   shell: pcs constraint list --full | grep id:order-glance-registry-clone-glance-api-clone-mandatory || pcs constraint order start glance-registry-clone then glance-api-clone
   run_once: true
   tags: glance
+
+
+

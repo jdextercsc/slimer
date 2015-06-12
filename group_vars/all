@@ -181,6 +181,9 @@ nova_notify_on_state_change: vm_and_task_state
 
 ### Glance
 
+glance_datadir: /var/lib/glance/images/
+glance_api_port: 9292
+glance_registry_port: 9191
 # define the following parameters to use NetApp as a Glance backend
 #default_store: file
 #glance_show_image_direct_url: true
