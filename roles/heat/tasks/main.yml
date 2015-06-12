@@ -18,7 +18,37 @@
             dest=/etc/heat/heat.conf
             mode=0640 owner=root group=heat
   notify: restart heat
+  when: openstack_release == 'icehouse' or openstack_release == 'havana'
   tags: heat
+
+- name: Update heat config file for Juno
+  command: openstack-config --verbose --set /etc/heat/heat.conf {{ item }}
+  with_items:
+    - "database connection mysql://heat:{{ heat_db_pass }}@{{ lb_db_vip }}/heat"
+    - "database max_retries -1"
+    - "keystone_authtoken admin_tenant_name services"
+    - "keystone_authtoken admin_user heat"
+    - "keystone_authtoken admin_password {{ heat_pass }}"
+    - "keystone_authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
+    - "keystone_authtoken auth_port {{ keystone_auth_port | default(35357) }}"
+    - "keystone_authtoken auth_protocol {{ keystone_auth_protocol | default('http') }}"
+    - "keystone_authtoken auth_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
+    - "DEFAULT memcached_servers {{ memcached_servers | join(',') }}"
+    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
+    - "DEFAULT rabbit_ha_queues true"
+    - "heat_api bind_host {{ heat_bind_host }}"
+    - "heat_api_cfn bind_host {{ heat_bind_host }}"
+    - "heat_api_cloudwatch bind_host {{ heat_bind_host }}"
+    - "DEFAULT heat_metadata_server_url {{ heat_metadata_server_url }}"
+    - "DEFAULT heat_waitcondition_server_url {{ heat_waitcondition_server_url }}"
+    - "DEFAULT heat_watch_server_url {{ heat_watch_server_url }}"
+    - "DEFAULT rpc_backend heat.openstack.common.rpc.impl_kombu"
+    - "DEFAULT notification_driver heat.openstack.common.notifier.rpc_notifier
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: heat
+
 
 - name: run dbsync for heat
   shell: su -s /bin/sh -c '/usr/bin/heat-manage db_sync' heat
@@ -32,6 +62,10 @@
     - openstack-heat-api-cfn
     - openstack-heat-api-cloudwatch
     - openstack-heat-engine
+  tags: heat
+
+- include: juno-cluster-resources.yml
+  when: openstack_release == 'juno'
   tags: heat
 
 - include: rhel7-icehouse-cluster-resources.yml
