@@ -75,12 +75,6 @@
   when: ansible_distribution_major_version|int == 7
   tags: glance
 
--name: use pacemaker to mount the NFS share as service.
-  shell: pcs resource create glance-fs Filesystem device="{{ wiley-ctlr-1 }}:{{ glance_datadir }}" directory="{{ glance_datadir }}" fstype="nfs" options="v3" --clone
-  register: cmd
-  changed_when: “‘unchanged’ not in cmd.stderr"
-  tags: glance
-
 - name: install rabbitmq driver
   yum: pkg=python-kombu state=present
   when: use_rabbit
@@ -102,51 +96,7 @@
   firewalld: port=9191-9192/tcp permanent=true immediate=true state=enabled
   tags: glance
 
-- name: create pacemaker cloned resources for glance-registry
-  pcs_resource: command=create name=glance-registry type=systemd:openstack-glance-registry clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 7
+- include: glance-cluster-resources.yml
+  when: openstack_release == 'juno'
   tags: glance
 
-- name: create pacemaker cloned resources for glance-registry
-  pcs_resource: command=create name=glance-registry type=lsb:openstack-glance-registry clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
-  tags: glance
-
-- name: create pacemaker cloned resources for glance-api
-  pcs_resource: command=create name=glance-api type=systemd:openstack-glance-api clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 7
-  tags: glance
-
-- name: create pacemaker cloned resources for glance-api
-  pcs_resource: command=create name=glance-api type=lsb:openstack-glance-api clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
-  tags: glance
-
-- name: create pacemaker constraint for glance
-  shell: pcs constraint list --full | grep id:order-glance-registry-clone-glance-api-clone-mandatory || pcs constraint order start glance-registry-clone then glance-api-clone
-  run_once: true
-  tags: glance
