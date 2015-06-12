@@ -59,7 +59,7 @@
   command: mkdir -p {{ glance_datadir }}
   command: chown glance:nobody {{ glance_datadir }}
   register: cmd
-  changed_when: “‘unchanged’ not in cmd.stderr
+  changed_when: “‘unchanged’ not in cmd.stderr"
   tags: glance
 
 - name: enable nfs support services
@@ -78,7 +78,7 @@
 -name: use pacemaker to mount the NFS share as service.
   shell: pcs resource create glance-fs Filesystem device="{{ wiley-ctlr-1 }}:{{ glance_datadir }}" directory="{{ glance_datadir }}" fstype="nfs" options="v3" --clone
   register: cmd
-  changed_when: “‘unchanged’ not in cmd.stderr
+  changed_when: “‘unchanged’ not in cmd.stderr"
   tags: glance
 
 - name: install rabbitmq driver
