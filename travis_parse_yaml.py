@@ -19,9 +19,7 @@ def execute_process(cmd_line):
 
 
 def main():
-
     argv = sys.argv[1:]
-
     failure = False
 
     for arg in argv:
@@ -31,14 +29,10 @@ def main():
         if return_code != 0:
             failure = True
 
-
     path = os.getcwd()
-    print path
-    print "i am here"
     yamlfiles = [os.path.join(dirpath, f)
              for dirpath, dirnames, files in os.walk(path)
              for f in fnmatch.filter(files, '*.yml')]
-
 
     for yml in yamlfiles:
         caret = " " * 100
@@ -47,9 +41,6 @@ def main():
             config = yaml.load(stream)
 
         except yaml.YAMLError, exc:
-            #print "Error in configuration file: %s\n" % str(exc)
-            #print "exc: ", exc.__dict__
-
             print "%s %s %s\n" % ("#"*10, exc.problem, "#"*10)
             print "File: %s" % yml
 
