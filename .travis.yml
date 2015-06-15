@@ -14,4 +14,4 @@ install:
   #- "printf '[defaults]\nroles_path = ../' > ansible.cfg"
 
 script:
-  - ansible-playbook controllers.yml --syntax-check
+  - python travis_parse_yaml.py controllers.yml 
