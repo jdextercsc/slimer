@@ -130,7 +130,7 @@
   - "keystone_authtoken identity_uri  {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ default(5000) }}"
   - "database connection mysql://neutron:{{ neutron_db_pass }}@{{ lb_db_vip }}/neutron"
   - "database max_retries -1"
-  - "oslo_messaging_rabbit rabbit_hosts {{ rabbit_host }}"
+  - "oslo_messaging_rabbit rabbit_hosts {{ rabbit_hosts }}"
   - "oslo_messaging_rabbit rabbit_ha_queues true"
   - "DEFAULT notification_driver {{ neutron_notification_driver }}"
   - "DEFAULT nova_url http://{{ nova_private_vip | default('127.0.0.1') }}:{{ nova_osapi_compute_listen_port | default(8774) }}/v2"
@@ -169,6 +169,68 @@
   - "ml2_type_vxlan vxlan_group {{ neutron_vxlan_group }}"
   - "securitygroup enable_security_group {{ neutron_enable_security_group }}"
   - "securitygroup firewall_driver True"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+- name: Update ovs_neutron_plugin config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini {{ item }}
+  with_items:
+  - "agent tunnel_types {{ neutron_agent_tunnel_types }}"
+  - "agent vxlan_udp_port {{ neutron_vxlan_udp_port }}"
+  - "ovs local_ip {{ tunnel_ipaddr }}"
+  - "ovs enable_tunneling True"
+  - "ovs integration_bridge br-int"
+  - "ovs tunnel_bridge br-tun"
+  - "ovs bridge_mappings {{ neutron_ovs_bridge_mappings }}"
+  - "securitygroup firewall_driver {{ neutron_ovs_firewall_driver }}"
+  - "agent l2_population {{ neutron_l2_population }}"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+- name: Update metadata_agent config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/metadata_agent.ini {{ item }}
+  with_items:
+  - "DEFAULT auth_strategy keystone"
+  - "DEFAULT auth_url {{ keystone_private_protocol | default('http') }}://{{ keystone_private_vip | default('localhost') }}:{{ keystone_private_port | default(5000) }}/v2.0"
+  - "DEFAULT auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
+  - "DEFAULT auth_region {{ nova_region_name | default('regionOne') }}"
+  - "DEFAULT admin_tenant_name services"
+  - "DEFAULT admin_user neutron"
+  - "DEFAULT admin_password {{ neutron_pass }}"
+  - "DEFAULT nova_metadata_ip {{ nova_private_vip | default('127.0.0.1') }}"
+  - "DEFAULT nova_metadata_port {{ nova_metadata_port | default(8775) }}"
+  - "DEFAULT metadata_proxy_shared_secret {{ neutron_metadata_proxy_shared_secret }}"
+  - "DEFAULT metadata_workers {{ neutron_metadata_workers }}"
+  - "DEFAULT metadata_backlog {{ neutron_metadata_backlog }}"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+- name: Update dhcp_agent config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/dhcp_agent.ini {{ item }}
+  with_items:
+  - "DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver"
+  - "DEFAULT dhcp_delete_namespaces {{ neutron_dhcp_delete_namespaces }}"
+#  - "DEFAULT dnsmasq_dns_servers 10.35.255.14"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+- name: Update l3_agent config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/l3_agent.ini {{ item }}
+  with_items:
+  - "DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver"
+  - "DEFAULT handle_internal_only_routers {{ neutron_l3_handle_internal_only_routers }}"
+  - "DEFAULT send_arp_for_ha {{ neutron_l3_send_arp_for_ha }}"
+  - "DEFAULT router_delete_namespaces {{ neutron_l3_router_delete_namespaces }}"
+  - "DEFAULT metadata_ip {{ nova_private_vip | default('127.0.0.1') }}"
+  - "DEFAULT external_network_bridge {{ neutron_external_network_bridge }}"
   register: cmd
   changed_when: "'changed' in cmd.stderr"
   when: openstack_release == 'juno'
