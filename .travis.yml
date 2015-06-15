@@ -14,4 +14,5 @@ install:
   #- "printf '[defaults]\nroles_path = ../' > ansible.cfg"
 
 script:
+  - cd csc/slimer
   - ansible-playbook controller.yml --syntax-check
