@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/csc/slimer.svg?branch=master)](https://travis-ci.org/csc/slimer)
+
 RHEL-OSP5 HA deployment with Ansible
 ====================================
 
