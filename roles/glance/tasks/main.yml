@@ -107,7 +107,7 @@
   tags: glance
 
 - name: use pacemaker to mount the NFS share as service.
-    pcs_resource: command=create name=glance-fs type=Filesystem clone=yes
+  pcs_resource: command=create name=glance-fs type=Filesystem clone=yes
     args:
        options:
           device: "{{ wiley-ctlr-1 }}:{{ glance_datadir }}"
