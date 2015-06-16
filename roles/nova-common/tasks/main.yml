@@ -19,4 +19,48 @@
   with_items:
     - { src: nova.conf.j2, dest: /etc/nova/nova.conf }
     - { src: api-paste.ini.j2, dest: /etc/nova/api-paste.ini }
+  when: openstack_release == 'icehouse' or openstack_release == 'havana'
   tags: nova
+
+- name: Update nova.conf file for Juno
+  command: openstack-config --verbose --set /etc/nova/nova.conf {{ item }}
+  with_items:
+    - "DEFAULT vncserver_proxyclient_address {{ internal_ipaddr }}"
+    - "DEFAULT vncserver_listen {{ internal_ipaddr }}"
+    - "DEFAULT novncproxy_base_url http://{{ nova_public_vip }}:6080/vnc_auto.html"
+    - "database connection mysql://nova:{{ nova_pass }}@{{ vip-db }}/nova"
+    - "database max_retries -1"
+    - "DEFAULT auth_strategy keystone"
+    - "DEFAULT memcache_servers {{ memcached_servers }}"
+    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
+    - "DEFAULT rabbit_ha_queues true"
+    - "DEFAULT metadata_host {{ nova_private_vip }}"
+    - "DEFAULT metadata_listen {{ internal_ipaddr }}"
+    - "DEFAULT metadata_listen_port {{ nova_metadata_port }}"
+    - "DEFAULT service_neutron_metadata_proxy True"
+    - "DEFAULT neutron_metadata_proxy_shared_secret {{ neutron_metadata_proxy_shared_secret }}"
+    - "DEFAULT glance_host {{ glance_private_vip }}"
+    - "DEFAULT glance_port {{ glance_port | default(9292) }}"
+    - "DEFAULT network_api_class nova.network.neutronv2.api.API"
+    - "DEFAULT neutron_url http://{{ neutron_private_vip | default('127.0.0.1') }}:{{ neutron_port | default(9696) }}/"
+    - "DEFAULT neutron_admin_tenant_name services"
+    - "DEFAULT neutron_admin_username neutron"
+    - "DEFAULT neutron_admin_password {{ neutron_pass }}"
+    - "DEFAULT neutron_admin_auth_url http://{{ keystone_private_vip | default('127.0.0.1') }}:{{ keystone_private_port | default(5000) }}/v2.0"
+    - "DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver"
+    - "DEFAULT libvirt_vif_driver nova.virt.libvirt.vif.LibvirtGenericVIFDriver"
+    - "DEFAULT security_group_api {{ nova_security_group_api }}"
+    - "conductor use_local false"
+    - "DEFAULT scheduler_host_subset_size 30"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
+
+- name: Update api-paste.ini file for Juno
+  command: openstack-config --verbose --set /etc/nova/api-paste.ini {{ item }}
+  with_items:
+    - "filter:authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
+    - "filter:authtoken admin_tenant_name services"
+    - "filter:authtoken admin_user compute"
+    - "filter:authtoken admin_password {{ nova_pass }}"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
