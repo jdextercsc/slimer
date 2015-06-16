@@ -35,7 +35,7 @@
         onboot: '"yes"'
 
     - role: iface
-      device: "bond0.{{ ext_if.vlan }}"i
+      device: "bond0.{{ ext_if.vlan }}"
       params:
         type: Ethernet
         vlan: '"yes"'
