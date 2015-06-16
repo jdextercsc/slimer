@@ -42,7 +42,7 @@ def main():
             stream = open(yml, 'r')
             config = yaml.load(stream)
         except yaml.YAMLError, exc:
-	    failure = False
+	    failure = True 
             print "%s %s %s\n" % ("#"*10, exc.problem, "#"*10)
             print "File: %s" % yml
 
