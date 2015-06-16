@@ -23,7 +23,9 @@ def main():
     failure = False
 
     for arg in argv:
-        output, err, return_code = execute_process("ansible-playbook --syntax-check %s" % arg)
+        cmd_line = "ansible-playbook --syntax-check %s" % arg
+        print "Running: %s " % cmd_line
+        output, err, return_code = execute_process(cmd_line)
         print output, err
 
         if return_code != 0:
@@ -39,8 +41,8 @@ def main():
         try:
             stream = open(yml, 'r')
             config = yaml.load(stream)
-
         except yaml.YAMLError, exc:
+	    failure = False
             print "%s %s %s\n" % ("#"*10, exc.problem, "#"*10)
             print "File: %s" % yml
 
@@ -51,7 +53,6 @@ def main():
                 print "END: line:%d, column: %d\n" % (exc.problem_mark.line,exc.problem_mark.column)
                 print "%s" % linecache.getline(yml, exc.problem_mark.line+1)
                 print caret[:exc.problem_mark.column] + "^" + caret[exc.problem_mark.column+1:]
-
         finally:
             stream.close()
     if failure:
