@@ -29,9 +29,10 @@
   tags: nova
 
 - name: configure shared storage for nova instances
-  lineinfile: dest=/etc/fstab state=present
-              regexp="/var/lib/nova/instances"
-              line="{{ nova_shared_volume }} /var/lib/nova/instances {{ nova_shared_fs_type }} {{ nova_shared_fs_mount_options }} 0 0"
+  lineinfile: >
+    dest=/etc/fstab state=present
+    regexp="/var/lib/nova/instances"
+    line="{{ nova_shared_volume }} /var/lib/nova/instances {{ nova_shared_fs_type }} {{ nova_shared_fs_mount_options }} 0 0"
   when: use_nova_shared_backend
   tags: nova
 
