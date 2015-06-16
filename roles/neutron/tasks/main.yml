@@ -49,49 +49,49 @@
   copy: src=files/neutron/policy.json
         dest=/etc/neutron/policy.json
         mode=0640 owner=root group=neutron
-  when: use_neutron_custom_policy
+  when: use_neutron_custom_policy and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: deploy the neutron.conf file
   template: src={{ openstack_release }}/neutron.conf.j2
             dest=/etc/neutron/neutron.conf
             mode=0640 owner=root group=neutron
-  when: use_neutron
+  when: use_neutron and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: deploy the metadata_agent.ini file
   template: src={{ openstack_release }}/metadata_agent.ini.j2
             dest=/etc/neutron/metadata_agent.ini
             mode=0640 owner=root group=neutron
-  when: use_neutron
+  when: use_neutron and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: deploy the dhcp_agent.ini file
   template: src={{ openstack_release }}/dhcp_agent.ini.j2
             dest=/etc/neutron/dhcp_agent.ini
             mode=0640 owner=root group=neutron
-  when: use_neutron
+  when: use_neutron and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: deploy the lbaas_agent.ini file
   template: src={{ openstack_release }}/lbaas_agent.ini.j2
             dest=/etc/neutron/lbaas_agent.ini
             mode=0640 owner=root group=neutron
-  when: use_lbaas
+  when: use_lbaas and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: deploy the l3_agent.ini file
   template: src={{ openstack_release }}/l3_agent.ini.j2
             dest=/etc/neutron/l3_agent.ini
             mode=0640 owner=root group=neutron
-  when: use_neutron
+  when: use_neutron and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: deploy the ml2_conf.ini file
   template: src={{ openstack_release }}/ml2_conf.ini.j2
             dest=/etc/neutron/plugins/ml2/ml2_conf.ini
             mode=0640 owner=root group=neutron
-  when: use_neutron_ml2
+  when: use_neutron_ml2 and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: deploy the ovs_neutron_plugin.ini file
@@ -105,17 +105,135 @@
   template: src={{ openstack_release }}/cisco_plugins.ini.j2
             dest=/etc/neutron/plugins/cisco/cisco_plugins.ini
             mode=0640 owner=root group=neutron
-  when: use_neutron_cisco
+  when: use_neutron_cisco and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: link plugin.ini to the ml2 plugin config file
   file: src=/etc/neutron/plugins/ml2/ml2_conf.ini dest=/etc/neutron/plugin.ini state=link
-  when: use_neutron_ml2
+  when: use_neutron_ml2 and (openstack_release == 'icehouse' or openstack_release == 'havana')
   tags: neutron
 
 - name: link plugin.ini to the ovs plugin config file
   file: src=/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini dest=/etc/neutron/plugin.ini state=link
-  when: use_neutron_ovs and not use_neutron_ml2
+  when: (use_neutron_ovs and not use_neutron_ml2) and (openstack_release == 'icehouse' or openstack_release == 'havana')
+  tags: neutron
+
+- name: Update neutron config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
+  with_items:
+  - "DEFAULT bind_host {{ neutron_bind_host }}"
+  - "DEFAULT auth_strategy {{ neutron_auth_strategy }}"
+  - "keystone_authtoken admin_tenant_name services"
+  - "keystone_authtoken admin_user neutron"
+  - "keystone_authtoken admin_password {{ neutron_pass }}"
+  - "keystone_authtoken auth_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
+  - "keystone_authtoken identity_uri  {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ default(5000) }}"
+  - "database connection mysql://neutron:{{ neutron_db_pass }}@{{ lb_db_vip }}/neutron"
+  - "database max_retries -1"
+  - "oslo_messaging_rabbit rabbit_hosts {{ rabbit_hosts }}"
+  - "oslo_messaging_rabbit rabbit_ha_queues true"
+  - "DEFAULT notification_driver {{ neutron_notification_driver }}"
+  - "DEFAULT nova_url http://{{ nova_private_vip | default('127.0.0.1') }}:{{ nova_osapi_compute_listen_port | default(8774) }}/v2"
+  - "DEFAULT notify_nova_on_port_status_changes {{ neutron_notify_nova_on_port_status_changes }}"
+  - "DEFAULT notify_nova_on_port_data_changes {{ neutron_notify_nova_on_port_data_changes }}"
+  - "nova auth_url {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
+  - "nova auth_plugin password"
+  - "nova project_domain_id default"
+  - "nova user_domain_id default"
+  - "nova region_name {{ nova_region_name | default('regionOne') }}"
+  - "nova project_name services"
+  - "nova username compute"
+  - "nova password {{ nova_pass }}"
+  - "DEFAULT core_plugin {{ neutron_core_plugin }}"
+  - "DEFAULT service_plugins {{ neutron_service_plugins | join(',') }}"
+  - "DEFAULT router_scheduler_driver {{ neutron_router_scheduler_driver }}"
+  - "DEFAULT l3_ha True"
+  - "DEFAULT max_l3_agents_per_router 0"
+  - "DEFAULT min_l3_agents_per_router 2"
+  - "DEFAULT dhcp_agents_per_network {{ neutron_dhcp_agents_per_network }}"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+
+- name: Update ml2_conf config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini {{ item }}
+  with_items:
+  - "type_drivers {{ neutron_ml2_type_drivers }}"
+  - "ml2 tenant_network_types {{ neutron_ml2_tenant_network_types }}"
+  - "ml2 mechanism_drivers openvswitch"
+  - "ml2_type_flat flat_networks \"*\""
+  - "ml2_type_gre tunnel_id_ranges {{ neutron_gre_tunnel_id_ranges }}"
+  - "ml2_type_vxlan vni_ranges {{ neutron_vxlan_vni_ranges }}"
+  - "ml2_type_vxlan vxlan_group {{ neutron_vxlan_group }}"
+  - "securitygroup enable_security_group {{ neutron_enable_security_group }}"
+  - "securitygroup firewall_driver True"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+- name: Update ovs_neutron_plugin config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini {{ item }}
+  with_items:
+  - "agent tunnel_types {{ neutron_agent_tunnel_types }}"
+  - "agent vxlan_udp_port {{ neutron_vxlan_udp_port }}"
+  - "ovs local_ip {{ tunnel_ipaddr }}"
+  - "ovs enable_tunneling True"
+  - "ovs integration_bridge br-int"
+  - "ovs tunnel_bridge br-tun"
+  - "ovs bridge_mappings {{ neutron_ovs_bridge_mappings }}"
+  - "securitygroup firewall_driver {{ neutron_ovs_firewall_driver }}"
+  - "agent l2_population {{ neutron_l2_population }}"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+- name: Update metadata_agent config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/metadata_agent.ini {{ item }}
+  with_items:
+  - "DEFAULT auth_strategy keystone"
+  - "DEFAULT auth_url {{ keystone_private_protocol | default('http') }}://{{ keystone_private_vip | default('localhost') }}:{{ keystone_private_port | default(5000) }}/v2.0"
+  - "DEFAULT auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
+  - "DEFAULT auth_region {{ nova_region_name | default('regionOne') }}"
+  - "DEFAULT admin_tenant_name services"
+  - "DEFAULT admin_user neutron"
+  - "DEFAULT admin_password {{ neutron_pass }}"
+  - "DEFAULT nova_metadata_ip {{ nova_private_vip | default('127.0.0.1') }}"
+  - "DEFAULT nova_metadata_port {{ nova_metadata_port | default(8775) }}"
+  - "DEFAULT metadata_proxy_shared_secret {{ neutron_metadata_proxy_shared_secret }}"
+  - "DEFAULT metadata_workers {{ neutron_metadata_workers }}"
+  - "DEFAULT metadata_backlog {{ neutron_metadata_backlog }}"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+- name: Update dhcp_agent config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/dhcp_agent.ini {{ item }}
+  with_items:
+  - "DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver"
+  - "DEFAULT dhcp_delete_namespaces {{ neutron_dhcp_delete_namespaces }}"
+#  - "DEFAULT dnsmasq_dns_servers 10.35.255.14"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
+  tags: neutron
+
+- name: Update l3_agent config file for Juno
+  command: openstack-config --verbose --set /etc/neutron/l3_agent.ini {{ item }}
+  with_items:
+  - "DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver"
+  - "DEFAULT handle_internal_only_routers {{ neutron_l3_handle_internal_only_routers }}"
+  - "DEFAULT send_arp_for_ha {{ neutron_l3_send_arp_for_ha }}"
+  - "DEFAULT router_delete_namespaces {{ neutron_l3_router_delete_namespaces }}"
+  - "DEFAULT metadata_ip {{ nova_private_vip | default('127.0.0.1') }}"
+  - "DEFAULT external_network_bridge {{ neutron_external_network_bridge }}"
+  register: cmd
+  changed_when: "'changed' in cmd.stderr"
+  when: openstack_release == 'juno'
   tags: neutron
 
 - name: create integration bridge
@@ -190,6 +308,10 @@
 - name: enable neutron-openvswitch-agent
   service: name=neutron-openvswitch-agent enabled=yes state=started
   when: use_neutron_ovs and not use_ha_controller
+  tags: neutron
+
+- include: juno-cluster-resources.yml
+  when: openstack_release == 'juno'
   tags: neutron
 
 - include: rhel7-icehouse-cluster-resources.yml
