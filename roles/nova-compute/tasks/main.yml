@@ -31,7 +31,7 @@
 - name: configure shared storage for nova instances
   lineinfile: dest=/etc/fstab state=present
               regexp="/var/lib/nova/instances"
-              line="{{ nova_shared_volume }} /var/lib/nova/instances {{ nova_shared_fs_type }} {{ nova_shared_fs_mount_options }} 0 0
+              line="{{ nova_shared_volume }} /var/lib/nova/instances {{ nova_shared_fs_type }} {{ nova_shared_fs_mount_options }} 0 0"
   when: use_nova_shared_backend
   tags: nova
 
@@ -52,7 +52,7 @@
   tags: nova
 
 - name: modify libvirtd parameters with openstack-config
-  command: openstack-config --verbose --set libvirtd '' LIBVIRTD_ARGS '"--listen"'
+  command: openstack-config --verbose --set /etc/sysconfig/libvirtd '' LIBVIRTD_ARGS '"--listen"'
     register: cmd
     changed_when: "'unchanged' not in cmd.stderr"
   when: nova_instance_live_migration and openstack_release == 'juno'
