@@ -53,23 +53,23 @@
 
 - name: modify libvirtd parameters with openstack-config
   command: openstack-config --verbose --set /etc/sysconfig/libvirtd '' LIBVIRTD_ARGS '"--listen"'
-    register: cmd
-    changed_when: "'unchanged' not in cmd.stderr"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
   when: nova_instance_live_migration and openstack_release == 'juno'
   notify: restart libvirtd
   tags: nova
 
- - name: modify libvirtd.conf parameters with openstack-config
-   command: openstack-config --verbose --set /etc/libvirt/libvirtd.conf {{ item }}
-   with items:
-      - "'' listen_tls 0"
-      - "'' listen_tcp 1"
-      - "'' auth_tcp none"
-   register: cmd
-   changed_when: "'unchanged' not in cmd.stderr"
-   when: nova_instance_live_migration and openstack_release == 'juno'
-   notify: restart libvirtd
-   tags: nova
+- name: modify libvirtd.conf parameters with openstack-config
+  command: openstack-config --verbose --set /etc/libvirt/libvirtd.conf {{ item }}
+  with items:
+    - "'' listen_tls 0"
+    - "'' listen_tcp 1"
+    - "'' auth_tcp none"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
+  when: nova_instance_live_migration and openstack_release == 'juno'
+  notify: restart libvirtd
+  tags: nova
 
 - name: enable libvirtd service
   service: name=libvirtd enabled=yes state=started
