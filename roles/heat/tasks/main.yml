@@ -43,7 +43,7 @@
     - "DEFAULT heat_waitcondition_server_url {{ heat_waitcondition_server_url }}"
     - "DEFAULT heat_watch_server_url {{ heat_watch_server_url }}"
     - "DEFAULT rpc_backend heat.openstack.common.rpc.impl_kombu"
-    - "DEFAULT notification_driver heat.openstack.common.notifier.rpc_notifier
+    - "DEFAULT notification_driver heat.openstack.common.notifier.rpc_notifier"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   when: openstack_release == 'juno'
