@@ -40,7 +40,7 @@
     - "DEFAULT service_neutron_metadata_proxy True"
     - "DEFAULT neutron_metadata_proxy_shared_secret {{ neutron_metadata_proxy_shared_secret }}"
     - "DEFAULT glance_host {{ glance_private_vip }}"
-    - "DEFAULT glance_host {{ glance_port | default(9292) }}"
+    - "DEFAULT glance_port {{ glance_port | default(9292) }}"
     - "DEFAULT network_api_class nova.network.neutronv2.api.API"
     - "DEFAULT neutron_url http://{{ neutron_private_vip | default('127.0.0.1') }}:{{ neutron_port | default(9696) }}/"
     - "DEFAULT neutron_admin_tenant_name services"
