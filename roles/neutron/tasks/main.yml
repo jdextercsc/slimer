@@ -310,7 +310,7 @@
   when: use_neutron_ovs and not use_ha_controller
   tags: neutron
 
-- include: rhel7-icehouse-cluster-resources.yml
+- include: juno-cluster-resources.yml
   when: openstack_release == 'juno'
   tags: neutron
 
