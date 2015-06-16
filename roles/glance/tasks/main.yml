@@ -108,19 +108,19 @@
 
 - name: use pacemaker to mount the NFS share as service.
   pcs_resource: command=create name=glance-fs type=Filesystem clone=yes
-    args:
-       options:
-          device: "{{ wiley-ctlr-1 }}:{{ glance_datadir }}"
-          directory: "{{ glance_datadir }}"
-          fstype: "nfs"
-          options: "v3"
-       operations:
-        - action: monitor
-          options:
-            start-delay: 10s
-    run_once: true
-    when: ansible_distribution_major_version|int == 7
-    tags: glance
+  args:
+     options:
+        device: "{{ wiley-ctlr-1 }}:{{ glance_datadir }}"
+        directory: "{{ glance_datadir }}"
+        fstype: "nfs"
+        options: "v3"
+     operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  when: ansible_distribution_major_version|int == 7
+  tags: glance
 
 - name: create pacemaker cloned resources for glance-registry
   pcs_resource: command=create name=glance-registry type=systemd:openstack-glance-registry clone=yes
