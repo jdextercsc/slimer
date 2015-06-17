@@ -1,0 +1,15 @@
+---
+- name: create pacemaker constraints for nova-control
+  shell: pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}
+  with_items:
+    - { id: order-nova-consoleauth-clone-nova-novncproxy-clone-mandatory, cmd: "order start nova-consoleauth-clone then nova-novncproxy-clone" }
+    - { id: colocation-nova-consoleauth-clone-nova-novncproxy-clone, cmd: "colocation add nova-novncproxy-clone with nova-consoleauth-clone" }
+    - { id: order-nova-novncproxy-clone-nova-api-clone-mandatory, cmd: "order start nova-api-clone then nova-novncproxy-clone" }
+    - { id: colocation-nova-novncproxy-clone-nova-api-clone, cmd: "colocation add nova-api-clone with nova-novncproxy-clone" }
+    - { id: order-nova-api-clone-nova-scheduler-clone-mandatory, cmd: "order start nova-api-clone then nova-scheduler-clone" }
+    - { id: colocation-nova-api-clone-nova-scheduler-clone, cmd: "colocation add nova-scheduler-clone with nova-api-clone" }
+    - { id: order-nova-scheduler-clone-nova-conductor-clone-mandatory, cmd: "order start nova-scheduler-clone then nova-conductor-clone" }
+    - { id: colocation-nova-scheduler-clone-nova-conductor-clone, cmd: "colocation add nova-conductor-clone with nova-scheduler-clone" }
+  run_once: true
+  tags: nova
+

@@ -38,3 +38,10 @@
 - include: rhel6-havana-cluster-resources.yml
   when: openstack_release == 'havana' and ansible_distribution_major_version|int == 6
   tags: nova
+
+- include: juno-cluster-resources.yml
+  when: openstack_release == 'juno'
+  tags: nova
+
+- include: cluster-constraints.yml
+  tags: nova
