@@ -4,9 +4,17 @@
   with_items:
     - { id: order-ceilometer-central-ceilometer-collector-clone-mandatory, cmd: "order start ceilometer-central then ceilometer-collector-clone" }
     - { id: order-ceilometer-collector-clone-ceilometer-api-clone-mandatory, cmd: "order start ceilometer-collector-clone then ceilometer-api-clone" }
+    - { id: colocation-ceilometer-api-clone-ceilometer-collector-clone-mandatory, cmd: "colocation add ceilometer-api-clone with ceilometer-collector-clone" }
     - { id: order-ceilometer-api-clone-ceilometer-delay-clone-mandatory, cmd: "order start ceilometer-api-clone then ceilometer-delay-clone" }
+    - { id: colocation-ceilometer-delay-clone-ceilometer-api-clone-mandatory, cmd: "colocation add ceilometer-delay-clone with ceilometer-api-clone" }
     - { id: order-ceilometer-delay-clone-ceilometer-alarm-evaluator-clone-mandatory, cmd: "order start ceilometer-delay-clone then ceilometer-alarm-evaluator-clone" }
+    - { id: colocation-ceilometer-alarm-evaluator-clone-ceilometer-delay-clone-mandatory, cmd: "colocation add ceilometer-alarm-evaluator-clone with ceilometer-delay-clone" }
     - { id: order-ceilometer-alarm-evaluator-clone-ceilometer-alarm-notifier-clone-mandatory, cmd: "order start ceilometer-alarm-evaluator-clone then ceilometer-alarm-notifier-clone" }
+    - { id: colocation-ceilometer-alarm-notifier-clone-ceilometer-alarm-evaluator-clone-mandatory, cmd: "colocation add ceilometer-alarm-notifier-clone with ceilometer-alarm-evaluator-clone" }
+    - { id: order-ceilometer-alarm-notifier-clone-ceilometer-notification-clone-mandatory, cmd: "order start ceilometer-alarm-notifier-clone then ceilometer-notification-clone" }
+    - { id: colocation-ceilometer-notification-clone-ceilometer-alarm-notifier-clone-mandatory, cmd: "colocation add ceilometer-notification-clone with ceilometer-alarm-notifier-clone" }
+    - { id: order-mongodb-clone-ceilometer-central-mandatory, cmd: "order start mongodb-clone then ceilometer-central" }
+    - { id: order-keystone-clone-ceilometer-central-mandatory, cmd: "order start keystone-clone then ceilometer-central" }
   run_once: true
   tags: ceilometer
 
