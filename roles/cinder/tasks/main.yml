@@ -111,12 +111,7 @@
   when: ansible_distribution_major_version|int == 7
   tags: cinder
 
-#TODO add constraints
-# pcs constraint order start cinder-api-clone then cinder-scheduler-clone
-# pcs constraint colocation add cinder-scheduler-clone with cinder-api-clone
-# pcs constraint order start cinder-scheduler-clone then cinder-volume
-# pcs constraint colocation add cinder-volume with cinder-scheduler-clone
-# 
-# if [ $PHD_VAR_deployment = collapsed ]; then
-#     pcs constraint order start keystone-clone then cinder-api-clone
+- include: cluster-constraints.yml
+  tags: cinder
+
 

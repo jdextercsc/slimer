@@ -1,0 +1,13 @@
+---
+- name: create pacemaker constraints for cinder
+  shell: pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}
+  with_items:
+    - { id: order-keystone-clone-cinder-api-clone-mandatory, cmd: "order start keystone-clone then cinder-api-clone" }
+    - { id: order-cinder-api-clone-cinder-scheduler-clone-mandatory, cmd: "order start cinder-api-clone then cinder-scheduler-clone" }
+    - { id: colocation-cinder-api-clone-cinder-scheduler-clone, cmd: "colocation add cinder-scheduler-clone with cinder-api-clone" }
+    - { id: order-cinder-scheduler-clone-cinder-volume-mandatory, cmd: "order start cinder-scheduler-clone then cinder-volume" }
+    - { id: colocation-cinder-api-clone-cinder-scheduler-clone, cmd: "colocation add cinder-volume with cinder-scheduler-clone" }
+    - { id: order-cinder-scheduler-clone-cinder-volume-mandatory, cmd: "order start cinder-scheduler-clone then cinder-volume" }
+    - { id: colocation-cinder-api-clone-cinder-scheduler-clone, cmd: "colocation add cinder-volume with cinder-scheduler-clone" }
+  run_once: true
+  tags: cinder
