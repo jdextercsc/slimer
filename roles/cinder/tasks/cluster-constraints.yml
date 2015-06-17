@@ -8,7 +8,3 @@
     - { id: colocation-cinder-api-clone-cinder-scheduler-clone, cmd: "colocation add cinder-volume with cinder-scheduler-clone" }
   run_once: true
   tags: cinder
-
-
-# if [ $PHD_VAR_deployment = collapsed ]; then
-#     pcs constraint order start keystone-clone then cinder-api-clone
