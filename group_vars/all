@@ -1,14 +1,14 @@
 ---
 ### OpenStack control plane configuration
 
-# select OpenStack release: havana, icehouse
+# select OpenStack release: havana, icehouse, juno
 openstack_release: juno
 use_ha_controller: true
+use_swift: true
 use_rabbit: true
 use_ha_db: true
 use_galera: true
 use_ceph: false
-use_swift: false
 use_cinder_nfs_volume_driver: true
 use_netapp: false
 use_netapp_copyoffload: false
@@ -51,7 +51,7 @@ ntp:
 
 mongo_replSet:
  - wiley-ctlr-2
- - wiley-ctlr-3 
+ - wiley-ctlr-3
 
 ### Pacemaker cluster
 pcs_cluster_name: SOME_CLUSTER_NAME
@@ -69,6 +69,15 @@ controller_node_names:
 # fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
 # fencing: { agent: cisco_ucs, params: "login=pacemaker passwd='SECRET' ipaddr=10.161.0.50 suborg=org-Controller port=Profile-CT-1-1 ssl=1 ssl_insecure=1" }
 #
+
+swift_nodes:
+  - name: wiley-swift-1
+    addr_int: 172.17.17.74
+  - name: wiley-swift-2
+    addr_int: 172.17.17.75
+  - name: wiley-swift-3
+    addr_int: 172.17.17.76
+
 controller_nodes:
   - name: wiley-ctlr-1
     fqdn: wiley-ctlr-1.lordbusiness
@@ -112,6 +121,7 @@ cinder_db_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_db_p
 nova_db_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_db_pass chars=ascii_letters,digits') }}"
 neutron_db_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_db_pass chars=ascii_letters,digits') }}"
 heat_db_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
+swift_db_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_db_pass chars=ascii_letters,digits') }}"
 
 
 ### memcache servers
@@ -263,6 +273,9 @@ vip_addresses:
   - name: vip-ceilometer-int
     addr: 172.17.17.110
 
+  - name: vip-swift-int
+    addr: 172.17.17.111
+
 #  - name: vip-keystone-pub
 #    addr: 172.17.20.103
 
@@ -296,6 +309,11 @@ neutron_vip: 172.17.17.107
 horizon_vip: 172.17.17.108
 heat_vip: 172.17.17.109
 ceilometer_vip: 172.17.17.110
+swift_vip: 172.17.17.111
+
+swift_public_vip: "{{ swift_vip }}"
+swift_admin_vip: "{{ swift_vip }}"
+swift_private_vip: "{{ swift_vip }}"
 
 keystone_public_vip: "{{keystone_vip}}"
 keystone_admin_vip: "{{ keystone_vip }}"
@@ -454,3 +472,13 @@ ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials
 # keep last 5 days data only (value is in secs)
 ceilometer_time_to_live: 432000
 
+
+#### swift
+# part_power = 2 ^ partition power = partition count. ( The partition is rounded up after calculation.)
+part_power: 16
+#replica couunt =  The number of times that your data will be replicated in the cluster.
+replica_count: 3
+# min_part_hours =  Minimum number of hours before a partition can be moved. This parameter increases availability of data by not moving more than one copy of a given data item within that min_part_hours amount of time.
+min_part_hours: 24
+swift_pathprefix: "{{ lookup('password', inventory_dir + '/credentials/swift_prefix chars=ascii_letters,digits') }}"
+swift_pathsuffix: "{{ lookup('password', inventory_dir + '/credentials/swift_suffix chars=ascii_letters,digits') }}"

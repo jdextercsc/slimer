@@ -1,0 +1,48 @@
+---
+
+- name: install swift packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - openstack-swift-proxy
+    - openstack-swift
+    - openstack-utils
+    - python-swiftclient
+    - openstack-swift-container
+  tags: swift
+
+- name: configure /etc/swift/proxy-server.conf
+  command: openstack-config --set --verbose /etc/swift/proxy-server.conf {{item}}
+  with_items:
+    - "filter:authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
+    - "filter:authtoken auth_host {{keystone_public_vip}}"
+    - "filter:authtoken cache swift.cache"
+    - "filter:authtoken admin_tenant_name services"
+    - "filter:authtoken admin_user swift"
+    - "filter:authtoken admin_password {{swift_pass}}"
+    - "DEFAULT bind_ip {{internal_ipaddr}}"
+    - "filter:cache memcache_servers {{ memcache_list }}"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
+  tags: swift
+
+- name: configure /etc/swift/proxy-server.conf
+  command: openstack-config --set --verbose /etc/swift/object-expirer.conf {{item}}
+  with_items:
+    - "object-expirer concurrency 100"
+    - "filter:cache memcache_servers {{ memcache_list }}"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
+  tags: swift
+
+- name: create swift.conf
+  template: src=swift.conf.j2 dest=/etc/swift/swift.conf
+  tags: swift
+
+
+- name: create the rings
+  command: swift-ring-builder {{ item }} create {{ part_power | default( 16 )}} {{replica_count | default ( 3 ) }} {{min_part_hours | default ( 24 ) }}
+  with_items:
+    - "/etc/swift/object.builder"
+    - "/etc/swift/account.builder"
+    - "/etc/swift/container.builder"
+  tags: swift

@@ -1,5 +1,4 @@
----
-- hosts: controller
+- hosts: swift
   roles:
     - { role: iface, device: p3p1, params: { type: Ethernet, bootproto: none, onboot: '"yes"', master: bond0, slave: '"yes"', mtu: 9000 } }
     - { role: iface, device: p3p2, params: { type: Ethernet, bootproto: none, onboot: '"yes"', master: bond0, slave: '"yes"', mtu: 9000  } }
@@ -39,60 +38,33 @@
         onboot: '"yes"'
 
     - role: iface
-      device: "bond0.{{ ext_if.vlan }}"
+      device: "bond0.{{ swift_if.vlan }}"
       params:
         mtu: 9000
-        devicetype: ovs
-        type: OVSPort
+        type: ethernet
         vlan: '"yes"'
         nm_controlled: '"no"'
         nozeroconf: '"yes"'
-        ovs_bridge: br-ex
         onboot: '"yes"'
+        ipaddr: "{{ swift_if.ipaddr}}"
+        netmask: "{{ swift_if.ipaddr}}"
 
-    - role: iface
-      device: "bond0.{{ tun_if.vlan }}"
-      params:
-        mtu: 9000
-        type: Ethernet
-        vlan: '"yes"'
-        nozeroconf: '"yes"'
-        bootproto: static
-        ipaddr: "{{ tun_if.ipaddr }}"
-        netmask: "{{ tun_if.netmask }}"
-        onboot: '"yes"'
-
-    - role: iface
-      device: br-ex
-      params:
-        mtu: 9000
-        devicetype: ovs
-        type: OVSBridge
-        onboot: '"no"'
-        ovsbootproto: static
-        nozeroconf: '"yes"'
-        ipaddr: "{{ ext_if.ipaddr }}"
-        netmask: "{{ ext_if.netmask }}"
-        gateway: "{{ ext_if.gateway }}"
-        defroute: '"yes"'
-        dns1: "{{ ext_if.dns1 }}"
-        dns2: "{{ ext_if.dns2 }}"
 
     - common
     - openstack-common
-    - pacemaker
-    - haproxy
-    - memcached
-    - rabbitmq
-    - galera
-    - mongodb
-    - keystone
-    - glance
-    - cinder
-    - neutron
-    - nova-common
-    - nova-control
-    - heat
-    - ceilometer-common
-    - ceilometer-control
-    - horizon
+    
+- hosts: controller
+  roles:
+    - swift-proxy-1
+
+- hosts: swift
+  roles:
+    - swift-storage-1
+
+- hosts: controller
+  roles:
+    - swift-proxy-2
+
+- hosts: swift
+  roles:
+    - swift-storage-2

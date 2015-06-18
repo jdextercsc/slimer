@@ -35,12 +35,7 @@
 # Pacemaker operations
 
 - name: create pacemaker resources for keystone
-  pcs_resource: command=create name=keystone type=systemd:openstack-keystone clone=yes
-  args:
-   operations:
-      - action: interleave
-        options: true
-         
+  pcs_resource: command=create name=keystone type=systemd:openstack-keystone clone=yes interleave=yes
   run_once: true
   when: ansible_distribution_major_version|int == 7
   tags: keystone
@@ -110,7 +105,10 @@
 - name: apply the admin role to the swift user
   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} user=swift role=admin tenant=services
   run_once: true
-  tags: keystone
+  when: use_swift
+  tags:
+    - keystone
+    - swift
 
 - name: create the neutron user
   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} user=neutron tenant=services password={{ neutron_pass }}
@@ -172,11 +170,19 @@
   run_once: true
   tags: keystone
 
-- name: create the swift service
+- name:  create the swift service
   shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-create --name swift --type object-store --description "Swift Storage Service"
   run_once: true
   when: use_swift
-  tags: keystone
+  tags:
+    - keystone
+    - swift
+
+- name: debug swift_keystone
+  debug: msg=" use swift = {{ use_swift }}"
+  tags:
+    - keystone
+    - swift
 
 - name: create the neutron service
   shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-get neutron || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-create --name neutron --type network --description "OpenStack Networking Service"
@@ -251,3 +257,10 @@
   when: use_ceilometer
   tags: keystone
 
+- name: create swift endpoints
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service swift  --publicurl "http://{{ swift_public_vip }}:8080/v1/AUTH_\$(tenant_id)s" --adminurl "http://{{ swift_admin_vip }}:8080" --internalurl "http://{{swift_private_vip }}:8080/v1/AUTH_\$(tenant_id)s"
+  run_once: true
+  when: use_swift
+  tags:
+    - keystone
+    - swift

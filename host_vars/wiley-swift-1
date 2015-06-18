@@ -18,3 +18,9 @@ swift_if:
 
 smbios_uuid:
 
+zone_id: 1
+
+swift_data_disks:
+  - sdb
+  - sdc
+  - sde

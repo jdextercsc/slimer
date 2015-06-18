@@ -272,3 +272,14 @@ backend ceilometer
 {% for node in controller_nodes %}
     server {{ node.name }} {{ node.addr_int }}:8777 check inter 1s
 {% endfor %}
+
+
+frontend vip-swift-int
+    bind {{swift_private_vip }}:8080
+    default_backend swift
+
+backend swift
+    balance roundrobin
+{% for node in swift_nodes %}
+  server {{ node.name}} {{ node.addr_int }}:8080 check inter 1s
+{% endfor %}
