@@ -10,7 +10,7 @@
   tags: ceilometer
 
 - name: create pacemaker resources for ceilometer-collector
-  pcs_resource: command=create name=ceilometer-collector type=systemd:openstack-ceilometer-collector clone=yes
+  pcs_resource: command=create name=ceilometer-collector type=systemd:openstack-ceilometer-collector clone=yes interleave=yes
   args:
     operations:
       - action: monitor
@@ -20,7 +20,7 @@
   tags: ceilometer
 
 - name: create pacemaker resources for ceilometer-api
-  pcs_resource: command=create name=ceilometer-api type=systemd:openstack-ceilometer-api clone=yes
+  pcs_resource: command=create name=ceilometer-api type=systemd:openstack-ceilometer-api clone=yes interleave=yes
   args:
     operations:
       - action: monitor
@@ -30,7 +30,7 @@
   tags: ceilometer
 
 - name: create ceilometer-delay resource
-  pcs_resource: command=create name=ceilometer-delay type=Delay clone=yes
+  pcs_resource: command=create name=ceilometer-delay type=Delay clone=yes interleave=yes
   args:
     options:
       startdelay: 10
@@ -38,7 +38,7 @@
   tags: ceilometer
 
 - name: create pacemaker resources for ceilometer notification system
-  pcs_resource: command=create name={{ item }} type=systemd:openstack-{{ item }} clone=yes
+  pcs_resource: command=create name={{ item }} type=systemd:openstack-{{ item }} clone=yes interleave=yes
   args:
     operations:
       - action: monitor

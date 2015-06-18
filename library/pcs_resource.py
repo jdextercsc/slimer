@@ -100,8 +100,7 @@ def main():
         cmd += ' --master'
 
     if module.params.has_key('interleave') and module.params['interleave'] == 'yes':
-        cmd += ' --interleave=true'
-
+        cmd += ' interleave=true'
 
     # Run command.
     cmd = cmd % module.params
