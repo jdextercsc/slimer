@@ -15,5 +15,13 @@ swift_if:
   ipaddr: 172.17.20.75
   netmask: 255.255.255.0
   vlan: 1804
-  
+
 smbios_uuid:
+
+zone_id: 2
+
+swift_data_disks:
+  - sdb
+  - sdc
+  - sde
+  

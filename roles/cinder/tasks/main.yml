@@ -81,7 +81,7 @@
   tags: cinder
 
 - name: create pacemaker resources for cinder-api
-  pcs_resource: command=create name=cinder-api type=systemd:openstack-cinder-api clone=yes
+  pcs_resource: command=create name=cinder-api type=systemd:openstack-cinder-api clone=yes interleave=yes
   args:
     operations:
       - action: monitor
@@ -92,13 +92,14 @@
   tags: cinder
   
 - name: create pacemaker resource for cinder-scheduler
-  pcs_resource: command=create name=cinder-scheduler type=systemd:openstack-cinder-scheduler clone=yes
+  pcs_resource: command=create name=cinder-scheduler type=systemd:openstack-cinder-scheduler clone=yes interleave=yes
   args:
     operations:
       - action: monitor
         options:
           start-delay: 10s
   when: ansible_distribution_major_version|int == 7
+  run_once: true
   tags: cinder
   
 - name: create pacemaker resource for cinder-volume
@@ -110,8 +111,7 @@
           start-delay: 10s
   when: ansible_distribution_major_version|int == 7
   tags: cinder
-
+  
 - include: cluster-constraints.yml
   tags: cinder
-
 

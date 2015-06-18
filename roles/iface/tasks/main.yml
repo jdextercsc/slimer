@@ -2,3 +2,8 @@
 - name: deploy network interface config file
   template: src=ifcfg-dev.j2 dest=/etc/sysconfig/network-scripts/ifcfg-{{ device }}
   tags: iface
+
+- name: bring up deployed interface
+  command: ifup {{ device}}
+  tags: iface
+  ignore_errors: yes
