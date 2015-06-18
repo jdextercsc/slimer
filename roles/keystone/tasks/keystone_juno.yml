@@ -10,17 +10,17 @@
 # following requires that crudini .5-1 be installed from epel or it will fail.
 
 - name: set keystone configuration
-  command: openstack-config --verbose {{ item }}
+  command: openstack-config --verbose --set /etc/keystone/keystone.conf {{ item }}
   with_items:
-    - " --set /etc/keystone/keystone.conf DEFAULT admin_token {{keystone_admin_token}}"
-    - " --set /etc/keystone/keystone.conf DEFAULT rabbit_hosts {{rabbit_hosts}}"
-    - " --set /etc/keystone/keystone.conf DEFAULT rabbit_ha_queues true"
-    - " --set /etc/keystone/keystone.conf DEFAULT admin_endpoint http://{{ keystone_vip }}:35357"
-    - " --set /etc/keystone/keystone.conf DEFAULT public_endpoint http://{{ keystone_public_vip }}:{{keystone_public_port}}"
-    - " --set /etc/keystone/keystone.conf DEFAULT database connection mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"
-    - " --set /etc/keystone/keystone.conf database max_retries -1"
-    - " --set /etc/keystone/keystone.conf DEFAULT public_bind_host {{internal_ipaddr}}"
-    - " --set /etc/keystone/keystone.conf DEFAULT admin_bind_host {{internal_ipaddr}}"
+    - "DEFAULT admin_token {{keystone_admin_token}}"
+    - "DEFAULT rabbit_hosts {{rabbit_hosts}}"
+    - "DEFAULT rabbit_ha_queues true"
+    - "DEFAULT admin_endpoint http://{{ keystone_vip }}:35357"
+    - "DEFAULT public_endpoint http://{{ keystone_public_vip }}:{{keystone_public_port}}"
+    - "DEFAULT database connection mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"
+    - "database max_retries -1"
+    - "DEFAULT public_bind_host {{internal_ipaddr}}"
+    - "DEFAULT admin_bind_host {{internal_ipaddr}}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: keystone
