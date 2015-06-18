@@ -22,4 +22,3 @@
       startdelay: 10
   run_once: true
   tags: ceilometer
-  
