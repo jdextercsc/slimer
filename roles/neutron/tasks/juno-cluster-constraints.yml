@@ -1,0 +1,34 @@
+---
+#- name: create pacemaker order constraint for neutron
+#  shell: pcs constraint list --full | grep id:order-neutron-agents-pre-neutron-agents-mandatory || pcs constraint order start neutron-agents-pre then neutron-agents
+#  run_once: true
+#  tags: neutron
+
+#- name: create pacemaker colocation constraint for neutron
+#  shell: pcs constraint list --full | grep id:colocation-neutron-agents-neutron-agents-pre || pcs constraint colocation add neutron-agents with neutron-agents-pre
+#  run_once: true
+#  tags: neutron
+
+#if [ $PHD_VAR_deployment = collapsed ]; then
+#   pcs constraint order start keystone-clone then neutron-server-clone
+#fi
+
+- name: create constraints temp
+  command: "{{ item }}"
+  with_items:
+  - "pcs constraint order start keystone-clone then neutron-server-clone"
+  - "pcs constraint order start neutron-scale-clone then neutron-ovs-cleanup-clone"
+  - "pcs constraint colocation add neutron-ovs-cleanup-clone with neutron-scale-clone"
+  - "pcs constraint order start neutron-ovs-cleanup-clone then neutron-netns-cleanup-clone"
+  - "pcs constraint colocation add neutron-netns-cleanup-clone with neutron-ovs-cleanup-clone"
+  - "pcs constraint order start neutron-netns-cleanup-clone then neutron-openvswitch-agent-clone"
+  - "pcs constraint colocation add neutron-openvswitch-agent-clone with neutron-netns-cleanup-clone"
+  - "pcs constraint order start neutron-openvswitch-agent-clone then neutron-dhcp-agent-clone"
+  - "pcs constraint colocation add neutron-dhcp-agent-clone with neutron-openvswitch-agent-clone"
+  - "pcs constraint order start neutron-dhcp-agent-clone then neutron-l3-agent-clone"
+  - "pcs constraint colocation add neutron-l3-agent-clone with neutron-dhcp-agent-clone"
+  - "pcs constraint order start neutron-l3-agent-clone then neutron-metadata-agent-clone"
+  - "pcs constraint colocation add neutron-metadata-agent-clone with neutron-l3-agent-clone"
+  - "pcs constraint order start neutron-server-clone then neutron-scale-clone"
+  run_once: true
+  tags: neutron
