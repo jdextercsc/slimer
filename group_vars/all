@@ -55,9 +55,9 @@ mongo_replSet:
 
 ### Pacemaker cluster
 pcs_cluster_name: SOME_CLUSTER_NAME
-#pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
+pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
 #pcs_cluster_pass_encoded: "{{ lookup('file', inventory_dir + '/credentials/pcs_cluster_pass_encoded') }}"
-pcs_cluster_pass: password
+#pcs_cluster_pass: password
 # short domain names of the controller nodes
 controller_node_names:
   - wiley-ctlr-1

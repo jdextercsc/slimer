@@ -63,9 +63,19 @@
   when: force_ntpdate == "yes"
   tags: ntp
 
-- template: src=hostname.j2 dest=/etc/hostname
+#- template: src=hostname.j2 dest=/etc/hostname
+#  when: ansible_distribution_major_version|int == 7
+#  notify: reset hostname using the hostnamectl utility
+
+- name: Set hostname transient 
+  command: hostnamectl set-hostname --transient {{ inventory_hostname }}
   when: ansible_distribution_major_version|int == 7
-  notify: reset hostname using the hostnamectl utility
+  tags: dns
+
+
+- name: Set hostname
+  command: hostnamectl set-hostname {{ inventory_hostname }}
+  when: ansible_distribution_major_version|int == 7
   tags: dns
 
 - name: set hostname in /etc/sysconfig/network
