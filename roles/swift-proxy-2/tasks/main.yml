@@ -44,7 +44,11 @@
 
   #add constraints
 - name: create constraint for swift-proxy-clone then swift-object-expirer
-  command: pcs constraint order start swift-proxy-clone then swift-object-expirer
-  when: ansible_distribution_major_version|int == 7
+  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
+  with_items:
+    - { id: swift-proxy-clone-swift-object-expirer-mandatory, cmd: "order start swift-proxy-clone then swift-object-expirer" }
   run_once: true
+  register: cmd
+  changed_when: "'{{ item.id }}' not in cmd.stdout"
+  when: ansible_distribution_major_version|int == 7
   tags: swift

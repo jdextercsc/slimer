@@ -1,6 +1,6 @@
 ---
 - name: create pacemaker constraints for heat
-  shell: pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}
+  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
   with_items:
     - { id: order-heat-api-clone-heat-api-cfn-clone-mandatory, cmd: "order start heat-api-clone then heat-api-cfn-clone" }
     - { id: colocation-heat-api-heat-api-cfn, cmd: "colocation add heat-api-cfn with heat-api" }
@@ -9,5 +9,7 @@
     - { id: order-heat-api-cloudwatch-clone-heat-engine-mandatory, cmd: "order start heat-api-cloudwatch-clone then heat-engine" }
     - { id: colocation-heat-engine-heat-api-cloudwatch, cmd: "colocation add heat-engine with heat-api-cloudwatch" }
   run_once: true
+  register: cmd
+  changed_when: "'{{ item.id }}' not in cmd.stdout"
   tags: heat
 
