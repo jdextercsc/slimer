@@ -75,8 +75,8 @@
         netmask: "{{ ext_if.netmask }}"
         gateway: "{{ ext_if.gateway }}"
         defroute: '"yes"'
-        dns1: "{{ ext_if.dns1 }}"
-        dns2: "{{ ext_if.dns2 }}"
+    #    dns1: "{{ ext_if.dns1 }}"
+    #    dns2: "{{ ext_if.dns2 }}"
 
     - subscription-manager
     - common

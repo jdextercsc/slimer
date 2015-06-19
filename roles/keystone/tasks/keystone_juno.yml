@@ -17,7 +17,7 @@
     - "DEFAULT rabbit_ha_queues true"
     - "DEFAULT admin_endpoint http://{{ keystone_vip }}:35357"
     - "DEFAULT public_endpoint http://{{ keystone_public_vip }}:{{keystone_public_port}}"
-    - "DEFAULT database connection mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"
+    - "database connection mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"
     - "database max_retries -1"
     - "DEFAULT public_bind_host {{internal_ipaddr}}"
     - "DEFAULT admin_bind_host {{internal_ipaddr}}"
@@ -43,7 +43,7 @@
 - name: create pcs constraints for keystone
   shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
   with_items:
-    - { id: lb-haproxy-clone-keystone-clone, cmd: "order start lb-haproxy-clone then keystone-clone" }
+    - { id: haproxy-clone-keystone-clone, cmd: "order start haproxy-clone then keystone-clone" }
     - { id: galera-master-keystone-clone, cmd: "order start galera-master then keystone-clone" }
     - { id: rabbitmq-clone-keystone-clone, cmd: "order start rabbitmq-clone then keystone-clone" }
     - { id: memcached-clone-keystone-clone, cmd: "order start memcached-clone then keystone-clone" }
