@@ -1,8 +1,4 @@
 
-- name: debug mount_out
-  debug: msg={{mount_out.stderr}}
-  tags: swift
-
 - name: labeldisks provided to swift in group_vars/all.swift_data_drive
   command: parted -s /dev/{{ item }} mklabel gpt
   with_items: "{{ swift_data_disks }}"
