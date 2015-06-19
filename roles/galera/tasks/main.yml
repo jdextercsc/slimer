@@ -8,9 +8,6 @@
   run_once: yes
   tags: mysql
 
-- debug: var=pcs_result
-  tags: mysql
-  
 - name: start galera deploy
   include: galera.yml
   #command: wall {{pcs_result.stdout}}

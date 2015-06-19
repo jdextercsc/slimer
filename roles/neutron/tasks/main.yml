@@ -1,8 +1,5 @@
 ---
 
-- debug: msg="{{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/"
-  tags: neutron
-
 - name: install neutron packages
   yum: pkg={{ item }} state=present
   with_items:
@@ -114,7 +111,7 @@
 
 - name: link plugin.ini to the ml2 plugin config file
   file: src=/etc/neutron/plugins/ml2/ml2_conf.ini dest=/etc/neutron/plugin.ini state=link
-  when: use_neutron_ml2 
+  when: use_neutron_ml2
   tags: neutron
 
 - name: link plugin.ini to the ovs plugin config file
@@ -126,8 +123,8 @@
 #- name: fix mess
 #  command: openstack-config --verbose --del /etc/neutron/neutron.conf {{ item }}
 #  with_items:
-#  - "oslo_messaging_rabbit rabbit_ha_queues" 
-#  - "oslo_messaging_rabbit rabbit_hosts" 
+#  - "oslo_messaging_rabbit rabbit_ha_queues"
+#  - "oslo_messaging_rabbit rabbit_hosts"
 #  tags: neutron
 #  when: openstack_release == 'juno'
 
@@ -140,13 +137,13 @@
   - "keystone_authtoken admin_user neutron"
   - "keystone_authtoken admin_password {{ neutron_pass }}"
   - "keystone_authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
-  - "keystone_authtoken identity_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/" 
+  - "keystone_authtoken identity_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/"
   - "database connection mysql://neutron:{{ neutron_db_pass }}@{{ lb_db_vip }}/neutron"
   - "database max_retries -1"
   - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
   - "DEFAULT rabbit_ha_queues true"
   - "DEFAULT rabbit_userid guest"
-  - "DEFAULT rabbit_password guest" 
+  - "DEFAULT rabbit_password guest"
   - "DEFAULT notification_driver {{ neutron_notification_driver }}"
   - "DEFAULT nova_url http://{{ nova_private_vip | default('127.0.0.1') }}:{{ nova_osapi_compute_listen_port | default(8774) }}/v2"
   - "DEFAULT notify_nova_on_port_status_changes {{ neutron_notify_nova_on_port_status_changes }}"
@@ -272,7 +269,7 @@
   command: openstack-config --verbose --set /etc/neutron/lbaas_agent.ini {{ item }}
   with_items:
   - "DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver"
-  - "DEFAULT device_driver neutron.services.loadbalancer.drivers.haproxy.namespace_driver.HaproxyNSDriver" 
+  - "DEFAULT device_driver neutron.services.loadbalancer.drivers.haproxy.namespace_driver.HaproxyNSDriver"
   register: cmd
   changed_when: "'changed' in cmd.stderr"
   when: openstack_release == 'juno'
@@ -323,7 +320,7 @@
 #  tags: neutron
 
 - name: disable neutron services
-  service: name={{ item }} enabled=no 
+  service: name={{ item }} enabled=no
   with_items:
     - neutron-server
     - neutron-dhcp-agent
@@ -334,7 +331,7 @@
   tags: neutron
 
 - name: disable neutron-openvswitch-agent
-  service: name=neutron-openvswitch-agent enabled=no 
+  service: name=neutron-openvswitch-agent enabled=no
   when: use_neutron_ovs and use_ha_controller
   tags: neutron
 
@@ -380,4 +377,4 @@
 
 
 
- 
+
