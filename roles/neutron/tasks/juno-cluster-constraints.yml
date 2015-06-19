@@ -1,34 +1,23 @@
 ---
-#- name: create pacemaker order constraint for neutron
-#  shell: pcs constraint list --full | grep id:order-neutron-agents-pre-neutron-agents-mandatory || pcs constraint order start neutron-agents-pre then neutron-agents
-#  run_once: true
-#  tags: neutron
 
-#- name: create pacemaker colocation constraint for neutron
-#  shell: pcs constraint list --full | grep id:colocation-neutron-agents-neutron-agents-pre || pcs constraint colocation add neutron-agents with neutron-agents-pre
-#  run_once: true
-#  tags: neutron
-
-#if [ $PHD_VAR_deployment = collapsed ]; then
-#   pcs constraint order start keystone-clone then neutron-server-clone
-#fi
-
-- name: create constraints temp
-  command: "{{ item }}"
+- name: create pacemaker constraints for neutron
+  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
   with_items:
-  - "pcs constraint order start keystone-clone then neutron-server-clone"
-  - "pcs constraint order start neutron-scale-clone then neutron-ovs-cleanup-clone"
-  - "pcs constraint colocation add neutron-ovs-cleanup-clone with neutron-scale-clone"
-  - "pcs constraint order start neutron-ovs-cleanup-clone then neutron-netns-cleanup-clone"
-  - "pcs constraint colocation add neutron-netns-cleanup-clone with neutron-ovs-cleanup-clone"
-  - "pcs constraint order start neutron-netns-cleanup-clone then neutron-openvswitch-agent-clone"
-  - "pcs constraint colocation add neutron-openvswitch-agent-clone with neutron-netns-cleanup-clone"
-  - "pcs constraint order start neutron-openvswitch-agent-clone then neutron-dhcp-agent-clone"
-  - "pcs constraint colocation add neutron-dhcp-agent-clone with neutron-openvswitch-agent-clone"
-  - "pcs constraint order start neutron-dhcp-agent-clone then neutron-l3-agent-clone"
-  - "pcs constraint colocation add neutron-l3-agent-clone with neutron-dhcp-agent-clone"
-  - "pcs constraint order start neutron-l3-agent-clone then neutron-metadata-agent-clone"
-  - "pcs constraint colocation add neutron-metadata-agent-clone with neutron-l3-agent-clone"
-  - "pcs constraint order start neutron-server-clone then neutron-scale-clone"
+    - { id: order-keystone-clone-neutron-server-clone, cmd: "order start keystone-clone then neutron-server-clone" }
+    - { id: order-neutron-scale-clone-neutron-ovs-cleanup-clone, cmd: "order start neutron-scale-clone then neutron-ovs-cleanup-clone" }
+    - { id: colocation-neutron-ovs-cleanup-clone-neutron-scale-clone, cmd: "colocation add neutron-ovs-cleanup-clone with neutron-scale-clone" }
+    - { id: order-neutron-ovs-cleanup-clone-neutron-netns-cleanup-clone, cmd: "order start neutron-ovs-cleanup-clone then neutron-netns-cleanup-clone" }
+    - { id: colocation-neutron-netns-cleanup-clone-neutron-ovs-cleanup-clone, cmd: "colocation add neutron-netns-cleanup-clone with neutron-ovs-cleanup-clone" }
+    - { id: order-neutron-netns-cleanup-clone-neutron-openvswitch-agent-clone, cmd: "order start neutron-netns-cleanup-clone then neutron-openvswitch-agent-clone" }
+    - { id: colocation-neutron-openvswitch-agent-clone-neutron-netns-cleanup-clone, cmd: "colocation add neutron-openvswitch-agent-clone with neutron-netns-cleanup-clone" }
+    - { id: order-neutron-openvswitch-agent-clone-neutron-dhcp-agent-clone, cmd: "order start neutron-openvswitch-agent-clone then neutron-dhcp-agent-clone" }
+    - { id: colocation-neutron-dhcp-agent-clone-neutron-openvswitch-agent-clone, cmd: "colocation add neutron-dhcp-agent-clone with neutron-openvswitch-agent-clone" }
+    - { id: order-neutron-dhcp-agent-clone-neutron-l3-agent-clone, cmd: "order start neutron-dhcp-agent-clone then neutron-l3-agent-clone" }
+    - { id: colocation-neutron-l3-agent-clone-neutron-dhcp-agent-clone, cmd: "colocation add neutron-l3-agent-clone with neutron-dhcp-agent-clone" }
+    - { id: order-neutron-l3-agent-clone-neutron-metadata-agent-clone, cmd: "order start neutron-l3-agent-clone then neutron-metadata-agent-clone" }
+    - { id: colocation-neutron-metadata-agent-clone-neutron-l3-agent-clone, cmd: "colocation add neutron-metadata-agent-clone with neutron-l3-agent-clone" }
+    - { id: order-neutron-server-clone-neutron-scale-clone, cmd: "order start neutron-server-clone then neutron-scale-clone" }
   run_once: true
+  register: cmd
+  changed_when: "'{{ item.id }}' not in cmd.stdout"
   tags: neutron
