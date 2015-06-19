@@ -78,6 +78,7 @@
         dns1: "{{ ext_if.dns1 }}"
         dns2: "{{ ext_if.dns2 }}"
 
+    - subscription-manager
     - common
     - openstack-common
     - pacemaker

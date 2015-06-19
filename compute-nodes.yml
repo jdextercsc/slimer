@@ -60,6 +60,7 @@
         netmask: "{{ tun_if.netmask }}"
         onboot: '"yes"'
 
+    - subscription-manager
     - common
     - openstack-common
     - ceilometer-common
