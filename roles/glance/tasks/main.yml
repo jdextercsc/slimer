@@ -167,8 +167,12 @@
   tags: glance
 
 - name: create pacemaker constraint for glance
-  shell: pcs constraint list --full | grep id:order-glance-registry-clone-glance-api-clone-mandatory || pcs constraint order start glance-registry-clone then glance-api-clone
+  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
+  with_items:
+    - { id: order-glance-registry-clone-glance-api-clone-mandatory, cmd: "order start glance-registry-clone then glance-api-clone" }
   run_once: true
+  register: cmd
+  changed_when: "'{{ item.id }}' not in cmd.stdout"
   tags: glance
 
 

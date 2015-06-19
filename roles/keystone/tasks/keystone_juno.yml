@@ -40,15 +40,17 @@
   when: ansible_distribution_major_version|int == 7
   tags: keystone
 
-#- name: create pcs constraints for keystone
-#  command: pcs constraint order start {{item}}
-#  with_items:
-#    - lb-haproxy-clone then keystone-clone
-#    - galera-master then keystone-clone
-#    - rabbitmq-clone then keystone-clone
-#    - memcached-clone then keystone-clone
-#  run_once: true
-#  tags: keystone
+- name: create pcs constraints for keystone
+  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
+  with_items:
+    - { id: lb-haproxy-clone-keystone-clone, cmd: "order start lb-haproxy-clone then keystone-clone" }
+    - { id: galera-master-keystone-clone, cmd: "order start galera-master then keystone-clone" }
+    - { id: rabbitmq-clone-keystone-clone, cmd: "order start rabbitmq-clone then keystone-clone" }
+    - { id: memcached-clone-keystone-clone, cmd: "order start memcached-clone then keystone-clone" }
+  run_once: true
+  register: cmd
+  changed_when: "'{{ item.id }}' not in cmd.stdout"
+  tags: keystone
 
 # configure keystone user and roles.
 - name: create admin tenant
