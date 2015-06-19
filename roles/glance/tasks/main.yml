@@ -122,57 +122,19 @@
   when: ansible_distribution_major_version|int == 7
   tags: glance
 
-- name: create pacemaker cloned resources for glance-registry
-  pcs_resource: command=create name=glance-registry type=systemd:openstack-glance-registry clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 7
+- include: rhel6-havana-cluster-resources.yml
+  when: openstack_release == 'havana' and ansible_distribution_major_version|int == 6
   tags: glance
 
-- name: create pacemaker cloned resources for glance-registry
-  pcs_resource: command=create name=glance-registry type=lsb:openstack-glance-registry clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
+- include: rhel6-icehouse-cluster-resources.yml
+  when: openstack_release == 'icehouse' and ansible_distribution_major_version|int == 6
   tags: glance
 
-- name: create pacemaker cloned resources for glance-api
-  pcs_resource: command=create name=glance-api type=systemd:openstack-glance-api clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 7
+- include: juno-cluster-resources.yml
+  when: openstack_release == 'juno'
   tags: glance
 
-- name: create pacemaker cloned resources for glance-api
-  pcs_resource: command=create name=glance-api type=lsb:openstack-glance-api clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
-  tags: glance
-
-- name: create pacemaker constraint for glance
-  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
-  with_items:
-    - { id: order-glance-registry-clone-glance-api-clone-mandatory, cmd: "order start glance-registry-clone then glance-api-clone" }
-  run_once: true
-  register: cmd
-  changed_when: "'{{ item.id }}' not in cmd.stdout"
+- include: cluster-constraints.yml
   tags: glance
 
 
