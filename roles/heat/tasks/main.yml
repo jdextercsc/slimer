@@ -50,7 +50,7 @@
   tags: heat
 
 - name: check for tables
-  command: mysql -e "select count(*) from information_schema.tables where table_schema='keystone'" -sN
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='heat'" -sN
   run_once: true
   register: mysql_result
   tags: heat
