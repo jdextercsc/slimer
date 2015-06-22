@@ -9,7 +9,7 @@ use_rabbit: true
 use_ha_db: true
 use_galera: true
 use_ceph: false
-use_cinder_nfs_volume_driver: true
+use_cinder_nfs_volume_driver: false
 use_netapp: false
 use_netapp_copyoffload: false
 # select Nova Network or Neutron
@@ -170,7 +170,7 @@ nova_vlan_interface: "{{ private_if }}"
 
 # specific for neutron based network implementation
 # disable security group
-nova_security_group_api: noop
+nova_security_group_api: neutron
 #nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
 #nova_ovs_bridge_mappings: "physnet1:br1"

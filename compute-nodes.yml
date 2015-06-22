@@ -60,6 +60,8 @@
         netmask: "{{ tun_if.netmask }}"
         onboot: '"yes"'
 
+- hosts: compute 
+  roles:
     - subscription-manager
     - common
     - openstack-common

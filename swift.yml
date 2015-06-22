@@ -50,6 +50,8 @@
         netmask: "{{ swift_if.ipaddr}}"
 
 
+- hosts: swift 
+  roles:
     - subscription-manager
     - common
     - openstack-common

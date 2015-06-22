@@ -3,11 +3,11 @@
   shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
   with_items:
     - { id: order-heat-api-clone-heat-api-cfn-clone-mandatory, cmd: "order start heat-api-clone then heat-api-cfn-clone" }
-    - { id: colocation-heat-api-heat-api-cfn, cmd: "colocation add heat-api-cfn with heat-api" }
+    - { id: colocation-heat-api-clone-heat-api-cfn-clone, cmd: "colocation add heat-api-cfn-clone with heat-api-clone" }
     - { id: order-heat-api-cfn-clone-heat-api-cloudwatch-clone-mandatory, cmd: "order start heat-api-cfn-clone then heat-api-cloudwatch-clone" }
-    - { id: colocation-heat-api-cloudwatch-heat-api-cfn, cmd: "colocation add heat-api-cloudwatch with heat-api-cfn" }
+    - { id: colocation-heat-api-cloudwatch-clone-heat-api-cfn-clone, cmd: "colocation add heat-api-cloudwatch-clone with heat-api-cfn-clone" }
     - { id: order-heat-api-cloudwatch-clone-heat-engine-mandatory, cmd: "order start heat-api-cloudwatch-clone then heat-engine" }
-    - { id: colocation-heat-engine-heat-api-cloudwatch, cmd: "colocation add heat-engine with heat-api-cloudwatch" }
+    - { id: colocation-heat-engine-heat-api-cloudwatch-clone, cmd: "colocation add heat-engine with heat-api-cloudwatch-clone" }
   run_once: true
   register: cmd
   changed_when: "'{{ item.id }}' not in cmd.stdout"

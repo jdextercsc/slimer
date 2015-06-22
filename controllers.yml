@@ -68,16 +68,18 @@
         mtu: 9000
         devicetype: ovs
         type: OVSBridge
-        onboot: '"no"'
+        onboot: '"yes"'
         ovsbootproto: static
         nozeroconf: '"yes"'
         ipaddr: "{{ ext_if.ipaddr }}"
         netmask: "{{ ext_if.netmask }}"
-        gateway: "{{ ext_if.gateway }}"
-        defroute: '"yes"'
+    #    gateway: "{{ ext_if.gateway }}"
+    #    defroute: '"yes"'
     #    dns1: "{{ ext_if.dns1 }}"
     #    dns2: "{{ ext_if.dns2 }}"
 
+- hosts: controller
+  roles:
     - subscription-manager
     - common
     - openstack-common
