@@ -24,7 +24,7 @@
     - alarm-notifier
     - notification
   tags: ceilometer
-  
+
 - name: create ceilometer-delay resource
   pcs_resource: command=create name=ceilometer-delay type=Delay clone=yes interleave=yes
   args:

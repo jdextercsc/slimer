@@ -1,6 +1,16 @@
 ---
+- name: create pacemaker resource for ceilometer-central
+  pcs_resource: command=create name=ceilometer-central type=lsb:openstack-ceilometer-central
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  tags: ceilometer
+
 - name: create pacemaker resources for ceilometer control services
-  pcs_resource: command=create name=ceilometer-{{ item }} type=lsb:openstack-ceilometer-{{ item }} clone=yes
+  pcs_resource: command=create name=ceilometer-{{ item }} type=lsb:openstack-ceilometer-{{ item }} clone=yes interleave=yes
   args:
     operations:
       - action: monitor
@@ -8,16 +18,15 @@
           start-delay: 10s
   run_once: true
   with_items:
-    - central
     - collector
     - api
     - alarm-evaluator
     - alarm-notifier
     - notification
   tags: ceilometer
-  
+
 - name: create ceilometer-delay resource
-  pcs_resource: command=create name=ceilometer-delay type=Delay clone=yes
+  pcs_resource: command=create name=ceilometer-delay type=Delay clone=yes interleave=yes
   args:
     options:
       startdelay: 10

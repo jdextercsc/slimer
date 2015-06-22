@@ -1,7 +1,5 @@
 ---
-
 # Setting up cinder using nfs until a different driver is supplied
-
 - name: install cinder components
   yum: name={{ item }} state=present
   with_items:
@@ -48,13 +46,11 @@
   when: use_cinder_nfs_volume_driver
   changed_when: "'unchanged' not in cmd.stderr"
   tags: cinder
-   
 
- 
 - name: create nfs export directory
   file: state=directory path={{nfs_path}}/cinder owner=root group=cinder mode=0640
   tags: cinder
-  
+
 - name: create cinder nfs export file
   template: src=nfs_exports.j2 dest=/etc/cinder/nfs_exports owner=root group=cinder mode=0640
   tags: cinder
@@ -71,7 +67,7 @@
     - nfslock
   when: use_cinder_nfs_volume_driver
   tags: cinder
-  
+
 - name: disable cinder services
   service: name={{ item }} enabled=no
   with_items:
@@ -80,38 +76,14 @@
     - openstack-cinder-volume
   tags: cinder
 
-- name: create pacemaker resources for cinder-api
-  pcs_resource: command=create name=cinder-api type=systemd:openstack-cinder-api clone=yes interleave=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  when: ansible_distribution_major_version|int == 7
+- include: rhel7-icehouse-cluster-resources.yml
+  when: openstack_release == 'icehouse' and ansible_distribution_major_version|int == 7
   tags: cinder
-  
-- name: create pacemaker resource for cinder-scheduler
-  pcs_resource: command=create name=cinder-scheduler type=systemd:openstack-cinder-scheduler clone=yes interleave=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  when: ansible_distribution_major_version|int == 7
-  run_once: true
+
+- include: juno-cluster-resources.yml
+  when: openstack_release == 'juno'
   tags: cinder
-  
-- name: create pacemaker resource for cinder-volume
-  pcs_resource: command=create name=cinder-volume type=systemd:openstack-cinder-volume 
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  when: ansible_distribution_major_version|int == 7
-  tags: cinder
-  
+
 - include: cluster-constraints.yml
   tags: cinder
 

@@ -49,7 +49,6 @@
   when: openstack_release == 'juno'
   tags: heat
 
-
 - name: run dbsync for heat
   shell: su -s /bin/sh -c '/usr/bin/heat-manage db_sync' heat
   run_once: true
@@ -83,27 +82,5 @@
 - include: cluster-constraints.yml
   tags: heat
 
-- name: create pacemaker resources for heat
-  pcs_resource: command=create name={{ item }} type=systemd:openstack-{{ item }} clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  with_items:
-    - heat-api
-    - heat-api-cfn
-    - heat-api-cloudwatch
-  tags: heat
 
-- name: create pacemaker resource for heat-engine
-  pcs_resource: command=create name=heat-engine type=systemd:openstack-heat-engine
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
-  run_once: true
-  tags: heat
 
