@@ -27,8 +27,15 @@
 
 # create ssl cert if using sha key for token
 
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='keystone'" -sN
+  run_once: true
+  register: mysql_result
+  tags: keystone
+
 - name: populate keystone database
   command: su keystone -s /bin/sh -c "keystone-manage -v -d db_sync"
+  when: mysql_result.stdout|int == 0
   tags: keystone
   run_once: true
 

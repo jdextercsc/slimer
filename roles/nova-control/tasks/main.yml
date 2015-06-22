@@ -12,8 +12,15 @@
     - python-memcached
   tags: nova
 
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='nova'" -sN
+  run_once: true
+  register: mysql_result
+  tags: nova
+
 - name: run dbsync for nova
   shell: runuser nova -s /bin/sh -c '/usr/bin/nova-manage db sync'
+  when: mysql_result.stdout|int == 0
   run_once: true
   tags: nova
 

@@ -49,8 +49,15 @@
   when: openstack_release == 'juno'
   tags: heat
 
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='keystone'" -sN
+  run_once: true
+  register: mysql_result
+  tags: heat
+
 - name: run dbsync for heat
   shell: su -s /bin/sh -c '/usr/bin/heat-manage db_sync' heat
+  when: mysql_result.stdout|int == 0
   run_once: true
   tags: heat
 

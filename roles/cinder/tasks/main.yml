@@ -55,8 +55,16 @@
   template: src=nfs_exports.j2 dest=/etc/cinder/nfs_exports owner=root group=cinder mode=0640
   tags: cinder
 
+
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='cinder'" -sN
+  run_once: true
+  register: mysql_result
+  tags: cinder
+
 - name: run dbsync for cinder
   command: runuser cinder -s /bin/sh -c '/usr/bin/cinder-manage db sync'
+  when: mysql_result.stdout|int == 0
   run_once: true
   tags: cinder
 
