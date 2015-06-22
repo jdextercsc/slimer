@@ -10,7 +10,7 @@
   tags: ceilometer
 
 - name: create pacemaker resources for ceilometer control services
-  pcs_resource: command=create name=ceilometer-{{ item }} type=systemd:openstack-ceilometer-{{ item }} clone=yes interleave=yes
+  pcs_resource: command=create name=ceilometer-{{ item }} type=lsb:openstack-ceilometer-{{ item }} clone=yes interleave=yes
   args:
     operations:
       - action: monitor

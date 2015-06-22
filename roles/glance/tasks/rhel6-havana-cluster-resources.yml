@@ -10,4 +10,4 @@
   with_items:
     - registry
     - api
-  tags: ceilometer
+  tags: glance

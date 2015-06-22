@@ -1,6 +1,21 @@
 ---
+<<<<<<< HEAD
 - name: create pacemaker resources for ceilometer control services
   pcs_resource: command=create name=ceilometer-{{ item }} type=systemd:openstack-ceilometer-{{ item }} clone=yes
+=======
+- name: create pacemaker resource for ceilometer-central
+  pcs_resource: command=create name=ceilometer-central type=systemd:openstack-ceilometer-central
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  tags: ceilometer
+
+- name: create pacemaker resources for ceilometer control services
+  pcs_resource: command=create name=ceilometer-{{ item }} type=systemd:openstack-ceilometer-{{ item }} clone=yes interleave=yes
+>>>>>>> Fixed various roles
   args:
     operations:
       - action: monitor
@@ -8,7 +23,10 @@
           start-delay: 10s
   run_once: true
   with_items:
+<<<<<<< HEAD
     - central
+=======
+>>>>>>> Fixed various roles
     - collector
     - api
     - alarm-evaluator
@@ -17,7 +35,7 @@
   tags: ceilometer
   
 - name: create ceilometer-delay resource
-  pcs_resource: command=create name=ceilometer-delay type=Delay clone=yes
+  pcs_resource: command=create name=ceilometer-delay type=Delay clone=yes interleave=yes
   args:
     options:
       startdelay: 10
