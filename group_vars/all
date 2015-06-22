@@ -9,7 +9,7 @@ use_rabbit: true
 use_ha_db: true
 use_galera: true
 use_ceph: false
-se_cinder_nfs_volume_driver: false
+use_cinder_nfs_volume_driver: false
 use_netapp: false
 use_netapp_copyoffload: false
 # select Nova Network or Neutron
