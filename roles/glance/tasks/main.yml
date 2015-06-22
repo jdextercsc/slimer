@@ -21,7 +21,7 @@
 - name: Update glance-api config file for Juno
   command: openstack-config --verbose --set /etc/glance/glance-api.conf {{ item }}
   with_items:
-    - "database connection mysql://glance:{{ glance_pass }}@{{ vip-db }}/glance"
+    - "database connection mysql://glance:{{ glance_db_pass }}@{{ lb_db_vip }}/glance"
     - "database max_retries -1"
     - "paste_deploy flavor keystone"
     - "keystone_authtoken identity_uri http://{{ keystone_vip }}:{{ keystone_auth_port }}"
@@ -77,11 +77,19 @@
   with_items:
     - rpcbind
     - nfslock
-  when: default_store == 'file'
+  when: default_store == 'file' and ansible_distribution_major_version|int == 6
   tags: glance
 
-- name: enable nfs-idmap
-  service: name=nfs-idmap enabled=yes state=started
+- name: enable nfs support services
+  service: name={{ item }} enabled=yes state=started
+  with_items:
+    - rpcbind
+    - nfs-lock
+  when: default_store == 'file' and ansible_distribution_major_version|int == 7
+  tags: glance
+
+- name: enable nfs-idmapd
+  service: name=nfs-idmapd enabled=yes state=started
   when: ansible_distribution_major_version|int == 7
   tags: glance
 
@@ -109,15 +117,15 @@
     - openstack-glance-api
   tags: glance
 
-- name: open firewall ports
-  firewalld: port=9191-9192/tcp permanent=true immediate=true state=enabled
-  tags: glance
+#- name: open firewall ports
+#  firewalld: port=9191-9192/tcp permanent=true immediate=true state=enabled
+#  tags: glance
 
 - name: use pacemaker to mount the NFS share as service.
   pcs_resource: command=create name=glance-fs type=Filesystem clone=yes
   args:
      options:
-        device: "{{ wiley-ctlr-1 }}:{{ glance_datadir }}"
+        device: "{{ inventory_hostname }}:{{ glance_datadir }}"
         directory: "{{ glance_datadir }}"
         fstype: "nfs"
         options: "v3"

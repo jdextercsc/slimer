@@ -65,12 +65,13 @@
 #  command: pcs resource create galera galera enable_creation=true wsrep_cluster_address="{{ wsrep_cluster_address }}" additional_parameters='--open-files-limit=16384' meta master-max=3 ordered=true op promote timeout=300s on-fail=block --master
 
 - name: create pacemaker resource for galera
-  shell: "pcs resource list --full | grep 'Resource: {{ item.id }}' || pcs resource {{ item.cmd }}"
+  shell: "pcs resource --full | grep 'Resource: {{ item.id }}' || pcs resource {{ item.cmd }}"
   with_items: 
     - { id: "galera", cmd: "create galera galera enable_creation=true wsrep_cluster_address='{{ wsrep_cluster_address }}' additional_parameters='--open-files-limit=16384' meta master-max=3 ordered=true op promote timeout=300s on-fail=block --master" }
   run_once: true
   register: cmd
   changed_when: "'Resource: {{ item.id }}' not in cmd.stdout"
+  tags: mysql
 
 #  pcs_resource: command=create name=galera type=galera master=yes
 #  args:
@@ -85,8 +86,8 @@
 #        options:
 #          timeout: 300s
 #          on-fail: block
-  run_once: true
-  tags: mysql
+#  run_once: true
+#  tags: mysql
 
 - name: Wait until clustercheck returns 0
   command: clustercheck

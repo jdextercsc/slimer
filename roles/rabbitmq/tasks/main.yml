@@ -50,6 +50,14 @@
 - name: stop rabbitmq app on other controller nodes
   shell: creates=/etc/rabbitmq/step.stop_app rabbitmqctl stop_app; touch /etc/rabbitmq/step.stop_app
   when: inventory_hostname != groups.controller[0]
+  register: rabbitstop
+  tags: rabbitmq
+
+- name: ensure rabbitmq is stopped
+  command: rabbitctl status
+  register: cmd
+  when: inventory_hostname != groups.controller[0] and rabbitstop|changed
+  until: "'RabbitMQ' not in cmd.stdout"
   tags: rabbitmq
 
 - name: join rabbitmq cluster from other controller nodes
