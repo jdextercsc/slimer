@@ -14,8 +14,9 @@
 #  Short term fix for password and user creation.
 #
 - name: Generate crypt password
-  command: python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt('{{ pcs_cluster_pass }}')"
+  local_action: command python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt('{{ pcs_cluster_pass }}')"
   register: cmd
+  run_once: true
   tags: pcs
 
 - name: setup hacluster passwd
@@ -25,7 +26,6 @@
 #- name: create password for hacluster
 #  shell: echo {{ pcs_cluster_pass }} | passwd hacluster --stdin
 #  tags: pcs
-
 
 
 - name: start pcsd
@@ -38,17 +38,30 @@
   when: ansible_distribution_major_version|int == 6
   tags: pcs
 
+- name: check for auth
+  command: pcs cluster auth
+  run_once: true
+  ignore_errors: true
+  register: cmd
+  tags: pcs
+
 - name: set pcs cluster auth
   command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ controller_node_names | join(' ') }} --force
-  when: ansible_distribution_major_version|int == 7
+  when: ansible_distribution_major_version|int == 7 and "'Already authorized' not in cmd.stdout"
   run_once: true
-  #when: {{hostname}}=='{{[groups['openstack_controller'][0]].hostname}}' 
   tags: pcs
+
+- name: check for cluster
+  command: pcs status
+  register: cmd
+  run_once: true
+  ignore_errors: true
+  tags: pcs 
 
 - name: setup pacemaker cluster
   command: pcs cluster setup --name {{ pcs_cluster_name }} {{ controller_node_names | join(' ') }} --enable --start --force
   run_once: true
-  when: ansible_distribution_major_version|int == 7
+  when: ansible_distribution_major_version|int == 7 and "'Cluster name:' not in cmd.stdout"
   tags: pcs
 
 - name: setup pacemaker cluster
@@ -87,8 +100,8 @@
   tags: pcs
 
 # this should be re-implemented with the pacemaker_stonith module
-- name: create stonith resources
-  shell: "pcs stonith show fence_{{ item.name }} || pcs stonith create fence_{{ item.name }} fence_{{ item.fencing.agent }} params {{ item.fencing.params }} action=reboot pcmk_host_list={{ item.name }}"
-  with_items: controller_nodes
-  run_once: true
-  tags: pcs_fencing
+#- name: create stonith resources
+#  shell: "pcs stonith show fence_{{ item.name }} || pcs stonith create fence_{{ item.name }} fence_{{ item.fencing.agent }} params {{ item.fencing.params }} action=reboot pcmk_host_list={{ item.name }}"
+#  with_items: controller_nodes
+#  run_once: true
+#  tags: pcs_fencing
