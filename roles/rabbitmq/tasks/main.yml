@@ -71,7 +71,11 @@
   tags: rabbitmq
 
 - name: set rabbitmq HA policy
-  rabbitmq_policy: name=HA pattern='^(?!amq\.).*' tags="ha-mode=all" node="rabbit@{{ ansible_hostname }}"
+  rabbitmq_policy: 
+    name: HA 
+    pattern: '^(?!amq\.).*' 
+    tags: "ha-mode=all" 
+    node: "rabbit@{{ ansible_hostname }}"
   run_once: true
   tags: rabbitmq_policy
 
