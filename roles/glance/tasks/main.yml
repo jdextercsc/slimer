@@ -90,8 +90,15 @@
   when: use_rabbit
   tags: glance
 
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='glance'" -sN
+  run_once: true
+  register: mysql_result
+  tags: glance
+
 - name: run db_sync for glance
   shell: runuser glance -s /bin/sh -c '/usr/bin/glance-manage db_sync'
+  when: mysql_result.stdout|int == 0
   run_once: true
   tags: glance
 

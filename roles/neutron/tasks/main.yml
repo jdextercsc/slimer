@@ -314,10 +314,17 @@
   when: use_neutron_cisco
   tags: neutron
 
-#- name: stamp neutron database
-#  command: /usr/bin/neutron-db-manage --config-file /usr/share/neutron/neutron-dist.conf --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugin.ini upgrade head
-#  run_once: true
-#  tags: neutron
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='neutron'" -sN
+  run_once: true
+  register: mysql_result
+  tags: neutron
+
+- name: stamp neutron database
+  command: /usr/bin/neutron-db-manage --config-file /usr/share/neutron/neutron-dist.conf --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugin.ini upgrade head
+  when: mysql_result.stdout|int <= 1
+  run_once: true
+  tags: neutron
 
 - name: disable neutron services
   service: name={{ item }} enabled=no
