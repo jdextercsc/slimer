@@ -5,6 +5,7 @@
     username: "{{rhn_user}}"
     password: "{{rhn_pass}}"
     pool: "{{pool}}"
+  tags: rhn
 
 - name: enable repos
   command: > 
