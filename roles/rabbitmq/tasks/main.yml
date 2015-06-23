@@ -57,7 +57,7 @@
   command: rabbitctl status
   register: cmd
   when: inventory_hostname != groups.controller[0] and rabbitstop|changed
-  until: "'RabbitMQ' not in cmd.stdout"
+  until: cmd.stdout.find("RabbitMQ") == -1 
   tags: rabbitmq
 
 - name: join rabbitmq cluster from other controller nodes
