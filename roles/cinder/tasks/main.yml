@@ -18,7 +18,7 @@
     - "database max_retries -1"
     - "DEFAULT auth_strategy keystone"
     - "keystone_authtoken identity_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/"
-    - "keystone_authtoken auth_uri{{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
+    - "keystone_authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
     - "keystone_authtoken admin_tenant_name services"
     - "keystone_authtoken admin_user cinder"
     - "keystone_authtoken admin_password {{ cinder_pass }}"
@@ -28,6 +28,9 @@
     - "DEFAULT memcache_servers {{ memcache_list }}"
     - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
     - "DEFAULT rabbit_ha_queues true"
+    - "DEFAULT host {{internal_ipaddr}}"
+    - "DEFAULT osapi_volume_listen {{ cinder_osapi_volume_listen }}"
+    - "DEFAULT osapi_volume_listen_port {{ cinder_osapi_volume_listen_port }}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: cinder
@@ -35,9 +38,6 @@
 - name: configure cinder nfs driver via openstack-config utility
   command: openstack-config --set --verbose /etc/cinder/cinder.conf {{item}}
   with_items:
-    - "DEFAULT host rhos6-cinder"
-    - "DEFAULT osapi_volume_listen {{ cinder_osapi_volume_listen }}"
-    - "DEFAULT osapi_volume_listen_port {{ cinder_osapi_volume_listen_port }}"
     - "DEFAULT nfs_shares_config /etc/cinder/nfs_exports"
     - "DEFAULT nfs_sparsed_volumes true"
     - "DEFAULT nfs_mount_options v3"

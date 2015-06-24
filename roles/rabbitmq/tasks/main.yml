@@ -54,7 +54,7 @@
   tags: rabbitmq
 
 - name: ensure rabbitmq is stopped
-  command: rabbitctl status
+  command: rabbitmqctl status
   register: cmd
   when: inventory_hostname != groups.controller[0] and rabbitstop|changed
   until: cmd.stdout.find("RabbitMQ") == -1 
