@@ -84,14 +84,21 @@
   service: name={{ item }} enabled=yes state=started
   with_items:
     - rpcbind
+    - nfs-server
     - nfs-lock
+    - nfs-idmapd
   when: default_store == 'file' and ansible_distribution_major_version|int == 7
   tags: glance
 
-- name: enable nfs-idmapd
-  service: name=nfs-idmapd enabled=yes state=started
-  when: ansible_distribution_major_version|int == 7
-  tags: glance
+#- name: pause for nfs
+#  pause: seconds=15
+#  when: ansible_distribution_major_version|int == 7
+#  tags: glance 
+
+#- name: enable nfs-idmapd
+#  service: name=nfs-idmapd enabled=yes state=started
+#  when: ansible_distribution_major_version|int == 7
+#  tags: glance
 
 - name: install rabbitmq driver
   yum: pkg=python-kombu state=present

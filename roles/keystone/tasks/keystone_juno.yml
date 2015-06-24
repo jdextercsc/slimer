@@ -59,6 +59,16 @@
   changed_when: "'{{ item.id }}' not in cmd.stdout"
   tags: keystone
 
+
+- name: check if keystone is running
+  shell: pcs status xml | xmllint --xpath '//crm_mon/resources/clone[contains(@id, "keystone-clone")]/resource[contains(@active, "true")]' -
+  register: pcs_status_xml
+  until: "'empty' not in pcs_status_xml.stderr"
+  retries: 12
+  delay: 30
+  run_once: true
+  ignore_errors: true
+
 # configure keystone user and roles.
 - name: create admin tenant
   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} tenant=admin

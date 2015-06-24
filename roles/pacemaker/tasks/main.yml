@@ -96,9 +96,19 @@
   pause: seconds=30
   tags: pcs
 
-# this should be re-implemented with the pacemaker_stonith module
-- name: create stonith resources
-  shell: "pcs stonith show fence_{{ item.name }} || pcs stonith create fence_{{ item.name }} fence_{{ item.fencing.agent }} params {{ item.fencing.params }} action=reboot pcmk_host_list={{ item.name }}"
-  with_items: controller_nodes
+- name: disable stonith
+  command: pcs property set stonith-enabled=false
   run_once: true
-  tags: pcs_fencing
+  tags: pcs
+
+- name: crm verify
+  command: crm_verify -L
+  run_once: true
+  tags: pcs
+
+# this should be re-implemented with the pacemaker_stonith module
+#- name: create stonith resources
+#  shell: "pcs stonith show fence_{{ item.name }} || pcs stonith create fence_{{ item.name }} fence_{{ item.fencing.agent }} params {{ item.fencing.params }} action=reboot pcmk_host_list={{ item.name }}"
+#  with_items: controller_nodes
+#  run_once: true
+#  tags: pcs_fencing
