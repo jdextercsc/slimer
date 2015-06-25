@@ -10,7 +10,7 @@ defaults
 listen stats :8888
     mode http
     stats uri /
-
+    stats enable
 {% if use_ha_db is defined and use_ha_db %}
 frontend vip-db
     bind {{ lb_db_vip }}:3306
@@ -280,6 +280,6 @@ frontend vip-swift-int
 
 backend swift
     balance roundrobin
-{% for node in swift_nodes %}
+{% for node in controller_nodes %}
   server {{ node.name}} {{ node.addr_int }}:8080 check inter 1s
 {% endfor %}

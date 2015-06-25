@@ -15,7 +15,7 @@ use_netapp_copyoffload: false
 # select Nova Network or Neutron
 use_nova_network: false
 # use nfs for nova ephemeral volumes
-#use_nova_nfs_backend: true
+use_nova_nfs_backend: false
 # if use_nova_shared_backend is "true", set nova_shared_volume, nova_shared_fs_type and nova_shared_fs_mount_options
 #use_nova_shared_backend: "{{ use_nova_nfs_backend }}"
 use_neutron: true
@@ -370,7 +370,7 @@ neutron_dhcp_enable_isolated_metadata: true
 neutron_ml2_type_drivers: vxlan,flat
 neutron_ml2_tenant_network_types: vxlan
 #neutron_network_vlan_ranges: "pnet1:100:200"
-neutron_network_vlan_ranges: "net-ex"
+neutron_network_vlan_ranges: "physnet1"
 neutron_vxlan_vni_ranges: 10:10000
 neutron_vxlan_group: 239.1.1.1
 neutron_ovs_tenant_network_type: vxlan

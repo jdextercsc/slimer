@@ -57,7 +57,7 @@
   command: rabbitmqctl status
   register: cmd
   when: inventory_hostname != groups.controller[0] and rabbitstop|changed
-  until: cmd.stdout.find("RabbitMQ") == -1 
+  until: cmd.stdout.find("RabbitMQ") == -1
   tags: rabbitmq
 
 - name: join rabbitmq cluster from other controller nodes
@@ -79,10 +79,10 @@
   tags: rabbitmq
 
 - name: set rabbitmq HA policy
-  rabbitmq_policy: 
-    name: HA 
-    pattern: '^(?!amq\.).*' 
-    tags: "ha-mode=all" 
+  rabbitmq_policy:
+    name: HA
+    pattern: '^(?!amq\.).*'
+    tags: "ha-mode=all"
     node: "rabbit@{{ ansible_hostname }}"
   run_once: true
   tags: rabbitmq_policy

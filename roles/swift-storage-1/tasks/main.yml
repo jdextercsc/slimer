@@ -18,6 +18,10 @@
   command: openstack-config --set --verbose /etc/swift/object-server.conf {{item}}
   with_items:
     - "DEFAULT bind_ip {{internal_ipaddr}}"
+    - "DEFAULT log_name object-server"
+    - "DEFAULT log_facility LOG_LOCAL2"
+    - "DEFUALT log_level INFO"
+    - "DEFAULT log_address /dev/log"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: swift
@@ -26,20 +30,25 @@
   command: openstack-config --set --verbose /etc/swift/account-server.conf {{item}}
   with_items:
     - "DEFAULT bind_ip {{internal_ipaddr}}"
+    - "DEFAULT log_name account-server"
+    - "DEFAULT log_facility LOG_LOCAL2"
+    - "DEFUALT log_level INFO"
+    - "DEFAULT log_address /dev/log"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: swift
-
 
 - name: configure swift-object-server
   command: openstack-config --set --verbose /etc/swift/container-server.conf {{item}}
   with_items:
     - "DEFAULT bind_ip {{internal_ipaddr}}"
+    - "DEFAULT log_name container-server"
+    - "DEFAULT log_facility LOG_LOCAL2"
+    - "DEFUALT log_level INFO"
+    - "DEFAULT log_address /dev/log"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: swift
-
-
 
 - name: check to see if swift disk is configured
   command: mount
@@ -71,7 +80,7 @@
 # create the rings on the controller1
 - name: create account ring
   delegate_to: "{{ groups['controller'][0] }}"
-  command: swift-ring-builder account.builder add z1-{{ int_if.ipaddr }}:6002/{{ item }} 100
+  command: swift-ring-builder account.builder add z1-{{ int_if.ipaddr }}:6202/{{ item }} 100
            chdir=/etc/swift
   with_items: hostvars[inventory_hostname].swift_data_disks
   ignore_errors: yes
@@ -79,15 +88,14 @@
 
 - name: create container ring
   delegate_to: "{{ groups['controller'][0] }}"
-  command: swift-ring-builder container.builder add z1-{{ int_if.ipaddr }}:6001/{{ item }}  100
+  command: swift-ring-builder container.builder add z1-{{ int_if.ipaddr }}:6201/{{ item }} 100
            chdir=/etc/swift
   with_items: hostvars[inventory_hostname].swift_data_disks
   tags: swift
 
 - name: create object ring
   delegate_to: "{{ groups['controller'][0] }}"
-  command: swift-ring-builder object.builder add z1-{{ int_if.ipaddr }}:6000/{{ item }} 100
+  command: swift-ring-builder object.builder add z1-{{ int_if.ipaddr }}:6200/{{ item }} 100
            chdir=/etc/swift
   with_items: hostvars[inventory_hostname].swift_data_disks
-
   tags: swift

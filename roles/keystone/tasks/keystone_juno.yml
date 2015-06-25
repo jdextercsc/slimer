@@ -85,6 +85,9 @@
   run_once: true
   tags: keystone
 
+- name: create the SwiftOperator role
+  keystone_user: token={{ keystone_admin_token }} role=SwiftOperator
+
 - name: create the services tenant
   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} tenant=services tenant_description="Services Tenant"
   run_once: true
@@ -101,8 +104,11 @@
   run_once: true
   tags: keystone
 
-- name: apply the admin role to the glance user
-  keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} user=glance role=admin tenant=services
+- name: apply the admin role and swiftOperator to the glance user
+  keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} user=glance role={{ item }} tenant=services
+  with_items:
+    - admin
+    - SwiftOperator
   run_once: true
   tags: keystone
 

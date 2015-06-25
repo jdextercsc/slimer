@@ -21,7 +21,7 @@ neutron_loadbalancer_pool_scheduler_driver: "neutron.services.loadbalancer.agent
 neutron_ovs_firewall_driver: "neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver"
 neutron_network_auto_schedule: true
 neutron_router_auto_schedule: true
-neutron_dhcp_agents_per_network: 1
+neutron_dhcp_agents_per_network: 3 
 neutron_api_workers: 0
 neutron_rpc_workers: 0
 neutron_metadata_workers: 4

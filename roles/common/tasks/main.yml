@@ -1,7 +1,7 @@
 ---
-- name: ifdown network after bond creation
-  shell: ifdown bond0 && ifup bond0
-  tags: network
+#- name: ifdown network after bond creation
+#  shell: ifdown bond0 && ifup bond0
+#  tags: network
 
 #- name: ifup network after bond creation
 #  command: ifup bond0
@@ -14,7 +14,7 @@
 - name: reload the sysctl file
   command: sysctl -p /etc/sysctl.d/99-sysctl.conf
   tags: sysctl
- 
+
 - name: deploy resolv.conf
   template: src=resolv.conf.j2 dest=/etc/resolv.conf
   tags: dns
@@ -24,11 +24,6 @@
   lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].int_if.ipaddr }} {{item}}" state=present
   when: hostvars[item].int_if.ipaddr is defined
   with_items: groups['all']
-
-# removed since w do not regigister the system or enable repos.
-#- name: attach to subscription manager pool
-#  command: subscription-manager attach --pool {{ sm_pool }}
-#  tags: sub-mgr
 
 - include: "RedHat-rpms.yml"
   when: ansible_os_family == "RedHat"
@@ -63,18 +58,8 @@
   when: force_ntpdate == "yes"
   tags: ntp
 
-#- template: src=hostname.j2 dest=/etc/hostname
-#  when: ansible_distribution_major_version|int == 7
-#  notify: reset hostname using the hostnamectl utility
-
-- name: Set hostname transient 
-  command: hostnamectl set-hostname --transient {{ inventory_hostname }}
-  when: ansible_distribution_major_version|int == 7
-  tags: dns
-
-
 - name: Set hostname
-  command: hostnamectl set-hostname {{ inventory_hostname }}
+  command: hostnamectl set-hostname --static --transient {{ inventory_hostname }}
   when: ansible_distribution_major_version|int == 7
   tags: dns
 

@@ -4,6 +4,6 @@
   tags: iface
 
 - name: bring up deployed interface
-  command: ifup {{ device}}
+  shell: ifdown {{ device }} && ifup {{ device }}
   tags: iface
   ignore_errors: yes

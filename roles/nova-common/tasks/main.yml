@@ -36,7 +36,7 @@
     - "DEFAULT memcache_servers {{ memcached_servers }}"
     - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
     - "DEFAULT rabbit_ha_queues true"
-    - "DEFAULT osapi_compute_listen {{internal_ipadd}}"
+    - "DEFAULT osapi_compute_listen {{ internal_ipaddr }}"
     - "DEFAULT metadata_host {{ nova_private_vip }}"
     - "DEFAULT metadata_listen {{ internal_ipaddr }}"
     - "DEFAULT metadata_listen_port {{ nova_metadata_port }}"
