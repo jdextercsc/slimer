@@ -48,4 +48,3 @@
   copy: src=special/secret_key_store dest=/var/lib/openstack-dashboard/.secret_key_store mode=0600 owner=apache group=apache
   notify: restart horizon
   tags: horizon
-

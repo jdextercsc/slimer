@@ -1,16 +1,34 @@
 ---
 - hosts: compute
   roles:
-    - { role: iface, device: p4p1, params: { type: Ethernet, bootproto: none, onboot: '"yes"', master: bond0, slave: '"yes"' } }
-    - { role: iface, device: p4p2, params: { type: Ethernet, bootproto: none, onboot: '"yes"', master: bond0, slave: '"yes"' } }
+    - role: iface
+      device: p3p1
+      params:
+        type: Ethernet
+        bootproto: none
+        onboot: '"yes"'
+        peerdns: '"no"'
+        master: bond0
+        slave: '"yes"'
+
+    - role: iface
+      device: p3p2
+        params:
+          type: Ethernet
+          bootproto: none
+          onboot: '"yes"'
+          peerdns: '"no"'
+          master: bond0
+          slave: '"yes"'
 
     - role: iface
       device: bond0
       params:
         nozeroconf: '"yes"'
         bootproto: none
-        bonding_opts: '"mode=4 miimon=100 lacp_rate=1"'
+        bonding_opts: '"miimon=100 mode=802.3ad"'
         onboot: '"yes"'
+        peerdns: '"no"'
 
     - role: iface
       device: "bond0.{{ int_if.vlan }}"
@@ -21,7 +39,10 @@
         bootproto: static
         ipaddr: "{{ int_if.ipaddr }}"
         netmask: "{{ int_if.netmask }}"
+        gateway: "{{ int_if.gateway }}"
+        defroute: '"yes"'
         onboot: '"yes"'
+        peerdns: '"no"'
 
     - role: iface
       device: "bond0.{{ storage_if.vlan }}"
@@ -33,6 +54,7 @@
         ipaddr: "{{ storage_if.ipaddr }}"
         netmask: "{{ storage_if.netmask }}"
         onboot: '"yes"'
+        peerdns: '"no"'
 
     - role: iface
       device: "bond0.{{ ext_if.vlan }}"
@@ -43,11 +65,8 @@
         bootproto: static
         ipaddr: "{{ ext_if.ipaddr }}"
         netmask: "{{ ext_if.netmask }}"
-        gateway: "{{ ext_if.gateway }}"
-        defroute: '"yes"'
-        dns1: "{{ ext_if.dns1 }}"
-        dns2: "{{ ext_if.dns2 }}"
         onboot: '"yes"'
+        peerdns: '"no"'
 
     - role: iface
       device: "bond0.{{ tun_if.vlan }}"
@@ -59,8 +78,9 @@
         ipaddr: "{{ tun_if.ipaddr }}"
         netmask: "{{ tun_if.netmask }}"
         onboot: '"yes"'
+        peerdns: '"no"'
 
-- hosts: compute 
+- hosts: compute
   roles:
     - subscription-manager
     - common

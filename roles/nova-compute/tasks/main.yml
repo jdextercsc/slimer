@@ -20,12 +20,12 @@
   with_items:
     - rpcbind
     - nfslock
-  when: use_cinder_nfs_driver or use_nova_nfs_backend
+  when: use_cinder_nfs_volume_driver or use_nova_nfs_backend
   tags: nova
 
 - name: enable nfs-idmap
   service: name=nfs-idmap enabled=yes state=started
-  when: ( use_cinder_nfs_driver or use_nova_nfs_backend ) and ansible_distribution_major_version|int == 7
+  when: ( use_cinder_nfs_volume_driver or use_nova_nfs_backend ) and ansible_distribution_major_version|int == 7
   tags: nova
 
 - name: configure shared storage for nova instances
@@ -62,7 +62,7 @@
 
 - name: modify libvirtd.conf parameters with openstack-config
   command: openstack-config --verbose --set /etc/libvirt/libvirtd.conf {{ item }}
-  with items:
+  with_items:
     - "'' listen_tls 0"
     - "'' listen_tcp 1"
     - "'' auth_tcp none"

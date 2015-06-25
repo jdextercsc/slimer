@@ -181,12 +181,13 @@
   with_items:
   - "ml2 type_drivers {{ neutron_ml2_type_drivers }}"
   - "ml2 tenant_network_types {{ neutron_ml2_tenant_network_types }}"
-  - "ml2 mechanism_drivers openvswitch"
+  - "ml2 mechanism_drivers openvswitch,l2population"
   - "ml2_type_flat flat_networks \"*\""
   - "ml2_type_vxlan vni_ranges {{ neutron_vxlan_vni_ranges }}"
   - "ml2_type_vxlan vxlan_group {{ neutron_vxlan_group }}"
   - "securitygroup enable_security_group {{ neutron_enable_security_group }}"
   - "securitygroup firewall_driver True"
+  - "ml2_type_vlan network_vlan_ranges {{ neutron_network_vlan_ranges }}"
   register: cmd
   changed_when: "'changed' in cmd.stderr"
   when: openstack_release == 'juno'
@@ -202,8 +203,10 @@
   - "ovs integration_bridge br-int"
   - "ovs tunnel_bridge br-tun"
   - "ovs bridge_mappings {{ neutron_ovs_bridge_mappings }}"
+  - "ovs network_vlan_ranges {{ neutron_network_vlan_ranges }}"
   - "securitygroup firewall_driver {{ neutron_ovs_firewall_driver }}"
-  - "agent l2_population {{ neutron_l2_population }}"
+  - "agent arp_responder true"
+  - "agent l2_population true"
   register: cmd
   changed_when: "'changed' in cmd.stderr"
   when: openstack_release == 'juno'
