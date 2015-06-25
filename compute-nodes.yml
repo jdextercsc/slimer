@@ -82,9 +82,6 @@
 
 - hosts: compute
   roles:
-    - subscription-manager
-    - common
-    - openstack-common
     - ceilometer-common
     - ceilometer-compute
     - nova-common

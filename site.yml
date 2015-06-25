@@ -1,6 +1,14 @@
 ---
+
+- hosts: all
+  roles:
+    - subscription-manager
+    - common
+
+- hosts: openstack
+  roles:
+    - openstack-common
+
 - include: controllers.yml
 - include: swift.yml
 - include: compute-nodes.yml
-- include: scaleio.yml
-

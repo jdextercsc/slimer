@@ -72,13 +72,6 @@
    #     ipaddr: "{{ swift_if.ipaddr}}"
    #     netmask: "{{ swift_if.ipaddr}}"
 
-
-- hosts: swift
-  roles:
-    - subscription-manager
-    - common
-    - openstack-common
-
 - hosts: controller
   roles:
     - swift-proxy-1
