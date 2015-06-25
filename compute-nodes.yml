@@ -13,13 +13,13 @@
 
     - role: iface
       device: p3p2
-        params:
-          type: Ethernet
-          bootproto: none
-          onboot: '"yes"'
-          peerdns: '"no"'
-          master: bond0
-          slave: '"yes"'
+      params:
+        type: Ethernet
+        bootproto: none
+        onboot: '"yes"'
+        peerdns: '"no"'
+        master: bond0
+        slave: '"yes"'
 
     - role: iface
       device: bond0
