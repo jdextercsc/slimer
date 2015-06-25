@@ -80,12 +80,12 @@ backend keystone
 {% endfor %}
 
 frontend  vip-glance-api-pub
-    bind {{ glance_public_vip }}:9191
+    bind {{ glance_public_vip }}:9292
     default_backend glance-api
 
 {% if glance_public_vip != glance_private_vip %}
 frontend  vip-glance-api-int
-    bind {{ glance_private_vip }}:9191
+    bind {{ glance_private_vip }}:9292
     default_backend glance-api
 {% endif %}
 
@@ -96,19 +96,19 @@ backend glance-api
 {% endfor %}
 
 frontend vip-glance-registry-pub
-    bind {{ glance_public_vip }}:9292
+    bind {{ glance_public_vip }}:9191
     default_backend glance-registry
 
 {% if glance_public_vip != glance_private_vip %}
 frontend vip-glance-registry-int
-    bind {{ glance_private_vip }}:9292
+    bind {{ glance_private_vip }}:9191
     default_backend glance-registry
 {% endif %}
 
 backend glance-registry
     balance roundrobin
 {% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:9292 check inter 1s
+    server {{ node.name }} {{ node.addr_int }}:9191 check inter 1s
 {% endfor %}
 
 frontend vip-cinder-pub

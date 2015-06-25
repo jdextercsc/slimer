@@ -1,0 +1,1749 @@
+diff --git a/group_vars/all.sample b/group_vars/all.sample
+deleted file mode 100644
+index 2cfa786..0000000
+--- a/group_vars/all.sample
++++ /dev/null
+@@ -1,438 +0,0 @@
+----
+-### OpenStack control plane configuration
+-
+-# select OpenStack release: havana, icehouse
+-openstack_release: icehouse
+-use_ha_controller: true
+-use_rabbit: true
+-use_ha_db: true
+-use_galera: true
+-use_ceph: false
+-use_swift: false
+-use_cinder_nfs_volume_driver: true
+-use_netapp: false
+-use_netapp_copyoffload: false
+-# select Nova Network or Neutron
+-use_nova_network: false
+-# use nfs for nova ephemeral volumes
+-#use_nova_nfs_backend: true
+-# if use_nova_shared_backend is "true", set nova_shared_volume, nova_shared_fs_type and nova_shared_fs_mount_options
+-#use_nova_shared_backend: "{{ use_nova_nfs_backend }}"
+-use_neutron: true
+-# havana: select ovs or other Neutron standalone plugin
+-# icehouse: select ml2 and its plugins or a standalone Neutron plugin like Cisco Nexus
+-use_neutron_ml2: true
+-use_neutron_ovs: true
+-use_neutron_cisco: false
+-use_neutron_l3: true
+-use_lbaas: true
+-use_heat: true
+-use_ceilometer: true
+-
+-
+-### Network interface assignment
+-# any deviations for individual hosts should be specified in the host_vars or inventory files
+-primary_if: bond0.1612
+-private_if: bond0.1610
+-tunnel_if: bond0.1613
+-
+-
+-### NTP servers
+-ntp: 
+-  - 0.rhel.pool.ntp.org
+-  - 1.rhel.pool.ntp.org
+-  - 2.rhel.pool.ntp.org
+-
+-
+-### Pacemaker cluster
+-pcs_cluster_name: SOME_CLUSTER_NAME
+-pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
+-pcs_cluster_pass_encoded: "{{ lookup('file', inventory_dir + '/credentials/pcs_cluster_pass_encoded') }}"
+-
+-# short domain names of the controller nodes
+-controller_node_names:
+-  - controller-01
+-  - controller-02
+-  - controller-03
+-
+-# The value of the fencing parameter below depends from the type of the fencing agent.
+-# Here are few examples for different agent types:
+-# fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
+-# fencing: { agent: cisco_ucs, params: "login=pacemaker passwd='SECRET' ipaddr=10.161.0.50 suborg=org-Controller port=Profile-CT-1-1 ssl=1 ssl_insecure=1" }
+-#
+-controller_nodes:
+-  - name: controller-01
+-    fqdn: controller-01.example.com
+-    addr_pub: 172.16.22.23
+-    addr_int: 172.16.20.23
+-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
+-
+-  - name: controller-02
+-    fqdn: controller-02.example.com
+-    addr_pub: 172.16.22.24
+-    addr_int: 172.16.20.24
+-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.24 lanplus='' verbose=''" }
+-
+-  - name: controller-03
+-    fqdn: controller-03.example.com
+-    addr_pub: 172.16.22.24
+-    addr_int: 172.16.20.25
+-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.25 lanplus='' verbose=''" }
+-
+-
+-### Messaging
+-rabbit_host: 172.16.20.14
+-rabbit_port: 5672
+-rabbit_node_names: "{{ controller_node_names }}"
+-rabbitmq_limit_nofile: 102400
+-
+-### Database
+-lb_db_vip: 172.16.20.13
+-
+-# Galera cluster parameters
+-wsrep_cluster_name: galera_cluster
+-wsrep_cluster_address: "gcomm://{{ controller_node_names | join(',') }}"
+-clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
+-
+-# Passwords for database special users
+-db_root_password: "{{ lookup('password', inventory_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
+-keystone_db_pass: "{{ lookup('password', inventory_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
+-glance_db_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_db_pass chars=ascii_letters,digits') }}"
+-cinder_db_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_db_pass chars=ascii_letters,digits') }}"
+-nova_db_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_db_pass chars=ascii_letters,digits') }}"
+-neutron_db_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_db_pass chars=ascii_letters,digits') }}"
+-heat_db_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
+-
+-
+-### memcache servers
+-memcached_servers:
+-  - '172.16.20.23:11211'
+-  - '172.16.20.24:11211'
+-  - '172.16.20.25:11211'
+-
+-### MongoDB servers (use domain names)
+-mongodb_servers: "{{ controller_node_names }}"
+-
+-### Keystone
+-# scalability tuning parameters
+-#keystone_rpc_conn_pool_size: 30
+-#keystone_rpc_thread_pool_size: 64
+-#keystone_database_min_pool_size: 1
+-
+-keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
+-
+-# passwords for special OpenStack users
+-admin_pass: "{{ lookup('password', inventory_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
+-glance_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_pass chars=ascii_letters,digits') }}"
+-cinder_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_pass chars=ascii_letters,digits') }}"
+-swift_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_pass chars=ascii_letters,digits') }}"
+-neutron_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_pass chars=ascii_letters,digits') }}"
+-nova_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_pass chars=ascii_letters,digits') }}"
+-heat_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_pass chars=ascii_letters,digits') }}"
+-ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
+-
+-
+-### Nova
+-# scalability tuning parameters
+-#nova_rpc_conn_pool_size: 30
+-#nova_rpc_thread_pool_size: 64
+-#nova_database_min_pool_size: 1
+-#nova_conductor_workers: 4
+-#nova_osapi_workers: 4
+-
+-# hypervisor features
+-#nova_instance_live_migration: true
+-#nova_network_device_mtu: 9000
+-
+-# nova network specific
+-#nova_vlan_start: 74
+-nova_vlan_interface: "{{ private_if }}"
+-
+-# specific for neutron based network implementation
+-# disable security group
+-nova_security_group_api: noop
+-#nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+-nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
+-#nova_ovs_bridge_mappings: "physnet1:br1"
+-
+-# storage related
+-nova_libvirt_images_type: rbd
+-nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+-
+-# Define the following parameters to use Nova with ephemeral storage on a shared volume
+-# For example, to use a NFS share:
+-#nova_shared_volume: "nfs-server.example.com:/srv/nova"
+-#nova_shared_fs_type: nfs4
+-#nova_shared_fs_mount_options: "sec=sys,defaults"
+-
+-# ceilometer related
+-nova_notify_on_state_change: vm_and_task_state
+-
+-
+-### Glance
+-
+-# define the following parameters to use NetApp as a Glance backend
+-#default_store: file
+-#glance_show_image_direct_url: true
+-#glance_show_multiple_locations: true
+-#glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
+-# this is necessary to support NetApp copy offload
+-#glance_filesystem_store_file_perm: '0644'
+-
+-# ceph backend settings
+-default_store: rbd
+-glance_rbd_user: images
+-glance_rbd_pool: images
+-rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+-
+-# for Havana only: use qpid or rabbit for communication with ceilometer
+-#glance_notifier_strategy: qpid
+-glance_notifier_strategy: rabbit
+-
+-
+-### Cinder
+-# definition of multi-volume backends
+-cinder_enabled_backends:
+-#  - LVM_iSCSI
+-#  - Generic_NFS
+-  - RBD
+-#  - GlusterFS
+-#  - NetApp
+-
+-# ceph backend settings
+-cinder_rbd_user: volumes
+-cinder_rbd_pool: volumes
+-
+-# NetApp driver parameters
+-# the volume backend name must match the name given in cinder_enabled_backends
+-netapp_volume_backend_name: NetApp
+-netapp_login: LOGIN
+-netapp_password: SECRET
+-netapp_vserver: VSERVER_NAME
+-netapp_server_hostname: '10.161.0.220'
+-netapp_storage_protocol: iscsi
+-netapp_transport_type: https
+-#netapp_thick_provisioned: false
+-#cinder_nfs_mount_options: 'sec=sys,defaults'
+-
+-### HAproxy parameters
+-# pacemaker IPaddr2 resources for HAproxy
+-vip_addresses:
+-  - name: vip-db
+-    addr: 172.16.20.13
+-
+-  - name: vip-msg
+-    addr: 172.16.20.14
+-
+-  - name: vip-keystone-int
+-    addr: 172.16.20.20
+-
+-  - name: vip-glance-int
+-    addr: 172.16.20.17
+-
+-  - name: vip-cinder-int
+-    addr: 172.16.20.16
+-
+-  - name: vip-nova-int
+-    addr: 172.16.20.22
+-
+-  - name: vip-neutron-int
+-    addr: 172.16.20.21
+-
+-  - name: vip-horizon-int
+-    addr: 172.16.20.19
+-
+-  - name: vip-heat-int
+-    addr: 172.16.20.18
+-
+-  - name: vip-ceilometer-int
+-    addr: 172.16.20.15
+-
+-  - name: vip-keystone-pub
+-    addr: 172.16.22.20
+-
+-  - name: vip-glance-pub
+-    addr: 172.16.22.17
+-
+-  - name: vip-cinder-pub
+-    addr: 172.16.22.16
+-
+-  - name: vip-nova-pub
+-    addr: 172.16.22.22
+-
+-  - name: vip-neutron-pub
+-    addr: 172.16.22.21
+-
+-  - name: vip-horizon-pub
+-    addr: 172.16.22.19
+-
+-  - name: vip-heat-pub
+-    addr: 172.16.22.18
+-
+-  - name: vip-ceilometer-pub
+-    addr: 172.16.22.15
+-
+-
+-keystone_vip: 172.16.20.20
+-glance_vip: 172.16.20.17
+-cinder_vip: 172.16.20.16
+-nova_vip: 172.16.20.22
+-neutron_vip: 172.16.20.21
+-horizon_vip: 172.16.20.19
+-heat_vip: 172.16.20.18
+-ceilometer_vip: 172.16.20.15
+-
+-keystone_public_vip: "vip-keystone-pub.example.com"
+-keystone_admin_vip: "{{ keystone_vip }}"
+-keystone_private_vip: "{{ keystone_vip }}"
+-
+-glance_public_vip: "vip-glance-pub.example.com"
+-glance_admin_vip: "{{ glance_vip }}"
+-glance_private_vip: "{{ glance_vip }}"
+-
+-cinder_public_vip: "vip-cinder-pub.example.com"
+-cinder_admin_vip: "{{ cinder_vip }}"
+-cinder_private_vip: "{{ cinder_vip }}"
+-
+-nova_public_vip: "vip-nova-pub.example.com"
+-nova_admin_vip: "{{ nova_vip }}"
+-nova_private_vip: "{{ nova_vip }}"
+-
+-neutron_public_vip: "vip-neutron-pub.example.com"
+-neutron_admin_vip: "{{ neutron_vip }}"
+-neutron_private_vip: "{{ neutron_vip }}"
+-
+-horizon_public_vip: "vip-horizon-pub.example.com"
+-horizon_private_vip: "{{ horizon_vip }}"
+-
+-heat_public_vip: "vip-heat-pub.example.com"
+-heat_admin_vip: "{{ heat_vip }}"
+-heat_private_vip: "{{ heat_vip }}"
+-
+-ceilometer_public_vip: "vip-ceilometer-pub.example.com"
+-ceilometer_admin_vip: "{{ ceilometer_vip }}"
+-ceilometer_private_vip: "{{ ceilometer_vip }}"
+-
+-
+-### Neutron parameters
+-neutron_core_plugin: neutron.plugins.ml2.plugin.Ml2Plugin
+-neutron_service_plugins:
+-  - neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
+-  - neutron.services.firewall.fwaas_plugin.FirewallPlugin
+-  - neutron.services.loadbalancer.plugin.LoadBalancerPlugin
+-  - neutron.services.metering.metering_plugin.MeteringPlugin
+-
+-# scalability tuning parameters
+-#neutron_thread_pool_size: 64
+-#neutron_rpc_conn_pool_size: 30
+-#neutron_database_min_pool_size: 1
+-#neutron_database_max_pool_size: 10
+-#neutron_api_workers: 0
+-#neutron_rpc_workers: 0
+-neutron_metadata_workers: 20
+-neutron_metadata_backlog: 2048
+-
+-neutron_metadata_proxy_shared_secret: "{{ lookup('password', inventory_dir + '/credentials/neutron_metadata_proxy_shared_secret chars=hexdigits') }}"
+-neutron_dhcp_enable_isolated_metadata: true
+-neutron_ml2_type_drivers: vxlan,flat
+-neutron_ml2_tenant_network_types: vxlan
+-#neutron_network_vlan_ranges: "pnet1:100:200"
+-neutron_network_vlan_ranges: "net-ex"
+-neutron_vxlan_vni_ranges: 10:10000
+-neutron_vxlan_group: 239.1.1.1
+-neutron_ovs_tenant_network_type: vxlan
+-neutron_ovs_tunnel_type: vxlan
+-neutron_ovs_tunnel_id_ranges: 10:10000
+-neutron_ovs_bridge_mappings: "net-ex:br-ex"
+-#neutron_ovs_bridges:
+-#  - bridge: br1
+-#    port: bond1
+-#neutron_ovs_veth_mtu: 9000
+-# if neutron_external_network_bridge is not set, Neutron will use br-ex by default
+-# it is recommended to use empty string with the ml2 plugin
+-neutron_external_network_bridge: ""
+-
+-# disable security groups
+-neutron_ovs_firewall_driver: "neutron.agent.firewall.NoopFirewallDriver"
+-neutron_agent_tunnel_types: vxlan
+-
+-# Cisco Nexus standalone plugin for Neutron
+-cisco_provider_vlan_auto_create: true
+-cisco_provider_vlan_auto_trunk: true
+-cisco_nexus_l3_enable: true
+-cisco_nexus_switches:
+-  - ipaddr: 10.161.0.21
+-    username: admin
+-    password: SECRET
+-    ssh_port: 22
+-    hosts:
+-      - name: compute-01.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-02.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-03.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-04.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-05.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-06.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-01.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-02.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-03.example.com
+-        port: "port-channel:2"
+-
+-  - ipaddr: 10.161.0.22
+-    username: admin
+-    password: SECRET
+-    ssh_port: 22
+-    hosts:
+-      - name: compute-01.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-02.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-03.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-04.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-05.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-06.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-01.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-02.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-03.example.com
+-        port: "port-channel:2"
+-
+-### Horizon
+-horizon_internal_servername: vip-horizon-int.example.com
+-horizon_public_servername: vip-horizon-pub.example.com
+-# A url to make first request and get .secret_key_store generated
+-dashboard_first_request_url: "http://vip-horizon-pub.example.com/dashboard"
+-
+-### Ceilometer
+-ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
+-
+-# keep last 5 days data only (value is in secs)
+-ceilometer_time_to_live: 432000
+diff --git a/group_vars/all.yml b/group_vars/all.yml
+deleted file mode 100644
+index 4f74615..0000000
+--- a/group_vars/all.yml
++++ /dev/null
+@@ -1,485 +0,0 @@
+----
+-### OpenStack control plane configuration
+-
+-# select OpenStack release: havana, icehouse, juno
+-openstack_release: juno
+-use_ha_controller: true
+-use_swift: true
+-use_rabbit: true
+-use_ha_db: true
+-use_galera: true
+-use_ceph: false
+-use_cinder_nfs_volume_driver: false
+-use_netapp: false
+-use_netapp_copyoffload: false
+-# select Nova Network or Neutron
+-use_nova_network: false
+-# use nfs for nova ephemeral volumes
+-use_nova_nfs_backend: false
+-# if use_nova_shared_backend is "true", set nova_shared_volume, nova_shared_fs_type and nova_shared_fs_mount_options
+-#use_nova_shared_backend: "{{ use_nova_nfs_backend }}"
+-use_neutron: true
+-# havana: select ovs or other Neutron standalone plugin
+-# icehouse: select ml2 and its plugins or a standalone Neutron plugin like Cisco Nexus
+-use_neutron_ml2: true
+-use_neutron_ovs: true
+-use_neutron_cisco: false
+-use_neutron_l3: true
+-use_lbaas: true
+-use_heat: true
+-use_ceilometer: true
+-
+-
+-### Network interface assignment
+-# any deviations for individual hosts should be specified in the host_vars or inventory files
+-primary_if: bond0.1805
+-private_if: bond0.1801
+-tunnel_if: bond0.1802
+-
+-search_domain: ".lordbusiness"
+-nameservers:
+- - 172.17.10.22
+- - 192.168.70.3
+- - 192.168.70.4
+-
+-
+-### NTP servers
+-ntp:
+-  - 0.rhel.pool.ntp.org
+-  - 1.rhel.pool.ntp.org
+-  - 2.rhel.pool.ntp.org
+-
+-mongo_replSet:
+- - wiley-ctlr-2
+- - wiley-ctlr-3
+-
+-### Pacemaker cluster
+-pcs_cluster_name: SOME_CLUSTER_NAME
+-pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
+-#pcs_cluster_pass_encoded: "{{ lookup('file', inventory_dir + '/credentials/pcs_cluster_pass_encoded') }}"
+-#pcs_cluster_pass: password
+-# short domain names of the controller nodes
+-controller_node_names:
+-  - wiley-ctlr-1
+-  - wiley-ctlr-2
+-  - wiley-ctlr-3
+-
+-# The value of the fencing parameter below depends from the type of the fencing agent.
+-# Here are few examples for different agent types:
+-# fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
+-# fencing: { agent: cisco_ucs, params: "login=pacemaker passwd='SECRET' ipaddr=10.161.0.50 suborg=org-Controller port=Profile-CT-1-1 ssl=1 ssl_insecure=1" }
+-#
+-
+-swift_nodes:
+-  - name: wiley-swift-1
+-    addr_int: 172.17.17.74
+-  - name: wiley-swift-2
+-    addr_int: 172.17.17.75
+-  - name: wiley-swift-3
+-    addr_int: 172.17.17.76
+-
+-controller_nodes:
+-  - name: wiley-ctlr-1
+-    fqdn: wiley-ctlr-1.lordbusiness
+-    addr_pub: 172.17.21.70
+-    addr_int: 172.17.17.70
+-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.70 lanplus='' verbose=''" }
+-
+-  - name: wiley-ctlr-2
+-    fqdn: wiley-ctlr-2.lordbusiness
+-    addr_pub: 172.17.21.71
+-    addr_int: 172.17.17.71
+-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.71 lanplus='' verbose=''" }
+-
+-  - name: wiley-ctlr-3
+-    fqdn: wiley-ctlr-3.lordbusiness
+-    addr_pub: 172.17.21.72
+-    addr_int: 172.17.17.72
+-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.72 lanplus='' verbose=''" }
+-
+-
+-### Messaging
+-rabbit_host: 172.17.17.99
+-rabbit_hosts: 172.17.17.70:5672,172.17.17.71:5672,172.17.17.72:5672
+-rabbit_port: 5672
+-rabbit_node_names: "{{ controller_node_names }}"
+-rabbitmq_limit_nofile: 102400
+-
+-### Database
+-lb_db_vip: 172.17.17.101
+-
+-# Galera cluster parameters
+-wsrep_cluster_name: galera_cluster
+-wsrep_cluster_address: "gcomm://{{ controller_node_names | join(',') }}"
+-#clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
+-clustercheck_db_pass: password
+-# Passwords for database special users
+-db_root_password: "{{ lookup('password', inventory_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
+-keystone_db_pass: "{{ lookup('password', inventory_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
+-glance_db_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_db_pass chars=ascii_letters,digits') }}"
+-cinder_db_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_db_pass chars=ascii_letters,digits') }}"
+-nova_db_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_db_pass chars=ascii_letters,digits') }}"
+-neutron_db_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_db_pass chars=ascii_letters,digits') }}"
+-heat_db_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
+-swift_db_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_db_pass chars=ascii_letters,digits') }}"
+-
+-
+-### memcache servers
+-memcached_servers:
+-  - '172.17.17.70:11211'
+-  - '172.17.17.71:11211'
+-  - '172.17.17.72:11211'
+-
+-### MongoDB servers (use domain names)
+-mongodb_servers: "{{ controller_node_names }}"
+-
+-### Keystone
+-# scalability tuning parameters
+-#keystone_rpc_conn_pool_size: 30
+-#keystone_rpc_thread_pool_size: 64
+-#keystone_database_min_pool_size: 1
+-
+-keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
+-
+-# passwords for special OpenStack users
+-admin_pass: "{{ lookup('password', inventory_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
+-glance_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_pass chars=ascii_letters,digits') }}"
+-cinder_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_pass chars=ascii_letters,digits') }}"
+-swift_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_pass chars=ascii_letters,digits') }}"
+-neutron_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_pass chars=ascii_letters,digits') }}"
+-nova_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_pass chars=ascii_letters,digits') }}"
+-heat_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_pass chars=ascii_letters,digits') }}"
+-ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
+-
+-
+-### Nova
+-# scalability tuning parameters
+-#nova_rpc_conn_pool_size: 30
+-#nova_rpc_thread_pool_size: 64
+-#nova_database_min_pool_size: 1
+-#nova_conductor_workers: 4
+-#nova_osapi_workers: 4
+-
+-# hypervisor features
+-#nova_instance_live_migration: true
+-#nova_network_device_mtu: 9000
+-
+-# nova network specific
+-#nova_vlan_start: 74
+-nova_vlan_interface: "{{ private_if }}"
+-
+-# specific for neutron based network implementation
+-# disable security group
+-nova_security_group_api: neutron
+-#nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+-nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
+-#nova_ovs_bridge_mappings: "physnet1:br1"
+-
+-# storage related
+-nova_libvirt_images_type: rbd
+-nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+-
+-# Define the following parameters to use Nova with ephemeral storage on a shared volume
+-# For example, to use a NFS share:
+-#nova_shared_volume: "nfs-server.example.com:/srv/nova"
+-#nova_shared_fs_type: nfs4
+-#nova_shared_fs_mount_options: "sec=sys,defaults"
+-
+-# ceilometer related
+-nova_notify_on_state_change: vm_and_task_state
+-
+-
+-### Glance
+-
+-glance_datadir: /var/lib/glance/images/
+-glance_api_port: 9292
+-glance_registry_port: 9191
+-# define the following parameters to use NetApp as a Glance backend
+-#default_store: file
+-#glance_show_image_direct_url: true
+-#glance_show_multiple_locations: true
+-#glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
+-# this is necessary to support NetApp copy offload
+-#glance_filesystem_store_file_perm: '0644'
+-
+-# ceph backend settings
+-#default_store: rbd
+-#glance_rbd_user: images
+-#glance_rbd_pool: images
+-#rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+-
+-# for Havana only: use qpid or rabbit for communication with ceilometer
+-#glance_notifier_strategy: qpid
+-#glance_notifier_strategy: rabbit
+-
+-
+-### Cinder
+-# definition of multi-volume backends
+-cinder_enabled_backends:
+-#  - LVM_iSCSI
+-  - Generic_NFS
+-#  - RBD
+-#  - GlusterFS
+-#  - NetApp
+-
+-nfs_path: "/srv"
+-
+-# ceph backend settings
+-#cinder_rbd_user: volumes
+-#cinder_rbd_pool: volumes
+-
+-# NetApp driver parameters
+-# the volume backend name must match the name given in cinder_enabled_backends
+-netapp_volume_backend_name: NetApp
+-netapp_login: LOGIN
+-netapp_password: SECRET
+-netapp_vserver: VSERVER_NAME
+-netapp_server_hostname: '10.161.0.220'
+-netapp_storage_protocol: iscsi
+-netapp_transport_type: https
+-#netapp_thick_provisioned: false
+-#cinder_nfs_mount_options: 'sec=sys,defaults'
+-
+-### HAproxy parameters
+-# pacemaker IPaddr2 resources for HAproxy
+-vip_addresses:
+-  - name: vip-db
+-    addr: 172.17.17.101
+-
+-  - name: vip-msg
+-    addr: 172.17.17.99
+-
+-  - name: vip-keystone-int
+-    addr: 172.17.17.103
+-
+-  - name: vip-glance-int
+-    addr: 172.17.17.104
+-
+-  - name: vip-cinder-int
+-    addr: 172.17.17.105
+-
+-  - name: vip-nova-int
+-    addr: 172.17.17.106
+-
+-  - name: vip-neutron-int
+-    addr: 172.17.17.107
+-
+-  - name: vip-horizon-int
+-    addr: 172.17.17.108
+-
+-  - name: vip-heat-int
+-    addr: 172.17.17.109
+-
+-  - name: vip-ceilometer-int
+-    addr: 172.17.17.110
+-
+-  - name: vip-swift-int
+-    addr: 172.17.17.111
+-
+-#  - name: vip-keystone-pub
+-#    addr: 172.17.20.103
+-
+-#  - name: vip-glance-pub
+-#    addr: 172.17.20.104
+-
+-#  - name: vip-cinder-pub
+-#    addr: 172.17.20.105
+-
+-#  - name: vip-nova-pub
+-#    addr: 172.17.20.106
+-
+-#  - name: vip-neutron-pub
+-#    addr: 172.17.20.107
+-
+-#  - name: vip-horizon-pub
+-#    addr: 172.17.20.108
+-
+-#  - name: vip-heat-pub
+-#    addr: 172.17.20.109
+-
+-#  - name: vip-ceilometer-pub
+-#    addr: 172.17.20.110
+-
+-
+-keystone_vip: 172.17.17.103
+-glance_vip: 172.17.17.104
+-cinder_vip: 172.17.17.105
+-nova_vip: 172.17.17.106
+-neutron_vip: 172.17.17.107
+-horizon_vip: 172.17.17.108
+-heat_vip: 172.17.17.109
+-ceilometer_vip: 172.17.17.110
+-swift_vip: 172.17.17.111
+-
+-swift_public_vip: "{{ swift_vip }}"
+-swift_admin_vip: "{{ swift_vip }}"
+-swift_private_vip: "{{ swift_vip }}"
+-
+-keystone_public_vip: "{{keystone_vip}}"
+-keystone_admin_vip: "{{ keystone_vip }}"
+-keystone_private_vip: "{{ keystone_vip }}"
+-
+-glance_public_vip: "{{glance_vip}}"
+-glance_admin_vip: "{{ glance_vip }}"
+-glance_private_vip: "{{ glance_vip }}"
+-
+-cinder_public_vip: "{{ cinder_vip }}"
+-cinder_admin_vip: "{{ cinder_vip }}"
+-cinder_private_vip: "{{ cinder_vip }}"
+-
+-nova_public_vip: "{{nova_vip}}"
+-nova_admin_vip: "{{ nova_vip }}"
+-nova_private_vip: "{{ nova_vip }}"
+-
+-neutron_public_vip: "{{ neutron_vip}}"
+-neutron_admin_vip: "{{ neutron_vip }}"
+-neutron_private_vip: "{{ neutron_vip }}"
+-
+-horizon_public_vip: "{{ horizon_vip }}"
+-horizon_private_vip: "{{ horizon_vip }}"
+-
+-heat_public_vip: "{{ heat_vip }}"
+-heat_admin_vip: "{{ heat_vip }}"
+-heat_private_vip: "{{ heat_vip }}"
+-
+-ceilometer_public_vip: "{{ ceilometer_vip}}"
+-ceilometer_admin_vip: "{{ ceilometer_vip }}"
+-ceilometer_private_vip: "{{ ceilometer_vip }}"
+-
+-
+-### Neutron parameters
+-neutron_core_plugin: neutron.plugins.ml2.plugin.Ml2Plugin
+-neutron_service_plugins:
+-  - neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
+-  - neutron.services.firewall.fwaas_plugin.FirewallPlugin
+-  - neutron.services.loadbalancer.plugin.LoadBalancerPlugin
+-  - neutron.services.metering.metering_plugin.MeteringPlugin
+-
+-# scalability tuning parameters
+-#neutron_thread_pool_size: 64
+-#neutron_rpc_conn_pool_size: 30
+-#neutron_database_min_pool_size: 1
+-#neutron_database_max_pool_size: 10
+-#neutron_api_workers: 0
+-#neutron_rpc_workers: 0
+-neutron_metadata_workers: 20
+-neutron_metadata_backlog: 2048
+-
+-neutron_metadata_proxy_shared_secret: "{{ lookup('password', inventory_dir + '/credentials/neutron_metadata_proxy_shared_secret chars=hexdigits') }}"
+-neutron_dhcp_enable_isolated_metadata: true
+-neutron_ml2_type_drivers: vxlan,flat
+-neutron_ml2_tenant_network_types: vxlan
+-#neutron_network_vlan_ranges: "pnet1:100:200"
+-neutron_network_vlan_ranges: "physnet1"
+-neutron_vxlan_vni_ranges: 10:10000
+-neutron_vxlan_group: 239.1.1.1
+-neutron_ovs_tenant_network_type: vxlan
+-neutron_ovs_tunnel_type: vxlan
+-neutron_ovs_tunnel_id_ranges: 10:10000
+-neutron_ovs_bridge_mappings: "physnet1:br-ex"
+-#neutron_ovs_bridges:
+-neutron_ovs_integration_bridge: br-int
+-neutron_ovs_tunnel_bridge: br-tun
+-neutron_ovs_bridges:
+-  - bridge: br-ex
+-    port: bond0.1805
+-#neutron_ovs_veth_mtu: 9000
+-# if neutron_external_network_bridge is not set, Neutron will use br-ex by default
+-# it is recommended to use empty string with the ml2 plugin
+-neutron_external_network_bridge: "br-ex"
+-
+-# disable security groups
+-neutron_ovs_firewall_driver: "neutron.agent.firewall.NoopFirewallDriver"
+-neutron_agent_tunnel_types: vxlan
+-
+-# Cisco Nexus standalone plugin for Neutron
+-cisco_provider_vlan_auto_create: true
+-cisco_provider_vlan_auto_trunk: true
+-cisco_nexus_l3_enable: true
+-cisco_nexus_switches:
+-  - ipaddr: 10.161.0.21
+-    username: admin
+-    password: SECRET
+-    ssh_port: 22
+-    hosts:
+-      - name: compute-01.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-02.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-03.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-04.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-05.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-06.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-01.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-02.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-03.example.com
+-        port: "port-channel:2"
+-
+-  - ipaddr: 10.161.0.22
+-    username: admin
+-    password: SECRET
+-    ssh_port: 22
+-    hosts:
+-      - name: compute-01.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-02.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-03.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-04.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-05.example.com
+-        port: "port-channel:2"
+-
+-      - name: compute-06.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-01.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-02.example.com
+-        port: "port-channel:2"
+-
+-      - name: controller-03.example.com
+-        port: "port-channel:2"
+-
+-### Horizon
+-horizon_internal_servername: vip-horizon-int.business
+-horizon_public_servername: vip-horizon-pub.business
+-# A url to make first request and get .secret_key_store generated
+-dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
+-
+-### Ceilometer
+-ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
+-
+-# keep last 5 days data only (value is in secs)
+-ceilometer_time_to_live: 432000
+-
+-
+-#### swift
+-# part_power = 2 ^ partition power = partition count. ( The partition is rounded up after calculation.)
+-part_power: 16
+-#replica couunt =  The number of times that your data will be replicated in the cluster.
+-replica_count: 3
+-# min_part_hours =  Minimum number of hours before a partition can be moved. This parameter increases availability of data by not moving more than one copy of a given data item within that min_part_hours amount of time.
+-min_part_hours: 24
+-swift_pathprefix: "{{ lookup('password', inventory_dir + '/credentials/swift_prefix chars=ascii_letters,digits') }}"
+-swift_pathsuffix: "{{ lookup('password', inventory_dir + '/credentials/swift_suffix chars=ascii_letters,digits') }}"
+diff --git a/group_vars/all/common.yml b/group_vars/all/common.yml
+new file mode 100644
+index 0000000..6ec2050
+--- /dev/null
++++ b/group_vars/all/common.yml
+@@ -0,0 +1,485 @@
++---
++### OpenStack control plane configuration
++
++# select OpenStack release: havana, icehouse, juno
++openstack_release: juno
++use_ha_controller: true
++use_swift: true
++use_rabbit: true
++use_ha_db: true
++use_galera: true
++use_ceph: false
++use_cinder_nfs_volume_driver: false
++use_netapp: false
++use_netapp_copyoffload: false
++# select Nova Network or Neutron
++use_nova_network: false
++# use nfs for nova ephemeral volumes
++use_nova_nfs_backend: false
++# if use_nova_shared_backend is "true", set nova_shared_volume, nova_shared_fs_type and nova_shared_fs_mount_options
++#use_nova_shared_backend: "{{ use_nova_nfs_backend }}"
++use_neutron: true
++# havana: select ovs or other Neutron standalone plugin
++# icehouse: select ml2 and its plugins or a standalone Neutron plugin like Cisco Nexus
++use_neutron_ml2: true
++use_neutron_ovs: true
++use_neutron_cisco: false
++use_neutron_l3: true
++use_lbaas: true
++use_heat: true
++use_ceilometer: true
++
++
++### Network interface assignment
++# any deviations for individual hosts should be specified in the host_vars or inventory files
++primary_if: bond0.1805
++private_if: bond0.1801
++tunnel_if: bond0.1802
++
++search_domain: ".lordbusiness"
++nameservers:
++ - 172.17.10.22
++ - 192.168.70.3
++ - 192.168.70.4
++
++
++### NTP servers
++ntp:
++  - 0.rhel.pool.ntp.org
++  - 1.rhel.pool.ntp.org
++  - 2.rhel.pool.ntp.org
++
++mongo_replSet:
++ - wiley-ctlr-2
++ - wiley-ctlr-3
++
++### Pacemaker cluster
++pcs_cluster_name: SOME_CLUSTER_NAME
++pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
++#pcs_cluster_pass_encoded: "{{ lookup('file', inventory_dir + '/credentials/pcs_cluster_pass_encoded') }}"
++#pcs_cluster_pass: password
++# short domain names of the controller nodes
++controller_node_names:
++  - wiley-ctlr-1
++  - wiley-ctlr-2
++  - wiley-ctlr-3
++
++# The value of the fencing parameter below depends from the type of the fencing agent.
++# Here are few examples for different agent types:
++# fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
++# fencing: { agent: cisco_ucs, params: "login=pacemaker passwd='SECRET' ipaddr=10.161.0.50 suborg=org-Controller port=Profile-CT-1-1 ssl=1 ssl_insecure=1" }
++#
++
++swift_nodes:
++  - name: wiley-swift-1
++    addr_int: 172.17.17.74
++  - name: wiley-swift-2
++    addr_int: 172.17.17.75
++  - name: wiley-swift-3
++    addr_int: 172.17.17.76
++
++controller_nodes:
++  - name: wiley-ctlr-1
++    fqdn: wiley-ctlr-1.lordbusiness
++    addr_pub: 172.17.21.70
++    addr_int: 172.17.17.70
++    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.70 lanplus='' verbose=''" }
++
++  - name: wiley-ctlr-2
++    fqdn: wiley-ctlr-2.lordbusiness
++    addr_pub: 172.17.21.71
++    addr_int: 172.17.17.71
++    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.71 lanplus='' verbose=''" }
++
++  - name: wiley-ctlr-3
++    fqdn: wiley-ctlr-3.lordbusiness
++    addr_pub: 172.17.21.72
++    addr_int: 172.17.17.72
++    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.72 lanplus='' verbose=''" }
++
++
++### Messaging
++rabbit_host: 172.17.17.99
++rabbit_hosts: 172.17.17.70:5672,172.17.17.71:5672,172.17.17.72:5672
++rabbit_port: 5672
++rabbit_node_names: "{{ controller_node_names }}"
++rabbitmq_limit_nofile: 102400
++
++### Database
++lb_db_vip: 172.17.17.101
++
++# Galera cluster parameters
++wsrep_cluster_name: galera_cluster
++wsrep_cluster_address: "gcomm://{{ controller_node_names | join(',') }}"
++#clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
++clustercheck_db_pass: password
++# Passwords for database special users
++db_root_password: "{{ lookup('password', inventory_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
++keystone_db_pass: "{{ lookup('password', inventory_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
++glance_db_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_db_pass chars=ascii_letters,digits') }}"
++cinder_db_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_db_pass chars=ascii_letters,digits') }}"
++nova_db_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_db_pass chars=ascii_letters,digits') }}"
++neutron_db_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_db_pass chars=ascii_letters,digits') }}"
++heat_db_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
++swift_db_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_db_pass chars=ascii_letters,digits') }}"
++
++
++### memcache servers
++memcached_servers:
++  - '172.17.17.70:11211'
++  - '172.17.17.71:11211'
++  - '172.17.17.72:11211'
++
++### MongoDB servers (use domain names)
++mongodb_servers: "{{ controller_node_names }}"
++
++### Keystone
++# scalability tuning parameters
++#keystone_rpc_conn_pool_size: 30
++#keystone_rpc_thread_pool_size: 64
++#keystone_database_min_pool_size: 1
++
++keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
++
++# passwords for special OpenStack users
++admin_pass: "{{ lookup('password', inventory_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
++glance_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_pass chars=ascii_letters,digits') }}"
++cinder_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_pass chars=ascii_letters,digits') }}"
++swift_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_pass chars=ascii_letters,digits') }}"
++neutron_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_pass chars=ascii_letters,digits') }}"
++nova_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_pass chars=ascii_letters,digits') }}"
++heat_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_pass chars=ascii_letters,digits') }}"
++ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
++
++
++### Nova
++# scalability tuning parameters
++#nova_rpc_conn_pool_size: 30
++#nova_rpc_thread_pool_size: 64
++#nova_database_min_pool_size: 1
++#nova_conductor_workers: 4
++#nova_osapi_workers: 4
++
++# hypervisor features
++#nova_instance_live_migration: true
++#nova_network_device_mtu: 9000
++
++# nova network specific
++#nova_vlan_start: 74
++nova_vlan_interface: "{{ private_if }}"
++
++# specific for neutron based network implementation
++# disable security group
++nova_security_group_api: neutron
++#nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
++nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
++#nova_ovs_bridge_mappings: "physnet1:br1"
++
++# storage related
++nova_libvirt_images_type: rbd
++nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
++
++# Define the following parameters to use Nova with ephemeral storage on a shared volume
++# For example, to use a NFS share:
++#nova_shared_volume: "nfs-server.example.com:/srv/nova"
++#nova_shared_fs_type: nfs4
++#nova_shared_fs_mount_options: "sec=sys,defaults"
++
++# ceilometer related
++nova_notify_on_state_change: vm_and_task_state
++
++
++### Glance
++default_store: swift
++glance_datadir: /var/lib/glance/images/
++glance_api_port: 9292
++glance_registry_port: 9191
++# define the following parameters to use NetApp as a Glance backend
++#default_store: file
++#glance_show_image_direct_url: true
++#glance_show_multiple_locations: true
++#glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
++# this is necessary to support NetApp copy offload
++#glance_filesystem_store_file_perm: '0644'
++
++# ceph backend settings
++#default_store: rbd
++#glance_rbd_user: images
++#glance_rbd_pool: images
++#rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
++
++# for Havana only: use qpid or rabbit for communication with ceilometer
++#glance_notifier_strategy: qpid
++#glance_notifier_strategy: rabbit
++
++
++### Cinder
++# definition of multi-volume backends
++cinder_enabled_backends:
++#  - LVM_iSCSI
++  - Generic_NFS
++#  - RBD
++#  - GlusterFS
++#  - NetApp
++
++nfs_path: "/srv"
++
++# ceph backend settings
++#cinder_rbd_user: volumes
++#cinder_rbd_pool: volumes
++
++# NetApp driver parameters
++# the volume backend name must match the name given in cinder_enabled_backends
++netapp_volume_backend_name: NetApp
++netapp_login: LOGIN
++netapp_password: SECRET
++netapp_vserver: VSERVER_NAME
++netapp_server_hostname: '10.161.0.220'
++netapp_storage_protocol: iscsi
++netapp_transport_type: https
++#netapp_thick_provisioned: false
++#cinder_nfs_mount_options: 'sec=sys,defaults'
++
++### HAproxy parameters
++# pacemaker IPaddr2 resources for HAproxy
++vip_addresses:
++  - name: vip-db
++    addr: 172.17.17.101
++
++  - name: vip-msg
++    addr: 172.17.17.99
++
++  - name: vip-keystone-int
++    addr: 172.17.17.103
++
++  - name: vip-glance-int
++    addr: 172.17.17.104
++
++  - name: vip-cinder-int
++    addr: 172.17.17.105
++
++  - name: vip-nova-int
++    addr: 172.17.17.106
++
++  - name: vip-neutron-int
++    addr: 172.17.17.107
++
++  - name: vip-horizon-int
++    addr: 172.17.17.108
++
++  - name: vip-heat-int
++    addr: 172.17.17.109
++
++  - name: vip-ceilometer-int
++    addr: 172.17.17.110
++
++  - name: vip-swift-int
++    addr: 172.17.17.111
++
++#  - name: vip-keystone-pub
++#    addr: 172.17.20.103
++
++#  - name: vip-glance-pub
++#    addr: 172.17.20.104
++
++#  - name: vip-cinder-pub
++#    addr: 172.17.20.105
++
++#  - name: vip-nova-pub
++#    addr: 172.17.20.106
++
++#  - name: vip-neutron-pub
++#    addr: 172.17.20.107
++
++#  - name: vip-horizon-pub
++#    addr: 172.17.20.108
++
++#  - name: vip-heat-pub
++#    addr: 172.17.20.109
++
++#  - name: vip-ceilometer-pub
++#    addr: 172.17.20.110
++
++
++keystone_vip: 172.17.17.103
++glance_vip: 172.17.17.104
++cinder_vip: 172.17.17.105
++nova_vip: 172.17.17.106
++neutron_vip: 172.17.17.107
++horizon_vip: 172.17.17.108
++heat_vip: 172.17.17.109
++ceilometer_vip: 172.17.17.110
++swift_vip: 172.17.17.111
++
++swift_public_vip: "{{ swift_vip }}"
++swift_admin_vip: "{{ swift_vip }}"
++swift_private_vip: "{{ swift_vip }}"
++
++keystone_public_vip: "{{keystone_vip}}"
++keystone_admin_vip: "{{ keystone_vip }}"
++keystone_private_vip: "{{ keystone_vip }}"
++
++glance_public_vip: "{{glance_vip}}"
++glance_admin_vip: "{{ glance_vip }}"
++glance_private_vip: "{{ glance_vip }}"
++
++cinder_public_vip: "{{ cinder_vip }}"
++cinder_admin_vip: "{{ cinder_vip }}"
++cinder_private_vip: "{{ cinder_vip }}"
++
++nova_public_vip: "{{nova_vip}}"
++nova_admin_vip: "{{ nova_vip }}"
++nova_private_vip: "{{ nova_vip }}"
++
++neutron_public_vip: "{{ neutron_vip}}"
++neutron_admin_vip: "{{ neutron_vip }}"
++neutron_private_vip: "{{ neutron_vip }}"
++
++horizon_public_vip: "{{ horizon_vip }}"
++horizon_private_vip: "{{ horizon_vip }}"
++
++heat_public_vip: "{{ heat_vip }}"
++heat_admin_vip: "{{ heat_vip }}"
++heat_private_vip: "{{ heat_vip }}"
++
++ceilometer_public_vip: "{{ ceilometer_vip}}"
++ceilometer_admin_vip: "{{ ceilometer_vip }}"
++ceilometer_private_vip: "{{ ceilometer_vip }}"
++
++
++### Neutron parameters
++neutron_core_plugin: neutron.plugins.ml2.plugin.Ml2Plugin
++neutron_service_plugins:
++  - neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
++  - neutron.services.firewall.fwaas_plugin.FirewallPlugin
++  - neutron.services.loadbalancer.plugin.LoadBalancerPlugin
++  - neutron.services.metering.metering_plugin.MeteringPlugin
++
++# scalability tuning parameters
++#neutron_thread_pool_size: 64
++#neutron_rpc_conn_pool_size: 30
++#neutron_database_min_pool_size: 1
++#neutron_database_max_pool_size: 10
++#neutron_api_workers: 0
++#neutron_rpc_workers: 0
++neutron_metadata_workers: 20
++neutron_metadata_backlog: 2048
++
++neutron_metadata_proxy_shared_secret: "{{ lookup('password', inventory_dir + '/credentials/neutron_metadata_proxy_shared_secret chars=hexdigits') }}"
++neutron_dhcp_enable_isolated_metadata: true
++neutron_ml2_type_drivers: vxlan,flat
++neutron_ml2_tenant_network_types: vxlan
++#neutron_network_vlan_ranges: "pnet1:100:200"
++neutron_network_vlan_ranges: "physnet1"
++neutron_vxlan_vni_ranges: 10:10000
++neutron_vxlan_group: 239.1.1.1
++neutron_ovs_tenant_network_type: vxlan
++neutron_ovs_tunnel_type: vxlan
++neutron_ovs_tunnel_id_ranges: 10:10000
++neutron_ovs_bridge_mappings: "physnet1:br-ex"
++#neutron_ovs_bridges:
++neutron_ovs_integration_bridge: br-int
++neutron_ovs_tunnel_bridge: br-tun
++neutron_ovs_bridges:
++  - bridge: br-ex
++    port: bond0.1805
++#neutron_ovs_veth_mtu: 9000
++# if neutron_external_network_bridge is not set, Neutron will use br-ex by default
++# it is recommended to use empty string with the ml2 plugin
++neutron_external_network_bridge: "br-ex"
++
++# disable security groups
++neutron_ovs_firewall_driver: "neutron.agent.firewall.NoopFirewallDriver"
++neutron_agent_tunnel_types: vxlan
++
++# Cisco Nexus standalone plugin for Neutron
++cisco_provider_vlan_auto_create: true
++cisco_provider_vlan_auto_trunk: true
++cisco_nexus_l3_enable: true
++cisco_nexus_switches:
++  - ipaddr: 10.161.0.21
++    username: admin
++    password: SECRET
++    ssh_port: 22
++    hosts:
++      - name: compute-01.example.com
++        port: "port-channel:2"
++
++      - name: compute-02.example.com
++        port: "port-channel:2"
++
++      - name: compute-03.example.com
++        port: "port-channel:2"
++
++      - name: compute-04.example.com
++        port: "port-channel:2"
++
++      - name: compute-05.example.com
++        port: "port-channel:2"
++
++      - name: compute-06.example.com
++        port: "port-channel:2"
++
++      - name: controller-01.example.com
++        port: "port-channel:2"
++
++      - name: controller-02.example.com
++        port: "port-channel:2"
++
++      - name: controller-03.example.com
++        port: "port-channel:2"
++
++  - ipaddr: 10.161.0.22
++    username: admin
++    password: SECRET
++    ssh_port: 22
++    hosts:
++      - name: compute-01.example.com
++        port: "port-channel:2"
++
++      - name: compute-02.example.com
++        port: "port-channel:2"
++
++      - name: compute-03.example.com
++        port: "port-channel:2"
++
++      - name: compute-04.example.com
++        port: "port-channel:2"
++
++      - name: compute-05.example.com
++        port: "port-channel:2"
++
++      - name: compute-06.example.com
++        port: "port-channel:2"
++
++      - name: controller-01.example.com
++        port: "port-channel:2"
++
++      - name: controller-02.example.com
++        port: "port-channel:2"
++
++      - name: controller-03.example.com
++        port: "port-channel:2"
++
++### Horizon
++horizon_internal_servername: vip-horizon-int.business
++horizon_public_servername: vip-horizon-pub.business
++# A url to make first request and get .secret_key_store generated
++dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
++
++### Ceilometer
++ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
++
++# keep last 5 days data only (value is in secs)
++ceilometer_time_to_live: 432000
++
++
++#### swift
++# part_power = 2 ^ partition power = partition count. ( The partition is rounded up after calculation.)
++part_power: 16
++#replica couunt =  The number of times that your data will be replicated in the cluster.
++replica_count: 3
++# min_part_hours =  Minimum number of hours before a partition can be moved. This parameter increases availability of data by not moving more than one copy of a given data item within that min_part_hours amount of time.
++min_part_hours: 24
++swift_pathprefix: "{{ lookup('password', inventory_dir + '/credentials/swift_prefix chars=ascii_letters,digits') }}"
++swift_pathsuffix: "{{ lookup('password', inventory_dir + '/credentials/swift_suffix chars=ascii_letters,digits') }}"
+diff --git a/group_vars/all/secrets.yml b/group_vars/all/secrets.yml
+new file mode 100644
+index 0000000..6e32ef4
+--- /dev/null
++++ b/group_vars/all/secrets.yml
+@@ -0,0 +1,9 @@
++$ANSIBLE_VAULT;1.1;AES256
++33353830366264633438346239376231306662663164306332656137383865623734316461663737
++3036663238353337313131393462373762633634373834650a313232363532393730633766393436
++65353736666264633330353563376566656164386632633361353439663330363037383565373937
++6366336337396131330a636131646432313533653765326462363732383166303361376663306439
++32383136366161353466656166666266636232643036356432623333313638623836393833363431
++38336334666463623937366130633763386361623731353938393531383766353533623761366531
++38663737363638626239666634646666626466303363616365303662346136613931363833333064
++63343130323730613166
+diff --git a/group_vars/secrets.yml b/group_vars/secrets.yml
+deleted file mode 100644
+index cd2c2e9..0000000
+--- a/group_vars/secrets.yml
++++ /dev/null
+@@ -1,10 +0,0 @@
+-$ANSIBLE_VAULT;1.1;AES256
+-36383539346261346137306665636633306462383130306161653961386262396466303334636636
+-6337633735313933393939663434333139616663323539390a316630353930386532623562396131
+-66613433386234646338633465663337333066343463306139633162383633353432333435376236
+-3336303434396332310a653636316366353534613332393034313236623466346263373566623763
+-64623930613662653636353364636464656631303730653739633237336636316465396661626534
+-39386233353961666663653266656362313031326662333833636161613137663662633336323863
+-64316563656461623136366536623939626264356538623335303838656666303037636466383533
+-39323638393133333432313839623766646564303536306263363234633232326437313230383532
+-3834
+diff --git a/hosts b/hosts
+index 4c806f8..af91af1 100644
+--- a/hosts
++++ b/hosts
+@@ -15,8 +15,8 @@ wiley-swift-3 ansible_ssh_host=172.17.16.76
+ 
+ [scaleio]
+ wiley-scale-1 ansible_ssh_host=172.17.16.77
+-wiley-scale-1 ansible_ssh_host=172.17.16.78
+-wiley-scale-1 ansible_ssh_host=172.17.16.79
++wiley-scale-2 ansible_ssh_host=172.17.16.78
++wiley-scale-3 ansible_ssh_host=172.17.16.79
+ 
+ [mongodb]
+ wiley-ctlr-1 ansible_ssh_host=172.17.16.70
+diff --git a/roles/glance/tasks/cluster-constraints.yml b/roles/glance/tasks/cluster-constraints.yml
+index 24a94ef..eb959b1 100644
+--- a/roles/glance/tasks/cluster-constraints.yml
++++ b/roles/glance/tasks/cluster-constraints.yml
+@@ -1,10 +1,16 @@
+ ---
++- name: create pacemaker constraints for glance-fs
++  shell: pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}
++  with_items:
++    - { id: order-glance-fs-clone-glance-registry-clone-mandatory, cmd: "order start glance-fs-clone then glance-registry-clone" }
++    - { id: colocation-glance-registry-clone-glance-fs-clone-mandatory, cmd: "colocation add glance-registry-clone with glance-fs-clone" }  
++  when: default_store == 'file' and ansible_distribution_major_version|int == 7 
++  tags: glance
++
+ - name: create pacemaker constraints for glance
+   shell: pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}
+   with_items:
+     - { id: order-keystone-clone-glance-registry-clone-mandatory, cmd: "order start keystone-clone then glance-registry-clone" }
+-    - { id: order-glance-fs-clone-glance-registry-clone-mandatory, cmd: "order start glance-fs-clone then glance-registry-clone" }
+-    - { id: colocation-glance-registry-clone-glance-fs-clone-mandatory, cmd: "colocation add glance-registry-clone with glance-fs-clone" }
+     - { id: order-glance-registry-clone-glance-api-clone-mandatory, cmd: "order start glance-registry-clone then glance-api-clone" }
+     - { id: colocation-glance-api-clone-glance-registry-clone-mandatory, cmd: "colocation add glance-api-clone with glance-registry-clone" }
+   run_once: true
+diff --git a/roles/glance/tasks/main.yml b/roles/glance/tasks/main.yml
+index c2a6eb9..87b6f1f 100644
+--- a/roles/glance/tasks/main.yml
++++ b/roles/glance/tasks/main.yml
+@@ -28,14 +28,13 @@
+     - "keystone_authtoken admin_tenant_name services"
+     - "keystone_authtoken admin_user glance"
+     - "keystone_authtoken admin_password {{ glance_pass }}"
+-    - "glance_store filesystem_store_datadir {{ glance_datadir }}"
+     - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
+     - "DEFAULT rabbit_port {{ rabbit_port }}"
+     - "DEFAULT rabbit_ha_queues true"
+     - "DEFAULT notification_driver messaging"
+     - "DEFAULT registry_host {{ glance_vip }}"
+     - "DEFAULT bind_host {{ glance_bind_host }}"
+-    - "DEFAULT bind_port {{ glance_api_port }}"
++  #  - "DEFAULT bind_port {{ glance_api_port }}"
+   register: cmd
+   changed_when: "'unchanged' not in cmd.stderr"
+   when: openstack_release == 'juno'
+@@ -57,7 +56,7 @@
+     - "DEFAULT notification_driver messaging"
+     - "DEFAULT registry_host {{ glance_vip }}"
+     - "DEFAULT bind_host {{ glance_bind_host }}"
+-    - "DEFAULT bind_port {{ glance_registry_port }}"
++  #  - "DEFAULT bind_port {{ glance_registry_port }}"
+   register: cmd
+   changed_when: "'unchanged' not in cmd.stderr"
+   when: openstack_release == 'juno'
+@@ -140,7 +139,7 @@
+         options:
+           start-delay: 10s
+   run_once: true
+-  when: ansible_distribution_major_version|int == 7
++  when: default_store == 'file' and ansible_distribution_major_version|int == 7
+   tags: glance
+ 
+ - include: rhel6-havana-cluster-resources.yml
+diff --git a/roles/haproxy/templates/haproxy.cfg.j2 b/roles/haproxy/templates/haproxy.cfg.j2
+index 8229a2e..669b763 100644
+--- a/roles/haproxy/templates/haproxy.cfg.j2
++++ b/roles/haproxy/templates/haproxy.cfg.j2
+@@ -80,12 +80,12 @@ backend keystone
+ {% endfor %}
+ 
+ frontend  vip-glance-api-pub
+-    bind {{ glance_public_vip }}:9191
++    bind {{ glance_public_vip }}:9292
+     default_backend glance-api
+ 
+ {% if glance_public_vip != glance_private_vip %}
+ frontend  vip-glance-api-int
+-    bind {{ glance_private_vip }}:9191
++    bind {{ glance_private_vip }}:9292
+     default_backend glance-api
+ {% endif %}
+ 
+@@ -96,19 +96,19 @@ backend glance-api
+ {% endfor %}
+ 
+ frontend vip-glance-registry-pub
+-    bind {{ glance_public_vip }}:9292
++    bind {{ glance_public_vip }}:9191
+     default_backend glance-registry
+ 
+ {% if glance_public_vip != glance_private_vip %}
+ frontend vip-glance-registry-int
+-    bind {{ glance_private_vip }}:9292
++    bind {{ glance_private_vip }}:9191
+     default_backend glance-registry
+ {% endif %}
+ 
+ backend glance-registry
+     balance roundrobin
+ {% for node in controller_nodes %}
+-    server {{ node.name }} {{ node.addr_int }}:9292 check inter 1s
++    server {{ node.name }} {{ node.addr_int }}:9191 check inter 1s
+ {% endfor %}
+ 
+ frontend vip-cinder-pub
+diff --git a/roles/keystone/tasks/keystone_juno.yml b/roles/keystone/tasks/keystone_juno.yml
+index 7f8ba99..834cc12 100644
+--- a/roles/keystone/tasks/keystone_juno.yml
++++ b/roles/keystone/tasks/keystone_juno.yml
+@@ -85,8 +85,8 @@
+   run_once: true
+   tags: keystone
+ 
+-- name: create the SwiftOperator role
+-  keystone_user: token={{ keystone_admin_token }} role=SwiftOperator
++#- name: create the SwiftOperator role
++#  keystone_user: token={{ keystone_admin_token }} role=SwiftOperator
+ 
+ - name: create the services tenant
+   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} tenant=services tenant_description="Services Tenant"
+diff --git a/roles/mongodb/tasks/rhel7-juno-cluster-resources.yml b/roles/mongodb/tasks/rhel7-juno-cluster-resources.yml
+index 7f47a79..d63aa44 100644
+--- a/roles/mongodb/tasks/rhel7-juno-cluster-resources.yml
++++ b/roles/mongodb/tasks/rhel7-juno-cluster-resources.yml
+@@ -5,6 +5,6 @@
+     operations:
+       - action: monitor
+         options:
+-          start-delay: 300s
++          start-delay: 120s
+   run_once: true
+   tags: mongodb
+diff --git a/roles/neutron/tasks/main.yml b/roles/neutron/tasks/main.yml
+index c8f3100..577c6a8 100644
+--- a/roles/neutron/tasks/main.yml
++++ b/roles/neutron/tasks/main.yml
+@@ -119,15 +119,6 @@
+   when: (use_neutron_ovs and not use_neutron_ml2)
+   tags: neutron
+ 
+-
+-#- name: fix mess
+-#  command: openstack-config --verbose --del /etc/neutron/neutron.conf {{ item }}
+-#  with_items:
+-#  - "oslo_messaging_rabbit rabbit_ha_queues"
+-#  - "oslo_messaging_rabbit rabbit_hosts"
+-#  tags: neutron
+-#  when: openstack_release == 'juno'
+-
+ - name: Update neutron config file for Juno
+   command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
+   with_items:
+@@ -168,14 +159,6 @@
+   when: openstack_release == 'juno'
+   tags: neutron
+ 
+-
+-#- name: fix mess
+-#  command: openstack-config --verbose --del /etc/neutron/plugins/ml2/ml2_conf.ini {{ item }}
+-#  with_items:
+-#  - "ml2_type_gre tunnel_id_ranges"
+-#  tags: neutron
+-#  when: openstack_release == 'juno'
+-
+ - name: Update ml2_conf config file for Juno
+   command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini {{ item }}
+   with_items:
+@@ -278,8 +261,6 @@
+   when: openstack_release == 'juno'
+   tags: neutron
+ 
+-
+-
+ - name: create integration bridge
+   openvswitch_bridge: bridge=br-int state=present
+   when: use_neutron
+@@ -307,6 +288,15 @@
+   when: neutron_ovs_bridges is defined
+   tags: neutron
+ 
++- name: bring up bridge interfaces
++  command: ifup {{ item }}
++  with_items:
++    - "{{ neutron_ovs_tunnel_bridge }}"
++    - "{{ neutron_ovs_integration_bridge }}"
++    - "{{ neutron_external_network_bridge }}"
++  when: neutron_ovs_bridges is defined
++  tags: neutron 
++
+ - name: create a directory for the cisco nexus ssh keys
+   file: dest=/var/lib/neutron/.ssh mode=0700 owner=neutron group=neutron state=directory
+   when: use_neutron_cisco
+diff --git a/roles/subscription-manager/tasks/main.yml b/roles/subscription-manager/tasks/main.yml
+index 6c5c61c..a0b8345 100644
+--- a/roles/subscription-manager/tasks/main.yml
++++ b/roles/subscription-manager/tasks/main.yml
+@@ -2,17 +2,19 @@
+ - name: register to RHN
+   redhat_subscription:
+     state: present
+-    username: "{{rhn_user}}"
+-    password: "{{rhn_pass}}"
+-    pool: "{{pool}}"
++    username: "{{ rhn_user }}"
++    password: "{{ rhn_pass }}"
++    pool: "{{ pool }}"
+   tags: rhn
+ 
+ - name: enable repos
+-  command: > 
+-           subscription-manager repos
+-           --enable=rhel-7-server-rpms
+-           --enable=rhel-7-server-openstack-6.0-rpms
+-           --enable=rhel-server-rhscl-7-rpms
+-           --enable=rhel-ha-for-rhel-7-server-rpms
+-           --enable=rhel-7-server-optional-rpms
++  shell: "subscription-manager repos --list-enabled | grep 'Repo ID:   {{ item }}' || subscription-manager repos --enable={{ item }}"
++  with_items:
++    - rhel-7-server-rpms
++    - rhel-7-server-openstack-6.0-rpms
++    - rhel-server-rhscl-7-rpms
++    - rhel-ha-for-rhel-7-server-rpms
++    - rhel-7-server-optional-rpms
++  register: result
++  changed_when: result.stdout.find('enabled') != -1
+ 
+diff --git a/roles/swift-glance/tasks/main.yml b/roles/swift-glance/tasks/main.yml
+index 6f4b0e9..b539ee1 100644
+--- a/roles/swift-glance/tasks/main.yml
++++ b/roles/swift-glance/tasks/main.yml
+@@ -2,7 +2,7 @@
+ - name: configure glance to use swift as backend
+   command: openstack-config --set --verbose /etc/glance/glance-api.conf {{ item }}
+   with_items:
+-    - "DEFAULT stores glance.store.swift.Store"
++    - "glance_store stores glance.store.swift.Store"
+     - "DEFAULT default_store swift"
+     - "glance_store swift_store_auth_version 2"
+     - "glance_store swift_store_auth_address {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(5000) }}/v2.0"
+@@ -14,6 +14,16 @@
+   changed_when: "'unchanged' not in cmd.stderr"
+   tags: swift_glance
+ 
++
++- name: create pacemaker constraint for glance-swift backend
++  shell: pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}
++  with_items:
++    - { id: order-swift-proxy-clone-glance-api-clone-mandatory, cmd: "order start swift-proxy-clone then glance-api-clone" }
++  run_once: true
++  when: default_store == 'swift'
++  tags: glance
++
++
+ - name: restart glance
+   service: name=openstack-glance-{{ item }} state=restarted
+   with_items:
+diff --git a/scaleio.yml b/scaleio.yml
+new file mode 100644
+index 0000000..6d06f85
+--- /dev/null
++++ b/scaleio.yml
+@@ -0,0 +1,5 @@
++---
++- hosts: scaleio
++  roles:
++    - subscription-manager
++
+diff --git a/site.yml b/site.yml
+index a7a90c6..782fc8b 100644
+--- a/site.yml
++++ b/site.yml
+@@ -1,4 +1,6 @@
+ ---
+ - include: controllers.yml
+-- include: compute-nodes.yml
+ - include: swift.yml
++- include: compute-nodes.yml
++- include: scaleio.yml
++

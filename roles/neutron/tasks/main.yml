@@ -119,15 +119,6 @@
   when: (use_neutron_ovs and not use_neutron_ml2)
   tags: neutron
 
-
-#- name: fix mess
-#  command: openstack-config --verbose --del /etc/neutron/neutron.conf {{ item }}
-#  with_items:
-#  - "oslo_messaging_rabbit rabbit_ha_queues"
-#  - "oslo_messaging_rabbit rabbit_hosts"
-#  tags: neutron
-#  when: openstack_release == 'juno'
-
 - name: Update neutron config file for Juno
   command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
   with_items:
@@ -167,14 +158,6 @@
   changed_when: "'changed' in cmd.stderr"
   when: openstack_release == 'juno'
   tags: neutron
-
-
-#- name: fix mess
-#  command: openstack-config --verbose --del /etc/neutron/plugins/ml2/ml2_conf.ini {{ item }}
-#  with_items:
-#  - "ml2_type_gre tunnel_id_ranges"
-#  tags: neutron
-#  when: openstack_release == 'juno'
 
 - name: Update ml2_conf config file for Juno
   command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini {{ item }}
@@ -278,8 +261,6 @@
   when: openstack_release == 'juno'
   tags: neutron
 
-
-
 - name: create integration bridge
   openvswitch_bridge: bridge=br-int state=present
   when: use_neutron
@@ -306,6 +287,15 @@
   with_items: neutron_ovs_bridges
   when: neutron_ovs_bridges is defined
   tags: neutron
+
+- name: bring up bridge interfaces
+  command: ifup {{ item }}
+  with_items:
+    - "{{ neutron_ovs_tunnel_bridge }}"
+    - "{{ neutron_ovs_integration_bridge }}"
+    - "{{ neutron_external_network_bridge }}"
+  when: neutron_ovs_bridges is defined
+  tags: neutron 
 
 - name: create a directory for the cisco nexus ssh keys
   file: dest=/var/lib/neutron/.ssh mode=0700 owner=neutron group=neutron state=directory

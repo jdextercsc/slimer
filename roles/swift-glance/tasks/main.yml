@@ -2,7 +2,7 @@
 - name: configure glance to use swift as backend
   command: openstack-config --set --verbose /etc/glance/glance-api.conf {{ item }}
   with_items:
-    - "DEFAULT stores glance.store.swift.Store"
+    - "glance_store stores glance.store.swift.Store"
     - "DEFAULT default_store swift"
     - "glance_store swift_store_auth_version 2"
     - "glance_store swift_store_auth_address {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(5000) }}/v2.0"
@@ -13,6 +13,16 @@
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: swift_glance
+
+
+- name: create pacemaker constraint for glance-swift backend
+  shell: pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}
+  with_items:
+    - { id: order-swift-proxy-clone-glance-api-clone-mandatory, cmd: "order start swift-proxy-clone then glance-api-clone" }
+  run_once: true
+  when: default_store == 'swift'
+  tags: glance
+
 
 - name: restart glance
   service: name=openstack-glance-{{ item }} state=restarted
