@@ -28,14 +28,13 @@
     - "keystone_authtoken admin_tenant_name services"
     - "keystone_authtoken admin_user glance"
     - "keystone_authtoken admin_password {{ glance_pass }}"
-    - "glance_store filesystem_store_datadir {{ glance_datadir }}"
     - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
     - "DEFAULT rabbit_port {{ rabbit_port }}"
     - "DEFAULT rabbit_ha_queues true"
     - "DEFAULT notification_driver messaging"
     - "DEFAULT registry_host {{ glance_vip }}"
     - "DEFAULT bind_host {{ glance_bind_host }}"
-    - "DEFAULT bind_port {{ glance_api_port }}"
+  #  - "DEFAULT bind_port {{ glance_api_port }}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   when: openstack_release == 'juno'
@@ -57,7 +56,7 @@
     - "DEFAULT notification_driver messaging"
     - "DEFAULT registry_host {{ glance_vip }}"
     - "DEFAULT bind_host {{ glance_bind_host }}"
-    - "DEFAULT bind_port {{ glance_registry_port }}"
+  #  - "DEFAULT bind_port {{ glance_registry_port }}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   when: openstack_release == 'juno'
@@ -140,7 +139,7 @@
         options:
           start-delay: 10s
   run_once: true
-  when: ansible_distribution_major_version|int == 7
+  when: default_store == 'file' and ansible_distribution_major_version|int == 7
   tags: glance
 
 - include: rhel6-havana-cluster-resources.yml

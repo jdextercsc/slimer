@@ -1,4 +1,6 @@
 ---
 - include: controllers.yml
-- include: compute-nodes.yml
 - include: swift.yml
+- include: compute-nodes.yml
+- include: scaleio.yml
+

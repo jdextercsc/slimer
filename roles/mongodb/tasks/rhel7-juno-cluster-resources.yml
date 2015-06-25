@@ -5,6 +5,6 @@
     operations:
       - action: monitor
         options:
-          start-delay: 300s
+          start-delay: 120s
   run_once: true
   tags: mongodb

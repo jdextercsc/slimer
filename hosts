@@ -15,8 +15,8 @@ wiley-swift-3 ansible_ssh_host=172.17.16.76
 
 [scaleio]
 wiley-scale-1 ansible_ssh_host=172.17.16.77
-wiley-scale-1 ansible_ssh_host=172.17.16.78
-wiley-scale-1 ansible_ssh_host=172.17.16.79
+wiley-scale-2 ansible_ssh_host=172.17.16.78
+wiley-scale-3 ansible_ssh_host=172.17.16.79
 
 [mongodb]
 wiley-ctlr-1 ansible_ssh_host=172.17.16.70

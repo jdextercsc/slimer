@@ -1,0 +1,5 @@
+---
+- hosts: scaleio
+  roles:
+    - subscription-manager
+
