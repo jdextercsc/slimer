@@ -43,7 +43,7 @@
 - name: Update glance-registry config file for Juno
   command: openstack-config --verbose --set /etc/glance/glance-registry.conf {{ item }}
   with_items:
-    - "database connection mysql://glance:{{ glance_pass }}@{{ vip-db }}/glance"
+    - "database connection mysql://glance:{{ glance_db_pass }}@{{ lb_db_vip }}/glance"
     - "database max_retries -1"
     - "paste_deploy flavor keystone"
     - "keystone_authtoken identity_uri http://{{ keystone_vip }}:{{ keystone_auth_port }}"
