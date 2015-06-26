@@ -69,7 +69,7 @@
     path: "{{ glance_datadir }}"
     owner: glance
     group: nobody
-  state: directory
+    state: directory
   tags: glance
 
 - name: enable nfs support services
