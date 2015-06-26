@@ -119,6 +119,11 @@
   when: (use_neutron_ovs and not use_neutron_ml2)
   tags: neutron
 
+- name: get services id
+  shell: "keystone tenant-list --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} | grep services | gawk -F' ' '{print$2}'"
+  register: services
+  run_once: true
+
 - name: Update neutron config file for Juno
   command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
   with_items:
@@ -143,7 +148,7 @@
     - "DEFAULT nova_admin_auth_url {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
     - "DEFAULT nova_region_name {{ nova_region_name | default('regionOne') }}"
     - "DEFAULT nova_admin_username compute"
-    - "DEFAULT nova_admin_tenant_name services"
+    - "DEFAULT nova_admin_tenant_id {{ services.stdout }}"
     - "DEFAULT nova_admin_password {{ nova_pass }}"
     - "DEFAULT core_plugin {{ neutron_core_plugin }}"
     - "DEFAULT service_plugins {{ neutron_service_plugins | join(',') }}"
@@ -168,7 +173,6 @@
     - "ml2_type_vxlan vni_ranges {{ neutron_vxlan_vni_ranges }}"
     - "ml2_type_vxlan vxlan_group {{ neutron_vxlan_group }}"
     - "securitygroup enable_security_group {{ neutron_enable_security_group }}"
-    - "securitygroup firewall_driver True"
     - "ml2_type_vlan network_vlan_ranges {{ neutron_network_vlan_ranges }}"
   register: cmd
   changed_when: "'changed' in cmd.stderr"
@@ -338,12 +342,8 @@
     - neutron-metadata-agent
     - neutron-l3-agent
     - neutron-lbaas-agent
+    - neutron-openvswitch-agent
   when: use_neutron and use_ha_controller
-  tags: neutron
-
-- name: disable neutron-openvswitch-agent
-  service: name=neutron-openvswitch-agent enabled=no
-  when: use_neutron_ovs and use_ha_controller
   tags: neutron
 
 - name: enable neutron services
@@ -354,12 +354,21 @@
     - neutron-metadata-agent
     - neutron-l3-agent
     - neutron-lbaas-agent
+    - neutron-openvswitch-agent
   when: use_neutron and not use_ha_controller
+  run_once: true
   tags: neutron
 
-- name: enable neutron-openvswitch-agent
-  service: name=neutron-openvswitch-agent enabled=yes state=started
-  when: use_neutron_ovs and not use_ha_controller
+- name: disable neutron services
+  service: name={{ item }} enabled=no state=stopped
+  with_items:
+    - neutron-server
+    - neutron-dhcp-agent
+    - neutron-metadata-agent
+    - neutron-l3-agent
+    - neutron-lbaas-agent
+    - neutron-openvswitch-agent
+  when: use_neutron and not use_ha_controller
   tags: neutron
 
 - include: juno-cluster-resources.yml

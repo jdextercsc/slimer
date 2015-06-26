@@ -3,8 +3,8 @@
   shell: pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}
   with_items:
     - { id: order-glance-fs-clone-glance-registry-clone-mandatory, cmd: "order start glance-fs-clone then glance-registry-clone" }
-    - { id: colocation-glance-registry-clone-glance-fs-clone-mandatory, cmd: "colocation add glance-registry-clone with glance-fs-clone" }  
-  when: default_store == 'file' and ansible_distribution_major_version|int == 7 
+    - { id: colocation-glance-registry-clone-glance-fs-clone-mandatory, cmd: "colocation add glance-registry-clone with glance-fs-clone" }
+  when: default_store == 'file' and ansible_distribution_major_version|int == 7
   tags: glance
 
 - name: create pacemaker constraints for glance

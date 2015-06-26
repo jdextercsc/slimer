@@ -9,7 +9,7 @@
   notify: reload kernel parameters with systemctl
   tags: haproxy
 
-- name: set sysctl parameters 
+- name: set sysctl parameters
   lineinfile: dest=/etc/sysctl.conf
               regexp=^net.ipv4.ip_nonlocal_bind
               line="net.ipv4.ip_nonlocal_bind = 1"
