@@ -102,9 +102,6 @@
 
 - hosts: controller
   roles:
-    - subscription-manager
-    - common
-    - openstack-common
     - pacemaker
     - haproxy
     - memcached
