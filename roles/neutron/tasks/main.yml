@@ -127,7 +127,6 @@
 - name: Update neutron config file for Juno
   command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
   with_items:
-<<<<<<< HEAD
     - "DEFAULT verbose true"
     - "DEFAULT bind_host {{ neutron_bind_host }}"
     - "DEFAULT auth_strategy {{ neutron_auth_strategy }}"
@@ -149,7 +148,7 @@
     - "DEFAULT nova_admin_auth_url {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
     - "DEFAULT nova_region_name {{ nova_region_name | default('regionOne') }}"
     - "DEFAULT nova_admin_username compute"
-    - "DEFAULT nova_admin_tenant_name services"
+    - "DEFAULT nova_admin_tenant_id {{ services.stdout }}"
     - "DEFAULT nova_admin_password {{ nova_pass }}"
     - "DEFAULT core_plugin {{ neutron_core_plugin }}"
     - "DEFAULT service_plugins {{ neutron_service_plugins | join(',') }}"
@@ -158,38 +157,6 @@
     - "DEFAULT max_l3_agents_per_router 0"
     - "DEFAULT min_l3_agents_per_router 2"
     - "DEFAULT dhcp_agents_per_network {{ neutron_dhcp_agents_per_network }}"
-=======
-  - "DEFAULT verbose true"
-  - "DEFAULT bind_host {{ neutron_bind_host }}"
-  - "DEFAULT auth_strategy {{ neutron_auth_strategy }}"
-  - "keystone_authtoken admin_tenant_name services"
-  - "keystone_authtoken admin_user neutron"
-  - "keystone_authtoken admin_password {{ neutron_pass }}"
-  - "keystone_authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
-  - "keystone_authtoken identity_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/"
-  - "database connection mysql://neutron:{{ neutron_db_pass }}@{{ lb_db_vip }}/neutron"
-  - "database max_retries -1"
-  - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
-  - "DEFAULT rabbit_ha_queues true"
-  - "DEFAULT rabbit_userid guest"
-  - "DEFAULT rabbit_password guest"
-  - "DEFAULT notification_driver {{ neutron_notification_driver }}"
-  - "DEFAULT nova_url http://{{ nova_private_vip | default('127.0.0.1') }}:{{ nova_osapi_compute_listen_port | default(8774) }}/v2"
-  - "DEFAULT notify_nova_on_port_status_changes {{ neutron_notify_nova_on_port_status_changes }}"
-  - "DEFAULT notify_nova_on_port_data_changes {{ neutron_notify_nova_on_port_data_changes }}"
-  - "DEFAULT nova_admin_auth_url {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
-  - "DEFAULT nova_region_name {{ nova_region_name | default('regionOne') }}"
-  - "DEFAULT nova_admin_username compute"
-  - "DEFAULT nova_admin_tenant_id {{ services.stdout }}"
-  - "DEFAULT nova_admin_password {{ nova_pass }}"
-  - "DEFAULT core_plugin {{ neutron_core_plugin }}"
-  - "DEFAULT service_plugins {{ neutron_service_plugins | join(',') }}"
-  - "DEFAULT router_scheduler_driver {{ neutron_router_scheduler_driver }}"
-  - "DEFAULT l3_ha True"
-  - "DEFAULT max_l3_agents_per_router 0"
-  - "DEFAULT min_l3_agents_per_router 2"
-  - "DEFAULT dhcp_agents_per_network {{ neutron_dhcp_agents_per_network }}"
->>>>>>> Debugging from 06-26
   register: cmd
   changed_when: "'changed' in cmd.stderr"
   when: openstack_release == 'juno'
@@ -198,7 +165,6 @@
 - name: Update ml2_conf config file for Juno
   command: openstack-config --verbose --set /etc/neutron/plugins/ml2/ml2_conf.ini {{ item }}
   with_items:
-<<<<<<< HEAD
     - "DEFAULT verbose true"
     - "ml2 type_drivers {{ neutron_ml2_type_drivers }}"
     - "ml2 tenant_network_types {{ neutron_ml2_tenant_network_types }}"
@@ -207,18 +173,7 @@
     - "ml2_type_vxlan vni_ranges {{ neutron_vxlan_vni_ranges }}"
     - "ml2_type_vxlan vxlan_group {{ neutron_vxlan_group }}"
     - "securitygroup enable_security_group {{ neutron_enable_security_group }}"
-    - "securitygroup firewall_driver True"
     - "ml2_type_vlan network_vlan_ranges {{ neutron_network_vlan_ranges }}"
-=======
-  - "ml2 type_drivers {{ neutron_ml2_type_drivers }}"
-  - "ml2 tenant_network_types {{ neutron_ml2_tenant_network_types }}"
-  - "ml2 mechanism_drivers openvswitch"
-  - "ml2_type_flat flat_networks \"*\""
-  - "ml2_type_vxlan vni_ranges {{ neutron_vxlan_vni_ranges }}"
-  - "ml2_type_vxlan vxlan_group {{ neutron_vxlan_group }}"
-  - "securitygroup enable_security_group {{ neutron_enable_security_group }}"
-  - "ml2_type_vlan network_vlan_ranges {{ neutron_network_vlan_ranges }}"
->>>>>>> Debugging from 06-26
   register: cmd
   changed_when: "'changed' in cmd.stderr"
   when: openstack_release == 'juno'
