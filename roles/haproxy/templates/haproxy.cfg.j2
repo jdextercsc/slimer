@@ -92,7 +92,7 @@ frontend  vip-glance-api-int
 backend glance-api
     balance roundrobin
 {% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:9191 check inter 1s
+    server {{ node.name }} {{ node.addr_int }}:9292 check inter 1s
 {% endfor %}
 
 frontend vip-glance-registry-pub
