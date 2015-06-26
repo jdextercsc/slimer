@@ -15,6 +15,7 @@
 - name: Update nova.conf file for Juno
   command: openstack-config --verbose --set /etc/nova/nova.conf {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "DEFAULT vncserver_proxyclient_address {{ internal_ipaddr }}"
     - "DEFAULT vncserver_listen {{ internal_ipaddr }}"
     - "DEFAULT novncproxy_host {{ internal_ipaddr }}"

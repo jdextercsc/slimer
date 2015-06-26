@@ -63,6 +63,7 @@
 - name: modify libvirtd.conf parameters with openstack-config
   command: openstack-config --verbose --set /etc/libvirt/libvirtd.conf {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "'' listen_tls 0"
     - "'' listen_tcp 1"
     - "'' auth_tcp none"
@@ -127,6 +128,7 @@
 - name: Update neutron.conf file for Juno
   command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "DEFAULT auth_strategy keystone"
     - "keystone_authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
     - "keystone_authtoken auth_port {{ keystone_auth_port | default(35357) }}"
@@ -144,6 +146,7 @@
 - name: Update ovs_neutron_plugin.ini file for Juno
   command: openstack-config --verbose --set /etc/neutron//plugins/openvswitch/ovs_neutron_plugin.ini {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "agent tunnel_types {{ neutron_ovs_tunnel_type }}"
     - "agent vxlan_udp_port {{ neutron_vxlan_udp_port }}"
     - "ovs enable_tunneling True"
@@ -162,6 +165,7 @@
 - name: Update nova.conf file for Juno
   command: openstack-config --verbose --set /etc/nova/nova.conf {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "DEFAULT vncserver_proxyclient_address {{ internal_ipaddr }}"
     - "DEFAULT vncserver_listen {{ internal_ipaddr }}"
     - "DEFAULT novncproxy_base_url http://{{ nova_public_vip }}:6080/vnc_auto.html"
@@ -212,6 +216,7 @@
 - name: Update ceilometer.conf file for Juno
   command: openstack-config --verbose --set /etc/ceilometer/ceilometer.conf {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "keystone_authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
     - "keystone_authtoken auth_port {{ keystone_auth_port | default(35357) }}"
     - "keystone_authtoken auth_protocol {{ keystone_auth_protocol | default('http') }}"

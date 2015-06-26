@@ -2,6 +2,7 @@
 - name: configure glance to use swift as backend
   command: openstack-config --set --verbose /etc/glance/glance-api.conf {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "glance_store stores glance.store.swift.Store"
     - "DEFAULT default_store swift"
     - "glance_store swift_store_auth_version 2"

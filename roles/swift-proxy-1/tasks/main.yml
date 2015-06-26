@@ -13,6 +13,7 @@
 - name: configure /etc/swift/proxy-server.conf
   command: openstack-config --set --verbose /etc/swift/proxy-server.conf {{item}}
   with_items:
+    - "DEFAULT verbose true"
     - "filter:authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
     - "filter:authtoken auth_host {{keystone_public_vip}}"
     - "filter:authtoken cache swift.cache"
@@ -28,6 +29,7 @@
 - name: configure /etc/swift/proxy-server.conf
   command: openstack-config --set --verbose /etc/swift/object-expirer.conf {{item}}
   with_items:
+    - "DEFAULT verbose true"
     - "object-expirer concurrency 100"
     - "filter:cache memcache_servers {{ memcache_list }}"
   register: cmd

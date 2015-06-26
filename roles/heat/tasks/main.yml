@@ -24,6 +24,7 @@
 - name: Update heat config file for Juno
   command: openstack-config --verbose --set /etc/heat/heat.conf {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "database connection mysql://heat:{{ heat_db_pass }}@{{ lb_db_vip }}/heat"
     - "database max_retries -1"
     - "keystone_authtoken admin_tenant_name services"
