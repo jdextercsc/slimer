@@ -277,7 +277,7 @@
   tags: keystone
 
 - name: create swift endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service swift  --publicurl "http://{{ swift_public_vip }}:8080/v1/AUTH_\%(tenant_id)s" --adminurl "http://{{ swift_admin_vip }}:8080" --internalurl "http://{{swift_private_vip }}:8080/v1/AUTH_\%(tenant_id)s"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service swift  --publicurl "http://{{ swift_public_vip }}:8080/v1/AUTH_%(tenant_id)s" --adminurl "http://{{ swift_admin_vip }}:8080" --internalurl "http://{{swift_private_vip }}:8080/v1/AUTH_%(tenant_id)s"
   run_once: true
   when: use_swift
   tags:

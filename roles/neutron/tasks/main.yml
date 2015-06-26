@@ -122,6 +122,7 @@
 - name: Update neutron config file for Juno
   command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
   with_items:
+  - "DEFAULT verbose true"
   - "DEFAULT bind_host {{ neutron_bind_host }}"
   - "DEFAULT auth_strategy {{ neutron_auth_strategy }}"
   - "keystone_authtoken admin_tenant_name services"
@@ -139,14 +140,11 @@
   - "DEFAULT nova_url http://{{ nova_private_vip | default('127.0.0.1') }}:{{ nova_osapi_compute_listen_port | default(8774) }}/v2"
   - "DEFAULT notify_nova_on_port_status_changes {{ neutron_notify_nova_on_port_status_changes }}"
   - "DEFAULT notify_nova_on_port_data_changes {{ neutron_notify_nova_on_port_data_changes }}"
-  - "nova auth_url {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
-  - "nova auth_plugin password"
-  - "nova project_domain_id default"
-  - "nova user_domain_id default"
-  - "nova region_name {{ nova_region_name | default('regionOne') }}"
-  - "nova project_name services"
-  - "nova username compute"
-  - "nova password {{ nova_pass }}"
+  - "DEFAULT nova_admin_auth_url {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
+  - "DEFAULT nova_region_name {{ nova_region_name | default('regionOne') }}"
+  - "DEFAULT nova_admin_username compute"
+  - "DEFAULT nova_admin_tenant_name services"
+  - "DEFAULT nova_admin_password {{ nova_pass }}"
   - "DEFAULT core_plugin {{ neutron_core_plugin }}"
   - "DEFAULT service_plugins {{ neutron_service_plugins | join(',') }}"
   - "DEFAULT router_scheduler_driver {{ neutron_router_scheduler_driver }}"
