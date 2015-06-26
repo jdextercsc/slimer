@@ -389,7 +389,7 @@ neutron_ovs_bridges:
 neutron_external_network_bridge: "br-ex"
 
 # disable security groups
-neutron_ovs_firewall_driver: "neutron.agent.firewall.NoopFirewallDriver"
+neutron_ovs_firewall_driver: "neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver"
 neutron_agent_tunnel_types: vxlan
 
 # Cisco Nexus standalone plugin for Neutron
