@@ -1,5 +1,5 @@
 ---
-- hosts: compute
+- hosts: scaleio 
   roles:
     - role: iface
       device: p3p1
@@ -61,35 +61,3 @@
         peerdns: '"no"'
         mtu: 9000
 
-    - role: iface
-      device: "bond0.{{ ext_if.vlan }}"
-      params:
-        type: Ethernet
-        vlan: '"yes"'
-        nozeroconf: '"yes"'
-        bootproto: static
-        ipaddr: "{{ ext_if.ipaddr }}"
-        netmask: "{{ ext_if.netmask }}"
-        onboot: '"yes"'
-        peerdns: '"no"'
-        mtu: 9000
-
-    - role: iface
-      device: "bond0.{{ tun_if.vlan }}"
-      params:
-        type: Ethernet
-        vlan: '"yes"'
-        nozeroconf: '"yes"'
-        bootproto: static
-        ipaddr: "{{ tun_if.ipaddr }}"
-        netmask: "{{ tun_if.netmask }}"
-        onboot: '"yes"'
-        peerdns: '"no"'
-        mtu: 9000
-
-- hosts: compute
-  roles:
-    - ceilometer-common
-    - ceilometer-compute
-    - nova-common
-    - nova-compute
