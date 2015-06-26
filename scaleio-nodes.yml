@@ -1,0 +1,58 @@
+---
+- hosts: scaleio 
+  roles:
+    - role: iface
+      device: p3p1
+      params:
+        type: Ethernet
+        bootproto: none
+        onboot: '"yes"'
+        peerdns: '"no"'
+        master: bond0
+        slave: '"yes"'
+
+    - role: iface
+      device: p3p2
+      params:
+        type: Ethernet
+        bootproto: none
+        onboot: '"yes"'
+        peerdns: '"no"'
+        master: bond0
+        slave: '"yes"'
+
+    - role: iface
+      device: bond0
+      params:
+        nozeroconf: '"yes"'
+        bootproto: none
+        bonding_opts: '"miimon=100 mode=802.3ad"'
+        onboot: '"yes"'
+        peerdns: '"no"'
+
+    - role: iface
+      device: "bond0.{{ int_if.vlan }}"
+      params:
+        type: Ethernet
+        vlan: '"yes"'
+        nozeroconf: '"yes"'
+        bootproto: static
+        ipaddr: "{{ int_if.ipaddr }}"
+        netmask: "{{ int_if.netmask }}"
+        gateway: "{{ int_if.gateway }}"
+        defroute: '"yes"'
+        onboot: '"yes"'
+        peerdns: '"no"'
+
+    - role: iface
+      device: "bond0.{{ storage_if.vlan }}"
+      params:
+        type: Ethernet
+        vlan: '"yes"'
+        nozeroconf: '"yes"'
+        bootproto: static
+        ipaddr: "{{ storage_if.ipaddr }}"
+        netmask: "{{ storage_if.netmask }}"
+        onboot: '"yes"'
+        peerdns: '"no"'
+
