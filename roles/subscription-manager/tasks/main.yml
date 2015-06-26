@@ -1,4 +1,7 @@
 ---
+- name: Load Credentials
+  include_vars: ~/sub_mgr_creds.yml
+
 - name: register to RHN
   redhat_subscription:
     state: present

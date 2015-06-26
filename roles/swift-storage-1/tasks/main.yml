@@ -17,6 +17,7 @@
 - name: configure swift-object-server
   command: openstack-config --set --verbose /etc/swift/object-server.conf {{item}}
   with_items:
+    - "DEFAULT verbose true"
     - "DEFAULT bind_ip {{internal_ipaddr}}"
     - "DEFAULT log_name object-server"
     - "DEFAULT log_facility LOG_LOCAL2"
@@ -29,6 +30,7 @@
 - name: configure swift-object-server
   command: openstack-config --set --verbose /etc/swift/account-server.conf {{item}}
   with_items:
+    - "DEFAULT verbose true"
     - "DEFAULT bind_ip {{internal_ipaddr}}"
     - "DEFAULT log_name account-server"
     - "DEFAULT log_facility LOG_LOCAL2"
@@ -41,6 +43,7 @@
 - name: configure swift-object-server
   command: openstack-config --set --verbose /etc/swift/container-server.conf {{item}}
   with_items:
+    - "DEFAULT verbose true"
     - "DEFAULT bind_ip {{internal_ipaddr}}"
     - "DEFAULT log_name container-server"
     - "DEFAULT log_facility LOG_LOCAL2"

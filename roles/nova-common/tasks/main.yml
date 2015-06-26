@@ -26,6 +26,7 @@
 - name: Update api-paste.ini file for Juno
   command: openstack-config --verbose --set /etc/nova/api-paste.ini {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "filter:authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
     - "filter:authtoken admin_tenant_name services"
     - "filter:authtoken admin_user compute"

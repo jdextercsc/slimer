@@ -14,6 +14,7 @@
 - name: configure base cinder via openstack-config utility
   command: openstack-config --set --verbose /etc/cinder/cinder.conf {{item}}
   with_items:
+    - "DEFAULT verbose true"
     - "database connection mysql://cinder:{{ cinder_db_pass }}@{{ lb_db_vip}}/cinder"
     - "database max_retries -1"
     - "DEFAULT auth_strategy keystone"
@@ -38,6 +39,7 @@
 - name: configure cinder nfs driver via openstack-config utility
   command: openstack-config --set --verbose /etc/cinder/cinder.conf {{item}}
   with_items:
+    - "DEFAULT verbose true"
     - "DEFAULT nfs_shares_config /etc/cinder/nfs_exports"
     - "DEFAULT nfs_sparsed_volumes true"
     - "DEFAULT nfs_mount_options v3"

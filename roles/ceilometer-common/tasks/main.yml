@@ -17,6 +17,7 @@
 - name: Update ceilometer config file for Juno
   command: openstack-config --verbose --set /etc/ceilometer/ceilometer.conf {{ item }}
   with_items:
+    - "DEFAULT verbose true"
     - "keystone_authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
     - "keystone_authtoken auth_port {{ keystone_auth_port | default(35357) }}"
     - "keystone_authtoken auth_protocol {{ keystone_auth_protocol | default('http') }}"
