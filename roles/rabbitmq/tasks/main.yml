@@ -22,16 +22,10 @@
   notify: change selinux context of the custome rabbitmq-server.service file
   tags: rabbitmq
 
-- name: generate erlang cookie file on the first controller
-  command: creates=/var/lib/rabbitmq/.erlang.cookie systemctl start rabbitmq-server
-  run_once: true
-  when: ansible_distribution_major_version|int == 7
-  tags: rabbitmq
-
-- name: generate erlang cookie file on the first controller
-  command: creates=/var/lib/rabbitmq/.erlang.cookie service rabbitmq-server start
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
+- name: start rabbitmq to generate erlang cookie file on the first controller
+  service:
+    name: rabbitmq-server
+    state: started
   tags: rabbitmq
 
 - name: fetch erlang cookie file from the first controller

@@ -65,11 +65,11 @@
   tags: glance
 
 - name: create the NFS share mountpoint on the nfs server
-  command: mkdir -p {{ glance_datadir }}
-  tags: glance
-
-- name: change properties on glance_datadir
-  command: chown glance:nobody {{ glance_datadir }}
+  file:
+    path: "{{ glance_datadir }}"
+    owner: glance
+    group: nobody
+  state: directory
   tags: glance
 
 - name: enable nfs support services

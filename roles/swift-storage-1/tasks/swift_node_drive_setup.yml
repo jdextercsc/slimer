@@ -15,7 +15,7 @@
   tags: swift
 
 - name: create mount point
-  file: path=/srv/node/{{item}}} state=directory owner=swift group=swift
+  file: path=/srv/node/{{item}} state=directory owner=swift group=swift
   with_items: "{{ swift_data_disks }}"
   tags: swift
 

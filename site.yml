@@ -1,6 +1,8 @@
 ---
 
-- hosts: all
+- hosts:
+    - openstack
+    - scaleio
   roles:
     - subscription-manager
     - common
