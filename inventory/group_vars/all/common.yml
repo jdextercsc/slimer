@@ -276,6 +276,9 @@ vip_addresses:
   - name: vip-swift-int
     addr: 172.17.17.111
 
+  - name: vip-scaleio-int
+    addr: 172.17.17.112
+
 #  - name: vip-keystone-pub
 #    addr: 172.17.20.103
 
@@ -310,6 +313,7 @@ horizon_vip: 172.17.17.108
 heat_vip: 172.17.17.109
 ceilometer_vip: 172.17.17.110
 swift_vip: 172.17.17.111
+scaleio_vip: 172.17.17.112
 
 swift_public_vip: "{{ swift_vip }}"
 swift_admin_vip: "{{ swift_vip }}"
