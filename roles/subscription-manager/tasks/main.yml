@@ -1,6 +1,7 @@
 ---
 - name: Load Credentials
   include_vars: ~/sub_mgr_creds.yml
+  tags: sub-mgr
 
 - name: register to RHN
   redhat_subscription:
@@ -8,7 +9,7 @@
     username: "{{ rhn_user }}"
     password: "{{ rhn_pass }}"
     pool: "{{ pool }}"
-  tags: rhn
+  tags: sub-mgr
 
 - name: enable repos
   shell: "subscription-manager repos --list-enabled | grep 'Repo ID:   {{ item }}' || subscription-manager repos --enable={{ item }}"
@@ -20,4 +21,4 @@
     - rhel-7-server-optional-rpms
   register: result
   changed_when: result.stdout.find('enabled') != -1
-
+  tags: sub-mgr

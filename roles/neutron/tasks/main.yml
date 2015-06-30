@@ -185,6 +185,7 @@
     - "DEFAULT verbose true"
     - "agent tunnel_types {{ neutron_agent_tunnel_types }}"
     - "agent vxlan_udp_port {{ neutron_vxlan_udp_port }}"
+    - "agent veth_mtu 9000"
     - "ovs local_ip {{ tunnel_ipaddr }}"
     - "ovs enable_tunneling True"
     - "ovs integration_bridge br-int"

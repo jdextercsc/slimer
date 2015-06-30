@@ -1,8 +1,8 @@
 ---
-- hosts: scaleio 
+- hosts: scaleio
   roles:
     - role: iface
-      device: p3p1
+      device: p4p1
       params:
         type: Ethernet
         bootproto: none
@@ -13,7 +13,7 @@
         mtu: 9000
 
     - role: iface
-      device: p3p2
+      device: p4p2
       params:
         type: Ethernet
         bootproto: none
