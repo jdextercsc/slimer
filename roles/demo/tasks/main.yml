@@ -1,5 +1,10 @@
 ---
 # setups up test network for demo
+- name: deploy the keystonerc_demo file
+  template: src=keystonerc_demo.j2
+            dest=/root/keystonerc_demo
+            mode=0750 owner=root group=root
+  tags: demo
 
 - name: create demo project
   keystone_user:
@@ -24,11 +29,31 @@
   run_once: true
   tags: demo
 
+- name: create demo user
+  keystone_user:
+    login_password: "{{admin_pass}}"
+    endpoint: "{{keystone_adminurl}}"
+    login_user: "{{admin_user}}"
+    login_tenant_name: "{{admin_tenant}}"
+    user: "{{demo_user}}"
+    password: "{{demo_pass}}"
+    tenant: "{{demo_tenant}}"
+    role: "_member_"
+  run_once: true
+  tags: demo
+
+- name: check for external network
+  command: neutron {{os_admin_auth}} net-list
+  register: cmd
+  run_once: true
+  tags: demo
+
 - name: create External Network.
   command: >
     neutron {{os_admin_auth}}
     net-create {{ext_net_name}}
   run_once: true
+  when: "{{ext_net_name}}" not in netcheck.stdout
   tags: demo
 
 - name: create external Subnet.
@@ -40,6 +65,7 @@
     --allocation-pool start={{ext_allocation.start}},end={{ext_allocation.end}}
     --disable-dhcp
     {{ext_network}}
+  when: "{{ext_network}}" not in netcheck.stdout
   run_once: true
   tags: demo
 
@@ -54,6 +80,7 @@
     neutron
     {{os_demo_auth}}
     net-create {{int_net_name}}
+  when: "{{int_net_name}}" not in netcheck.stdout
   run_once: true
   tags: demo
 
@@ -64,6 +91,7 @@
     subnet-create
     {{int_net_name}} {{int_network}}
   run_once: true
+  when: "{{int_network}}" not in netcheck.stdout
   tags: demo
 
 - name: get external network ID
