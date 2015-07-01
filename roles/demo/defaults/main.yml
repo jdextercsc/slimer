@@ -1,2 +1,15 @@
 keystone_auth_protocol: http
 keystone_auth_port: 35357
+admin_user: admin
+admin_tenant: admin
+demo_user: admin
+demo_tenant: demo
+ext_net_name: external
+ext_gateway: 172.17.21.1
+ext_network: 172.17.21.0/24
+ext_allocation:
+  start: 172.17.21.100
+  end: 172.17.21.200
+int_net_name: internal_net
+int_network: 192.168.101.0/24
+router_name: rotuer-1

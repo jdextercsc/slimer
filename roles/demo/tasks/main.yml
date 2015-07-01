@@ -5,9 +5,9 @@
   keystone_user:
     login_password: "{{admin_pass}}"
     endpoint: "{{keystone_adminurl}}"
-    login_user: admin   
-    login_tenant_name: admin
-    tenant: demo
+    login_user: "{{admin_user}}"
+    login_tenant_name: "{{admin_tenant}}"
+    tenant: "{{demo_tenant}}"
     tenant_description: "demo tenant"
   run_once: true
   tags: demo
@@ -15,84 +15,77 @@
 - name: add admin to demo tenant
   keystone_user:
     login_password: "{{admin_pass}}"
-    endpoint: "{{ keystone_adminurl }}"
-    login_user: admin
-    login_tenant_name: admin
-    user: admin
-    tenant: demo
+    endpoint: "{{keystone_adminurl}}"
+    login_user: "{{admin_user}}"
+    login_tenant_name: "{{admin_tenant}}"
+    tenant: "{{demo_tenant}}"
+    user: "{{demo_user}}"
     role: "_member_"
   run_once: true
   tags: demo
 
 - name: create External Network.
   command: >
-    neutron
-    --os-auth-url "{{ keystone_adminurl}}"
-    --os-tenant-name admin
-    --os-username admin
-    --os-password {{admin_pass}}
-    net-create External
+    neutron {{os_admin_auth}}
+    net-create {{ext_net_name}}
   run_once: true
   tags: demo
 
 - name: create external Subnet.
   command: >
     neutron
-    --os-auth-url "{{ keystone_adminurl}}"
-    --os-tenant-name admin
-    --os-username admin
-    --os-password {{admin_pass}}
-    subnet-create External 
-    --name ext_sub
-    --gateway 172.17.21.1
-    --allocation-pool start=172.17.21.100,end=172.17.21.200
-    --disable-dhcp 
-    172.17.21.0/24
+    {{os_admin_auth}}
+    subnet-create {{ext_net_name}}
+    --gateway {{ext_gateway}}
+    --allocation-pool start={{ext_allocation.start}},end={{ext_allocation.end}}
+    --disable-dhcp
+    {{ext_network}}
+  run_once: true
+  tags: demo
+
+- name: get external network ID
+  shell: $(neutron net-list | grep {{ext_net_name}} | gawk -F' ' '{print $2}')"
+  register: external_id
   run_once: true
   tags: demo
 
 - name: create internal Network.
   command: >
     neutron
-    --os-auth-url "{{ keystone_adminurl}}"
-    --os-tenant-name demo
-    --os-username admin
-    --os-password {{admin_pass}}
-    net-create internal_demo
+    {{os_demo_auth}}
+    net-create {{int_net_name}}
   run_once: true
   tags: demo
 
 - name: create internal Subnet.
   command: >
     neutron
-    --os-auth-url "{{ keystone_adminurl}}"
-    --os-tenant-name demo
-    --os-username admin
-    --os-password {{admin_pass}}
-    subnet-create 
-    --name int_sub
-    internal_demo 192.168.100.0/24
+    {{os_demo_auth}}
+    subnet-create
+    {{int_net_name}} {{int_network}}
+  run_once: true
+  tags: demo
+
+- name: get external network ID
+  shell: $(neutron net-list | grep {{int_net_name}} | gawk -F' ' '{print $2}')
+  register: internal_id
   run_once: true
   tags: demo
 
 - name: create router
   command: >
     neutron
-    --os-auth-url "{{ keystone_adminurl}}"
-    --os-tenant-name demo
-    --os-username admin
-    --os-password {{admin_pass}}
-    router-create demo-router
+    {{os_demo_auth}}
+    router-create {{router_name}}
   run_once: true
   tags: demo
 
 - name: set router-gateway
-  shell: "neutron --os-auth-url {{ keystone_adminurl}}  --os-tenant-name demo --os-username admin --os-password {{admin_pass}}  router-gateway-set $(router-list | grep demo-router| gwak -F' ' '{print $2}')  $(neutron net-list | grep External | gawk -F' ' '{print $2}')"
+  command: neutron {{os_demo_auth}} router-gateway-set {{router_name}} {{external_id.stdout}}
   run_once: true
-  tags: demo 
+  tags: demo
 
 - name: set internal router inteface in demo
-  shell:  "neutron --os-auth-url {{ keystone_adminurl}} --os-tenant-name demo --os-username admin --os-password {{admin_pass}} router-interface-add demo router $(neutron net-list | grep demo_internal | gawk -F' ' '{print $2}') "
+  command: neutron {{os_demo_auth}} router-interface-add {{router_name}} {{internal_id.stdout}}
   run_once: true
-  tags: demo    
-
+  tags: demo
