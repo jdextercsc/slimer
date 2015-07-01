@@ -1,4 +1,4 @@
 keystone_adminurl: "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
-os_admin_auth: "--os-auth-url "{{ keystone_adminurl}}" --os-tenant-name {{admin_tenant}} --os-username {{admin_user }}  --os-password {{admin_pass}}"
-os_demo_auth: "--os-auth-url "{{ keystone_adminurl}}" --os-tenant-name {{demo_tenant}} --os-username {{demo_user }}  --os-password {{admin_pass}}"
+os_admin_auth: "--os-auth-url {{ keystone_adminurl}} --os-tenant-name {{admin_tenant}} --os-username {{admin_user }}  --os-password {{admin_pass}}"
+os_demo_auth: "--os-auth-url {{ keystone_adminurl}} --os-tenant-name {{demo_tenant}} --os-username {{demo_user }}  --os-password {{admin_pass}}"
 demo_pass: "{{ lookup('password', inventory_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"

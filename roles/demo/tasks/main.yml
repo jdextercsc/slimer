@@ -48,12 +48,14 @@
   run_once: true
   tags: demo
 
+
 - name: create External Network.
   command: >
     neutron {{os_admin_auth}}
     net-create {{ext_net_name}}
+    --router:external=True
   run_once: true
-  when: "{{ext_net_name}}" not in netcheck.stdout
+  when: "'{{ext_net_name}}' not in cmd.stdout"
   tags: demo
 
 - name: create external Subnet.
@@ -65,22 +67,23 @@
     --allocation-pool start={{ext_allocation.start}},end={{ext_allocation.end}}
     --disable-dhcp
     {{ext_network}}
-  when: "{{ext_network}}" not in netcheck.stdout
+  when: '"{{ext_network}}" not in cmd.stdout'
   run_once: true
   tags: demo
 
 - name: get external network ID
-  shell: $(neutron net-list | grep {{ext_net_name}} | gawk -F' ' '{print $2}')"
+  shell: neutron {{os_admin_auth}}  net-list | grep {{ext_net_name}} | gawk -F' ' '{print $2}'
   register: external_id
   run_once: true
   tags: demo
+
 
 - name: create internal Network.
   command: >
     neutron
     {{os_demo_auth}}
     net-create {{int_net_name}}
-  when: "{{int_net_name}}" not in netcheck.stdout
+  when: '"{{int_net_name}}" not in cmd.stdout'
   run_once: true
   tags: demo
 
@@ -91,13 +94,19 @@
     subnet-create
     {{int_net_name}} {{int_network}}
   run_once: true
-  when: "{{int_network}}" not in netcheck.stdout
+  when: '"{{int_network}}" not in cmd.stdout'
   tags: demo
 
-- name: get external network ID
-  shell: $(neutron net-list | grep {{int_net_name}} | gawk -F' ' '{print $2}')
+- name: get internal network ID
+  shell: neutron {{os_demo_auth}} net-list | grep {{int_net_name}} | gawk -F" " ' {print $6} '
   register: internal_id
   run_once: true
+  tags: demo
+
+- name: check for router
+  command: neutron {{os_demo_auth}} router-list
+  run_once: true
+  register: cmd
   tags: demo
 
 - name: create router
@@ -105,15 +114,31 @@
     neutron
     {{os_demo_auth}}
     router-create {{router_name}}
+  when: '"{{router_name}}" not in cmd.stdout'
   run_once: true
   tags: demo
+
+
+- name: check to see if gateway is set
+  command: neutron {{os_demo_auth}} router-show {{router_name}}
+  register: cmd
+  tags: demo
+  run_once: true
 
 - name: set router-gateway
   command: neutron {{os_demo_auth}} router-gateway-set {{router_name}} {{external_id.stdout}}
   run_once: true
+  when: '"{{external_id.stdout}}" not in cmd.stdout'
+  tags: demo
+
+- name: check to see if interface is added
+  command: neutron {{os_demo_auth}} router-port-list {{router_name}}
+  run_once: true
+  register: cmd
   tags: demo
 
 - name: set internal router inteface in demo
   command: neutron {{os_demo_auth}} router-interface-add {{router_name}} {{internal_id.stdout}}
   run_once: true
+  when: '"{{internal_id.stdout}}" not in cmd.stdout'
   tags: demo
