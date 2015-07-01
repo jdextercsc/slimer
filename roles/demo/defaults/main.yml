@@ -1,0 +1,2 @@
+keystone_auth_protocol: http
+keystone_auth_port: 35357
