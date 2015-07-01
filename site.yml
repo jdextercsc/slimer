@@ -15,3 +15,4 @@
 - include: swift.yml
 - include: compute-nodes.yml
 - include: scaleio-nodes.yml
+- include: demo.yml
