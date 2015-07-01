@@ -1,0 +1,96 @@
+---
+# setups up test network for demo
+
+- name: create demo project
+  keystone_user:
+    login_password: "{{admin_pass}}"
+    endpoint: "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
+    login_user: admin
+    login_tenant_user: admin
+    tenant: demo
+    tenant_description: "demo tenant"
+  run_once: true
+  tags: demo
+
+- name: add admin to demo tenant
+  keystone_user:
+    login_password: "{{admin_pass}}"
+    endpoint: "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
+    login_user: admin
+    login_tenant_user: admin
+    user: admin
+    tenant: demo
+    role: "_member_"
+  run_once: true
+  tags: demo
+
+- name: create External Network.
+  command: >
+    neutron
+    --os-auth-url "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
+    --os-tenant-name admin
+    --os-user-name admin
+    --os-password {{admin_pas}}
+    net-create External
+  run_once: true
+  tags: demo
+
+- name: create external Subnet.
+  command: >
+    neutron
+    --os-auth-url "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
+    --os-tenant-name admin
+    --os-user-name admin
+    --os-password {{admin_pas}}
+    subnet-create Ext_sub
+    --gateway 172.17.21.1
+    --allocation-172.17.21.100,172.17.21.200
+    --disable-dhcp 172.17.21.0/24
+  run_once: true
+  tags: demo
+
+- name: create internal Network.
+  command: >
+    neutron
+    --os-auth-url "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
+    --os-tenant-name demo
+    --os-user-name admin
+    --os-password {{admin_pas}}
+    net-create internal_demo
+  run_once: true
+  tags: demo
+
+- name: create internal Subnet.
+  command: >
+    neutron
+    --os-auth-url "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
+    --os-tenant-name demo
+    --os-user-name admin
+    --os-password {{admin_pas}}
+    subnet-create int_sub
+    internal_demo 192.168.100.0/24
+  run_once: true
+  tags: demo
+
+- name: create router
+  command: >
+    neutron
+    --os-auth-url "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
+    --os-tenant-name demo
+    --os-user-name admin
+    --os-password {{admin_pas}}
+    router-create demo-router
+  run_once: true
+  tags: demo
+
+- name: set router-gateway
+  command: >
+    neutron
+    --os-auth-url "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
+    --os-tenant-name demo
+    --os-user-name admin
+    --os-password {{admin_pas}}
+    router-gateway-set 
+  run_once: true
+  tags: demo   
+
