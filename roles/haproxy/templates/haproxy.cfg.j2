@@ -101,12 +101,16 @@ frontend vip-glance-registry-pub
 
 frontend vip-scaleio-int
     bind {{ scaleio_vip }}:8443
+    mode tcp
     default_backend scaleio
 
 backend scaleio
-   balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:8443 check inter 1s
+   mode tcp
+  balance roundrobin
+  stick-table type ip size 200k expire 30m
+  stick on src
+{% for node in groups['controller'] %}
+    server {{ node }} {{ hostvars[node]['ansible_'+scaleio_interface]['ipv4']['address'] }}:8443 check inter 1s
 {% endfor %}
 
 {% if glance_public_vip != glance_private_vip %}

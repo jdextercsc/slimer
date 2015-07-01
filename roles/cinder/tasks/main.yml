@@ -15,6 +15,7 @@
   command: openstack-config --set --verbose /etc/cinder/cinder.conf {{item}}
   with_items:
     - "DEFAULT verbose true"
+    - "DEFAULT debug true"
     - "database connection mysql://cinder:{{ cinder_db_pass }}@{{ lb_db_vip}}/cinder"
     - "database max_retries -1"
     - "DEFAULT auth_strategy keystone"
