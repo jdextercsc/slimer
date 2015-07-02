@@ -60,7 +60,6 @@
   changed_when: "'{{ item.id }}' not in cmd.stdout"
   tags: keystone
 
-
 - name: check if keystone is running
   shell: pcs status xml | xmllint --xpath '//crm_mon/resources/clone[contains(@id, "keystone-clone")]/resource[contains(@active, "true")]' -
   register: pcs_status_xml

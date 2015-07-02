@@ -14,7 +14,7 @@
   with_items:
     - { src: glance-registry.conf.j2, dest: /etc/glance/glance-registry.conf }
     - { src: glance-api.conf.j2, dest: /etc/glance/glance-api.conf }
-  notify: restart glance
+#  notify: restart glance
   when: openstack_release == 'havanna' or openstack_release == 'icehouse'
   tags: glance
 
@@ -63,6 +63,12 @@
   changed_when: "'unchanged' not in cmd.stderr"
   when: openstack_release == 'juno'
   tags: glance
+
+- name: restart and disable glance
+  service: name={{ item }} state=restarted enabled=no
+  with_items:
+    - openstack-glance-api
+    - openstack-glance-registry
 
 - name: create the NFS share mountpoint on the nfs server
   file:
@@ -115,13 +121,6 @@
   shell: runuser glance -s /bin/sh -c '/usr/bin/glance-manage db_sync'
   when: mysql_result.stdout|int == 0
   run_once: true
-  tags: glance
-
-- name: disable glance services
-  service: name={{ item }} enabled=no
-  with_items:
-    - openstack-glance-registry
-    - openstack-glance-api
   tags: glance
 
 #- name: open firewall ports

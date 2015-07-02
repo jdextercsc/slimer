@@ -31,7 +31,13 @@
 
 - name: enable ssh key-based access
   authorized_key: user=root key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
-  notify: restore selinux context of .ssh files
+#  notify: restore selinux context of .ssh files
+  register: result
+  tags: sshkey
+
+- name: restore selinux context of .ssh files
+  command: restorecon -R -v /root/.ssh
+  when: result.changed
   tags: sshkey
 
 - name: set selinux policy and mode

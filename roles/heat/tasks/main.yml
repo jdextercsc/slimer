@@ -17,7 +17,7 @@
   template: src={{ openstack_release }}/heat.conf.j2
             dest=/etc/heat/heat.conf
             mode=0640 owner=root group=heat
-  notify: restart heat
+#  notify: restart heat
   when: openstack_release == 'icehouse' or openstack_release == 'havana'
   tags: heat
 
@@ -62,8 +62,8 @@
   run_once: true
   tags: heat
 
-- name: disable heat services in systemd
-  service: name={{ item }} enabled=no
+- name: restart and disable heat
+  service: name={{ item }} state=restarted enabled=no
   with_items:
     - openstack-heat-api
     - openstack-heat-api-cfn
@@ -89,6 +89,3 @@
 
 - include: cluster-constraints.yml
   tags: heat
-
-
-
