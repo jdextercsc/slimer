@@ -166,9 +166,11 @@
 - name: Update nova.conf file for Juno
   command: openstack-config --verbose --set /etc/nova/nova.conf {{ item }}
   with_items:
+    - "DEFAULT vif_plugging_is_fatal False"
+    - "DEFAULT vif_plugging_timeout 0"
     - "DEFAULT verbose true"
     - "DEFAULT vncserver_proxyclient_address {{ internal_ipaddr }}"
-    - "DEFAULT vncserver_listen {{ internal_ipaddr }}"
+    - "DEFAULT vncserver_listen 0.0.0.0"
     - "DEFAULT novncproxy_base_url http://{{ nova_public_vip }}:6080/vnc_auto.html"
     - "database connection mysql://nova:{{ nova_db_pass }}@{{ lb_db_vip }}/nova"
     - "database max_retries -1"
