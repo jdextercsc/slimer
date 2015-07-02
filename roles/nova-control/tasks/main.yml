@@ -59,7 +59,7 @@
 
 - name: add novnc vip /etc/hosts with all nodes
   tags: nova
-  lineinfile: dest=/etc/hosts  line="{{ nova_vip }} {{item}}" state=present
+  lineinfile: dest=/etc/hosts  line="{{ nova_vip }} {{inventory_hostname}}" state=present
 
 - name: check for tables
   command: mysql -e "select count(*) from information_schema.tables where table_schema='nova'" -sN
