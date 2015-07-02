@@ -1,4 +1,5 @@
 - hosts: swift
+  max_fail_percentage: 0
   roles:
     - role: iface
       device: p3p1
@@ -73,21 +74,26 @@
    #     netmask: "{{ swift_if.ipaddr}}"
 
 - hosts: controller
+  max_fail_percentage: 0
   roles:
     - swift-proxy-1
 
 - hosts: swift
+  max_fail_percentage: 0
   roles:
     - swift-storage-1
 
 - hosts: controller
+  max_fail_percentage: 0
   roles:
     - swift-proxy-2
 
 - hosts: swift
+  max_fail_percentage: 0
   roles:
     - swift-storage-2
 
 - hosts: controller
+  max_fail_percentage: 0
   roles:
     - swift-glance

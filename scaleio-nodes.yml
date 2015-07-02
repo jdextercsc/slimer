@@ -1,5 +1,6 @@
 ---
 - hosts: scaleio
+  max_fail_percentage: 0
   roles:
     - role: iface
       device: p4p1

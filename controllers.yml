@@ -1,5 +1,6 @@
 ---
 - hosts: controller
+  max_fail_percentage: 0
   roles:
     - role: iface
       device: p3p1
@@ -101,6 +102,7 @@
         peerdns: '"no"'
 
 - hosts: controller
+  max_fail_percentage: 0
   roles:
     - pacemaker
     - haproxy

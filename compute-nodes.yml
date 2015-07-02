@@ -1,5 +1,6 @@
 ---
 - hosts: compute
+  max_fail_percentage: 0
   roles:
     - role: iface
       device: p3p1
@@ -88,6 +89,7 @@
         mtu: 9000
 
 - hosts: compute
+  max_fail_percentage: 0
   roles:
     - ceilometer-common
     - ceilometer-compute
