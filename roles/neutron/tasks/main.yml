@@ -119,10 +119,19 @@
   when: (use_neutron_ovs and not use_neutron_ml2)
   tags: neutron
 
+#- name: get services id
+#  shell: "keystone tenant-list --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} | grep services | gawk -F' ' '{print $2}'"
+#  register: services
+#  run_once: true
+
 - name: get services id
-  shell: "keystone tenant-list --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} | grep services | gawk -F' ' '{print$2}'"
-  register: services
+  keystone_user:
+    tenant: services
+    endpoint: "{{ keystone_adminurl }}" 
+    token: "{{ keystone_admin_token }}" 
+  register: keystone
   run_once: true
+
 
 - name: Update neutron config file for Juno
   command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
@@ -148,7 +157,7 @@
     - "DEFAULT nova_admin_auth_url {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
     - "DEFAULT nova_region_name {{ nova_region_name | default('regionOne') }}"
     - "DEFAULT nova_admin_username compute"
-    - "DEFAULT nova_admin_tenant_id {{ services.stdout }}"
+    - "DEFAULT nova_admin_tenant_id {{ keystone.id }}"
     - "DEFAULT nova_admin_password {{ nova_pass }}"
     - "DEFAULT core_plugin {{ neutron_core_plugin }}"
     - "DEFAULT service_plugins {{ neutron_service_plugins | join(',') }}"
