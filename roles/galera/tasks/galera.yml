@@ -130,12 +130,15 @@
     - { name: neutron, password: "{{ neutron_db_pass }}", db: neutron, priv: ALL }
     - { name: heat, password: "{{ heat_db_pass }}", db: heat, priv: ALL }
   run_once: true
-  #notify: flush db hosts
+#  notify: flush db hosts
   tags: mysql
 
 - name : wait for DB to create users
   pause: seconds=30
-  notify: flush db hosts
+#  notify: flush db hosts
   tags: mysql
 
-
+- name: flush db hosts
+  command: mysqladmin flush-hosts
+  run_once: true
+  tags: mysql

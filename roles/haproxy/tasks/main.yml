@@ -6,25 +6,35 @@
 - name: set sysctl parameters
   copy: src=haproxy-sysctl.conf dest=/etc/sysctl.d/haproxy.conf mode=0644 owner=root group=root
   when: ansible_distribution_major_version|int == 7
-  notify: reload kernel parameters with systemctl
+#  notify: reload kernel parameters with systemctl
+  tags: haproxy
+
+- name: reload kernel parameters with systemctl
+  command: systemctl restart systemd-sysctl
+  when: ansible_distribution_major_version|int == 7
   tags: haproxy
 
 - name: set sysctl parameters
-  lineinfile: dest=/etc/sysctl.conf
-              regexp=^net.ipv4.ip_nonlocal_bind
-              line="net.ipv4.ip_nonlocal_bind = 1"
+  lineinfile:
+    dest: /etc/sysctl.conf
+    regexp: ^net.ipv4.ip_nonlocal_bind
+    line: "net.ipv4.ip_nonlocal_bind = 1"
   when: ansible_distribution_major_version|int == 6
   notify: reload kernel parameters with sysctl
   tags: haproxy
 
 - name: set haproxy config file
   template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
-  notify: restart haproxy
+#  notify: restart haproxy
   tags: haproxy
 
-- name: disable haproxy service
-  service: name=haproxy enabled=no
+- name: restart and disable haproxy
+  service: name=haproxy state=restarted enabled=no
   tags: haproxy
+
+#- name: disable haproxy service
+#  service: name=haproxy enabled=no
+#  tags: haproxy
 
 - name: create haproxy pacemaker cloned resources
   pcs_resource: command=create name=haproxy type=systemd:haproxy clone=yes

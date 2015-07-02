@@ -57,7 +57,7 @@
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   when: nova_instance_live_migration and openstack_release == 'juno'
-  notify: restart libvirtd
+#  notify: restart libvirtd
   tags: nova
 
 - name: modify libvirtd.conf parameters with openstack-config
@@ -70,12 +70,17 @@
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   when: nova_instance_live_migration and openstack_release == 'juno'
-  notify: restart libvirtd
+#  notify: restart libvirtd
   tags: nova
 
-- name: enable libvirtd service
-  service: name=libvirtd enabled=yes state=started
+- name: restart and enable libvirtd
+  service: name=libvirtd state=restarted enabled=yes
+  when: nova_instance_live_migration and openstack_release == 'juno'
   tags: nova
+
+#- name: enable libvirtd service
+#  service: name=libvirtd enabled=yes state=started
+#  tags: nova
 
 - name: install nova-network
   yum: pkg=openstack-nova-network state=present
@@ -142,6 +147,7 @@
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   when: openstack_release == 'juno'
+  tags: nova
 
 - name: Update ovs_neutron_plugin.ini file for Juno
   command: openstack-config --verbose --set /etc/neutron//plugins/openvswitch/ovs_neutron_plugin.ini {{ item }}
@@ -161,7 +167,7 @@
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   when: openstack_release == 'juno'
-
+  tags: nova
 
 - name: Update nova.conf file for Juno
   command: openstack-config --verbose --set /etc/nova/nova.conf {{ item }}
@@ -210,10 +216,6 @@
   changed_when: "'unchanged' not in cmd.stderr"
   tags: nova
 
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
-  when: openstack_release == 'juno'
-
 - name: Update ceilometer.conf file for Juno
   command: openstack-config --verbose --set /etc/ceilometer/ceilometer.conf {{ item }}
   with_items:
@@ -238,6 +240,7 @@
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   when: openstack_release == 'juno'
+  tags: nova
 
 - name: create a directory for cisco plugins
   file: dest=/etc/neutron/plugins/cisco mode=0755 owner=root group=root state=directory
@@ -248,7 +251,7 @@
   template: src={{ openstack_release }}/cisco_plugins.ini.j2
             dest=/etc/neutron/plugins/cisco/cisco_plugins.ini
             mode=0640 owner=root group=neutron
-  notify: restart neutron openvswitch agent
+#  notify: restart neutron openvswitch agent
   when: use_neutron_cisco
   tags: nova
 
@@ -258,6 +261,10 @@
             mode=0640 owner=root group=neutron
   notify: restart neutron openvswitch agent
   when: use_neutron_ovs and (openstack_release == 'icehouse' or openstack_release == 'havana')
+  tags: nova
+
+- name: restart neutron openvswitch agent
+  service: name=neutron-openvswitch-agent state=restarted
   tags: nova
 
 - name: create a directory for the cisco nexus ssh keys
@@ -305,4 +312,3 @@
   service: name=openstack-nova-network enabled=yes state=started
   when: use_nova_network
   tags: nova
-

@@ -46,5 +46,14 @@
 
 - name: distribute a copy of the .secret_key_store file
   copy: src=special/secret_key_store dest=/var/lib/openstack-dashboard/.secret_key_store mode=0600 owner=apache group=apache
-  notify: restart horizon
+#  notify: restart horizon
+  tags: horizon
+
+- name: restart horizon
+  service: name={{ item }} state=restarted
+  with_items:
+    - openstack-nova-consoleauth
+    - openstack-nova-novncproxy
+    - httpd
+    - memcached
   tags: horizon
