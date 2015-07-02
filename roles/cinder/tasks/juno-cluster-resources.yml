@@ -19,4 +19,5 @@
       - action: monitor
         options:
           start-delay: 10s
+  run_once: true
   tags: cinder
