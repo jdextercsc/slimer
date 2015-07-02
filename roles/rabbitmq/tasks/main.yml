@@ -114,6 +114,17 @@
   run_once: true
   tags: rabbitmq_policy
 
+- name: enable plugins
+  command: rabbitmq-plugin enable {{ item }}
+  with_items: 
+    - "rabbitmq_management"
+    - "rabbitmq_management_agent"
+  tags: rabbitmq
+
+- name: restart rabbitmq to enable plugins
+  service: name=rabbitmq-server state=restarted
+  tags: rabbitmq
+
 - name: stop rabbitmq servers
   service: name=rabbitmq-server enabled=no state=stopped
   tags: rabbitmq
