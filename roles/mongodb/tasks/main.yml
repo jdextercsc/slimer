@@ -64,7 +64,7 @@
   wait_for: timeout=60
   tags: mongodb
 
-- name: cleanup pcs resouce
-  command: pcs resource cleanup mongodb
+- name: cleanup pcs resource
+  command: pcs resource cleanup
   tags: mongodb
-
+  run_once: true
