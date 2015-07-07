@@ -1,6 +1,7 @@
 ---
 
-- hosts:
+- name: Base RHEL Configuration
+  hosts:
     - openstack
     - scaleio
   max_fail_percentage: 0
@@ -8,7 +9,8 @@
     - subscription-manager
     - common
 
-- hosts: openstack
+- name: OpenStack Common
+  hosts: openstack
   max_fail_percentage: 0
   roles:
     - openstack-common

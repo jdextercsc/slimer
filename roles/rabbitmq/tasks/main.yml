@@ -115,7 +115,7 @@
   tags: rabbitmq_policy
 
 - name: enable plugins
-  command: rabbitmq-plugin enable {{ item }}
+  command: rabbitmq-plugins enable {{ item }}
   with_items: 
     - "rabbitmq_management"
     - "rabbitmq_management_agent"

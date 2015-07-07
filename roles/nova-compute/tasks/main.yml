@@ -75,7 +75,6 @@
 
 - name: restart and enable libvirtd
   service: name=libvirtd state=restarted enabled=yes
-  when: nova_instance_live_migration and openstack_release == 'juno'
   tags: nova
 
 #- name: enable libvirtd service

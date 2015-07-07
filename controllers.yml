@@ -1,5 +1,6 @@
 ---
-- hosts: controller
+- name: Controller Interface Configuration
+  hosts: controller
   max_fail_percentage: 0
   roles:
     - role: iface
@@ -101,7 +102,8 @@
         netmask: "{{ ext_if.netmask }}"
         peerdns: '"no"'
 
-- hosts: controller
+- name: Controller OpenStack Installation
+  hosts: controller
   max_fail_percentage: 0
   roles:
     - pacemaker
