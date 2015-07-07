@@ -1,4 +1,6 @@
-- hosts: swift
+---
+- name: Swift Interface Configuration
+  hosts: swift
   max_fail_percentage: 0
   roles:
     - role: iface
@@ -73,27 +75,32 @@
    #     ipaddr: "{{ swift_if.ipaddr}}"
    #     netmask: "{{ swift_if.ipaddr}}"
 
-- hosts: controller
+- name: Controller Swift Proxy 1
+  hosts: controller
   max_fail_percentage: 0
   roles:
     - swift-proxy-1
 
-- hosts: swift
+- name: Swift Storage 1
+  hosts: swift
   max_fail_percentage: 0
   roles:
     - swift-storage-1
 
-- hosts: controller
+- name: Controller Swift Proxy 2
+  hosts: controller
   max_fail_percentage: 0
   roles:
     - swift-proxy-2
 
-- hosts: swift
+- name: Swift Storage 2
+  hosts: swift
   max_fail_percentage: 0
   roles:
     - swift-storage-2
 
-- hosts: controller
+- name: Controller Swift Glance
+  hosts: controller
   max_fail_percentage: 0
   roles:
     - swift-glance

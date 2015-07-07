@@ -96,9 +96,26 @@
   with_items: hostvars[inventory_hostname].swift_data_disks
   tags: swift
 
-- name: create object ring
+- name: create object ring 1
   delegate_to: "{{ groups['controller'][0] }}"
-  command: swift-ring-builder object.builder add z1-{{ int_if.ipaddr }}:6200/{{ item }} 100
+  command: swift-ring-builder object.builder add z1-{{ hostvars[groups['swift'][0]].int_if.ipaddr }}:6200/{{ item }} 100
            chdir=/etc/swift
-  with_items: hostvars[inventory_hostname].swift_data_disks
+  with_items: hostvars[groups['swift'][0]].swift_data_disks
+  run_once: true
+  tags: swift
+
+- name: create object ring 2
+  delegate_to: "{{ groups['controller'][0] }}"
+  command: swift-ring-builder object.builder add z1-{{ hostvars[groups['swift'][1]].int_if.ipaddr }}:6200/{{ item }} 100
+           chdir=/etc/swift
+  with_items: hostvars[groups['swift'][1]].swift_data_disks
+  run_once: true
+  tags: swift
+
+- name: create object ring 3
+  delegate_to: "{{ groups['controller'][0] }}"
+  command: swift-ring-builder object.builder add z1-{{ hostvars[groups['swift'][2]].int_if.ipaddr }}:6200/{{ item }} 100
+           chdir=/etc/swift
+  with_items: hostvars[groups['swift'][2]].swift_data_disks
+  run_once: true
   tags: swift

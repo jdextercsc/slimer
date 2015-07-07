@@ -1,5 +1,6 @@
 ---
-- hosts: scaleio
+- name: ScaleIO Interface Configuration
+  hosts: scaleio
   max_fail_percentage: 0
   roles:
     - role: iface

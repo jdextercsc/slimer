@@ -61,7 +61,8 @@
 #  tags: mongodb
 
 - name: pause to allow primary election and sync of replica set
-  wait_for: timeout=60
+  pause:
+    seconds: 60
   tags: mongodb
 
 - name: cleanup pcs resource

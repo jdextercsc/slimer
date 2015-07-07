@@ -1,4 +1,5 @@
 ---
-- hosts: controller
+- name: Controller Demo Configuration
+  hosts: controller
   roles:
     - demo
