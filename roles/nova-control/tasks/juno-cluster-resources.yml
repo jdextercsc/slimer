@@ -8,9 +8,16 @@
           start-delay: 10s
   run_once: true
   with_items:
-    - consoleauth
     - novncproxy
     - api
     - scheduler
     - conductor
   tags: nova
+
+- name: create pacemaker resources for nova consoleauth
+  pcs_resource: command=create name=nova-{{ item }} type=systemd:openstack-nova-consoleauth
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
