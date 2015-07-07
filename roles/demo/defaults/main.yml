@@ -13,3 +13,13 @@ ext_allocation:
 int_net_name: internal_net
 int_network: 192.168.101.0/24
 router_name: rotuer-1
+copy_image: True
+image_location: /root/
+image_name: rhel-guest-image-7.1-20150224.0.x86_64.qcow2
+image_disk_format: qcow2
+image_short_name: rhel7.1
+image_root_password: redhat1234
+
+#boot options
+nova_boot_flavor: m1.small
+nova_boot_name: test_vm

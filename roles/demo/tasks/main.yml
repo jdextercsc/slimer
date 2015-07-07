@@ -142,3 +142,37 @@
   run_once: true
   when: '"{{internal_id.stdout}}" not in cmd.stdout'
   tags: demo
+
+### create security group
+- name: create security group
+  shell: neutron {{os_demo_auth}} security-group-create ssh-icmp -- description "ssh and icmp allowed" | grep "id " | gawk -F' ' '{print $4}'
+  run_once: true
+  register: sec_uuid
+  tags: demo
+
+- name: create ssh inbound rule
+  command: >
+    neutron {{os_demo_auth}}
+    security-group-rule-create
+    --direction ingress
+    --protocol tcp
+    --port_range_min 22
+    --port-range_max 22
+    {{ sec_uuid.stdout }}
+  run_once: true
+  tags: demo
+
+- name: create ssh inbound rule
+  command: >
+    neutron {{os_demo_auth}}
+    security-group-rule-create
+    --direction ingress
+    --protocol icmp
+    {{ sec_uuid.stdout }}
+  run_once: true
+  tags: demo
+
+- name: start image task
+  include: image.yml
+  when: copy_image
+  tags: demo
