@@ -144,8 +144,14 @@
   tags: demo
 
 ### create security group
+- name: get tenant ID for demo
+  shell: keystone {{os_admin_auth}} tenant-list | grep {{demo_tenant}} | gawk -F' ' '{print $2}'
+  register: tenant_id
+  run_once: true
+  tags: demo
+
 - name: create security group
-  shell: neutron {{os_demo_auth}} security-group-create ssh-icmp -- description "ssh and icmp allowed" | grep "id " | gawk -F' ' '{print $4}'
+  shell: neutron {{os_demo_auth}} security-group-create ssh-icmp -- description "ssh and icmp allowed" --tenant_id {{tenant_id.stdout}}| grep "id " | gawk -F' ' '{print $4}'
   run_once: true
   register: sec_uuid
   tags: demo
@@ -156,8 +162,8 @@
     security-group-rule-create
     --direction ingress
     --protocol tcp
-    --port_range_min 22
-    --port-range_max 22
+    --port-range-min 22
+    --port-range-max 22
     {{ sec_uuid.stdout }}
   run_once: true
   tags: demo
