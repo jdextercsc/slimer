@@ -1,4 +1,4 @@
 ---
 
 - name: run cinder role based on openstack release
-  include: "{{ openstack_release }}.yml"z
+  include: "{{ openstack_release }}.yml"
