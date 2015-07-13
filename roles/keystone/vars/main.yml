@@ -4,4 +4,4 @@ internal_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + private_if ].ipv
 keystone_public_bind_host: "{{ public_ipaddr }}"
 keystone_admin_bind_host: "{{ internal_ipaddr }}"
 keystone_adminurl: "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
-#rabbit_hosts_port : "{{ rabbit_hosts:rabbit_port | join(',') }}"
+rabbit_hosts:{% for node in groups['controller'] %}{{ node }}:5672{% if not loop.last %},{% endif %}{% endfor %}
