@@ -9,24 +9,24 @@
 -A INPUT -p tcp -m multiport --dports 22 -m comment --comment "allow ssh incoming" -j ACCEPT
 -A INPUT -p tcp -m multiport --dports 5000,35357 -m comment --comment "5000 keystone public incoming" -j ACCEPT
 #amqp incoming from controllers and compute
-{% for node in groups[controllers] %}
-- A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 --dports 5671,5672,4369 -m comment --comment "001 amqp incoming amqp_{{ node[ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% for node in groups['controllers'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 5671,5672,4369 -m comment --comment "001 amqp incoming amqp_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
 {% endfor %}
-{% for node in groups[compute] %}
-- A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 --dports 5671,5672 -m comment --comment "001 amqp incoming amqp_{{ node[ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% for node in groups['compute'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 5671,5672 -m comment --comment "001 amqp incoming amqp_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
 {% endfor %}
 #memcache incoming from controllers
-{% for node in groups[controllers] %}
-- A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 --dports 11211 -m comment --comment "001 memcacge_{{ node[ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% for node in groups['controllers'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 11211 -m comment --comment "001 memcacge_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
 {% endfor %}
 #pacemaker
 -A INPUT -p tcp -m multiport --dports 8777 -m comment --comment "001 ceilometer-api incoming ceilometer_api" -j ACCEPT
 #cinder api incoming from controllers and compute
-{% for node in groups[controllers] %}
-- A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 --dports 3260 -m comment --comment "002 cinder incoming iscsi_{{ node[ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% for node in groups['controllers'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 3260 -m comment --comment "002 cinder incoming iscsi_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
 {% endfor %}
-{% for node in groups[compute] %}
-- A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 --dports 3260 -m comment --comment "002 cinder incoming iscsi_{{ node[ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% for node in groups['compute'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 3260 -m comment --comment "002 cinder incoming iscsi_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
 {% endfor %}
 -A INPUT -p tcp -m multiport --dports 8776 -m comment --comment "001 cinder-api incoming cinder_api" -j ACCEPT
 -A INPUT -p tcp -m multiport --dports 9292,9191 -m comment --comment "001 glance incoming glance_api" -j ACCEPT
@@ -36,23 +36,23 @@
 -A INPUT -p tcp -m multiport --dports 80 -m comment --comment "001 horizon 80  incoming" -j ACCEPT
 -A INPUT -p tcp -m multiport --dports 5000,35357 -m comment --comment "001 keystone incoming keystone" -j ACCEPT
 # incoming mariadb connections
-{% for node in groups[controllers] %}
-- A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 --dports 3306 -m comment --comment "002 mariadb incoming db_{{ node[ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% for node in groups['controllers'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 3306 -m comment --comment "002 mariadb incoming db_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
 {% endfor %}
-{% for node in groups[compute] %}
-- A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 --dports 3306 -m comment --comment "002 mariadb incoming db_{{ node[ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% for node in groups['compute'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 3306 -m comment --comment "002 mariadb incoming db_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
 {% endfor %}
-{% for node in groups[controllers] %}
-- A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 --dports 27017 -m comment --comment "002 mongodb incoming mongodb_{{ node[ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% for node in groups['controllers'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 27017 -m comment --comment "002 mongodb incoming mongodb_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
 {% endfor %}
 -A INPUT -p tcp -m multiport --dports 80 -m comment --comment "001 nagios incoming" -j ACCEPT
 -A INPUT -p udp -m multiport --dports 67 -m comment --comment "001 neutron dhcp in incoming neutron_dhcp" -j ACCEPT
 -A INPUT -p udp -m multiport --dports 68 -m comment --comment "001 neutron dhcp in incoming neutron_dhcp" -j ACCEPT
 -A INPUT -p tcp -m multiport --dports 9696 -m comment --comment "001 neutron server incoming neutron_server" -j ACCEPT
--A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 -p udp -m multiport --dports 4789 -m comment --comment "001 neutron tunnel port incoming neutron_tunnel" -j ACCEPT
+-A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 -p udp -m multiport --dports 4789 -m comment --comment "001 neutron tunnel port incoming neutron_tunnel" -j ACCEPT
 -A INPUT -p tcp -m multiport --dports 8773,8774,8775 -m comment --comment "001 nova api incoming nova_api" -j ACCEPT
 -A INPUT -p tcp -m multiport --dports 6080 -m comment --comment "001 novncproxy incoming" -j ACCEPT
--A INPUT -s {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 -p tcp -m multiport --dports 6379 -m comment --comment "001 redis-server incoming redis_server" -j ACCEPT
+-A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 -p tcp -m multiport --dports 6379 -m comment --comment "001 redis-server incoming redis_server" -j ACCEPT
 -A INPUT -p tcp -m multiport --dport 8443,8081,6611,9011,7072,9099 -m comment --comment "scaleio incoming" -j ACCEPT
 -A INPUT -p udp -m multiport --dport 162 -m comment --comment "scaleio incoming" -j ACCEPT
 -A INPUT -p tcp -m multiport --dport 8080,9200 -m comment --comment "swift_proxy incoming" -j ACCEPT
@@ -63,7 +63,7 @@
 -A OUTPUT -p udp -m multiport --dports 68 -m comment --comment "001 neutron dhcp out outgoing neutron_dhcp_out_" -j ACCEPT
 -A OUTPUT -j nova-filter-top
 -A OUTPUT -j nova-api-OUTPUT
--A nova-api-INPUT -d {{ node[ 'ansible_' + private_if ].ipv4.address }}/32 -p tcp -m tcp --dport 8775 -j ACCEPT
+-A nova-api-INPUT -d {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 -p tcp -m tcp --dport 8775 -j ACCEPT
 -A nova-filter-top -j nova-api-local
 -A INPUT -j REJECT --reject-with icmp-host-prohibited
 COMMIT
