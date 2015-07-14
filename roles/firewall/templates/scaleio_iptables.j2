@@ -1,0 +1,12 @@
+*filter
+:INPUT ACCEPT [2:104]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [2:204]
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p tcp -m multiport --dports 22 -m comment --comment "allow ssh incoming" -j ACCEPT
+-A INPUT -p tcp -m multiport --dport 8443,8081,6611,9011,7072,9099 -m comment --comment "scaleio incoming" -j ACCEPT
+-A INPUT -p udp -m multiport --dport 162 -m comment --comment "scaleio incoming" -j ACCEPT
+-A INPUT -j REJECT --reject-with icmp-host-prohibited
+COMMIT

@@ -1,0 +1,13 @@
+*filter
+:INPUT ACCEPT [2:104]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [2:204]
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p tcp -m multiport --dports 22 -m comment --comment "allow ssh incoming" -j ACCEPT
+{% for node in groups['swift'] %}
+- A INPUT -s {{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}/32 --dports 6200,6201,6202,873 -m comment --comment "swift port incoming swift_{{ hostvars[node][ 'ansible_' + private_if ].ipv4.address }}" -j ACCEPT
+{% endfor %}
+-A INPUT -j REJECT --reject-with icmp-host-prohibited
+COMMIT
