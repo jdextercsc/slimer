@@ -29,8 +29,7 @@
   tags: mysql
 
 - name: create clustercheck database user
-  #mysql_user: name={{ clustercheck_db_user }} host=localhost password="{{ clustercheck_db_pass }} state=present
-  #run_once: true
+
   command: mysql -e "CREATE USER 'clustercheck'@'localhost' IDENTIFIED BY '{{clustercheck_db_pass}}';"
   tags: mysql
   ignore_errors: yes
@@ -41,7 +40,6 @@
 
 - name: deploy mariadb server config file with increased number of max_connections
   copy: src=server.cnf dest=/etc/my.cnf.d/server.cnf mode=0644 owner=root group=root
-  #template: src=server.cnf.j2 dest=/etc/my.cnf.d/server.cnf mode=0644 owner=root group=root
   tags: mysql
 
 - name: deploy galera.cnf on controllers
@@ -60,10 +58,6 @@
   service: name=mariadb enabled=no state=stopped
   tags: mysql
 
-
-#- name: create pacemaker resource for galera
-#  command: pcs resource create galera galera enable_creation=true wsrep_cluster_address="{{ wsrep_cluster_address }}" additional_parameters='--open-files-limit=16384' meta master-max=3 ordered=true op promote timeout=300s on-fail=block --master
-
 - name: create pacemaker resource for galera
   shell: "pcs resource --full | grep 'Resource: {{ item.id }}' || pcs resource {{ item.cmd }}"
   with_items:
@@ -73,21 +67,7 @@
   changed_when: "'Resource: {{ item.id }}' not in cmd.stdout"
   tags: mysql
 
-#  pcs_resource: command=create name=galera type=galera master=yes
-#  args:
-#    options:
-#      enable_creation: true
-#      wsrep_cluster_address: "{{ wsrep_cluster_address }}"
-#    meta:
-#      master-max: 3
-#      ordered: true
-#    operations:
-#      - action: promote
-#        options:
-#          timeout: 300s
-#          on-fail: block
-#  run_once: true
-#  tags: mysql
+
 
 - name: Wait until clustercheck returns 0
   command: clustercheck
@@ -97,14 +77,6 @@
   delay: 5
   tags: mysql
 
-#- name: pause to let galera start and form the cluster
-#  pause: seconds=30
-#  tags: mysql
-
-#- name: create clustercheck database user
-#  mysql_user: name={{ clustercheck_db_user }} host=localhost password={{ clustercheck_db_pass }} state=present
-#  run_once: true
-#  tags: mysql
 
 - name: create databases
   mysql_db: name={{ item }} state=present
@@ -130,12 +102,10 @@
     - { name: neutron, password: "{{ neutron_db_pass }}", db: neutron, priv: ALL }
     - { name: heat, password: "{{ heat_db_pass }}", db: heat, priv: ALL }
   run_once: true
-#  notify: flush db hosts
   tags: mysql
 
 - name : wait for DB to create users
   pause: seconds=30
-#  notify: flush db hosts
   tags: mysql
 
 - name: flush db hosts
