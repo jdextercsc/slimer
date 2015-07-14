@@ -1,12 +1,4 @@
 ---
-#- name: ifdown network after bond creation
-#  shell: ifdown bond0 && ifup bond0
-#  tags: network
-
-#- name: ifup network after bond creation
-#  command: ifup bond0
-#  tags: network
-
 - name: copy and load 99-sysctl.conf
   copy: src=99-sysctl.conf dest=/etc/sysctl.d/99-sysctl.conf owner=root group=root mode=0644 force
   tags: sysctl
@@ -31,7 +23,6 @@
 
 - name: enable ssh key-based access
   authorized_key: user=root key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
-#  notify: restore selinux context of .ssh files
   register: result
   tags: sshkey
 
@@ -66,11 +57,4 @@
 
 - name: Set hostname
   command: hostnamectl set-hostname --static --transient {{ inventory_hostname }}
-  when: ansible_distribution_major_version|int == 7
-  tags: dns
-
-- name: set hostname in /etc/sysconfig/network
-  template: src=sysconfig-network.j2 dest=/etc/sysconfig/network
-  when: ansible_distribution_major_version|int == 6
-  notify: reset hostname using the hostname utility
   tags: dns
