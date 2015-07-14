@@ -50,5 +50,4 @@
   run_once: true
   register: cmd
   changed_when: "'{{ item.id }}' not in cmd.stdout"
-  when: ansible_distribution_major_version|int == 7
   tags: swift
