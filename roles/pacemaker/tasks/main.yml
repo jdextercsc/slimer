@@ -71,9 +71,14 @@
   run_once: true
   tags: pcs
 
-# this should be re-implemented with the pacemaker_stonith module
-#- name: create stonith resources
-#  shell: "pcs stonith show fence_{{ item.name }} || pcs stonith create fence_{{ item.name }} fence_{{ item.fencing.agent }} params {{ item.fencing.params }} action=reboot pcmk_host_list={{ item.name }}"
-#  with_items: controller_nodes
-#  run_once: true
-#  tags: pcs_fencing
+- name: create stonith resources
+  shell: "pcs stonith show ipmilan-fence-{{item}} || pcs stonith create ipmilan-fence-{{item}}  fence_{{item.fencing_agent}} {{item.fencing_params}} pcmk_host_list={{item}}"
+  with_items: groups['controller']
+  run_once: true
+  tags: pcs
+
+- name: create location constraint
+  shell: "pcs constraint list --full | grep ipmilan-for-{{ item }} || pcs constraint location ipmilan-for-{{item}} avoids {{item}}"
+  with_items: groups ['controller']
+  run_once: true
+  tags: pcs

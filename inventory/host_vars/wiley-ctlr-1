@@ -26,3 +26,6 @@ tun_if:
   vlan: 1802
 
 smbios_uuid:
+
+fencing_agent: ipmilan
+fencing_params: "login=root passwd=calvin ipaddr=172.30.0.70 lanplus=1 cipher=1 op monitor=60s"
