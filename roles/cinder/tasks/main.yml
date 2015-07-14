@@ -2,4 +2,4 @@
 
 - name: run cinder role based on juno release
   include: juno.yml
-  when openstack_release == 'juno'
+  when: openstack_release == 'juno'
