@@ -29,7 +29,6 @@
   tags: mysql
 
 - name: create clustercheck database user
-
   command: mysql -e "CREATE USER 'clustercheck'@'localhost' IDENTIFIED BY '{{clustercheck_db_pass}}';"
   tags: mysql
   ignore_errors: yes
@@ -67,8 +66,6 @@
   changed_when: "'Resource: {{ item.id }}' not in cmd.stdout"
   tags: mysql
 
-
-
 - name: Wait until clustercheck returns 0
   command: clustercheck
   register: result
@@ -76,7 +73,6 @@
   retries: 60
   delay: 5
   tags: mysql
-
 
 - name: create databases
   mysql_db: name={{ item }} state=present
