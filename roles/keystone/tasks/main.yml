@@ -1,3 +1,4 @@
 ---
-- name: run keystone role based on openstack release
-  include: "{{ openstack_release }}.yml"
+- name: run keystone role based on juno release
+  include: juno.yml
+  when: openstack_release == 'juno'
