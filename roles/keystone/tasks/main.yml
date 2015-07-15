@@ -1,10 +1,4 @@
 ---
-- name: run juno keystone configuration
-  include: keystone_juno.yml
+- name: run keystone role based on juno release
+  include: juno.yml
   when: openstack_release == 'juno'
-  tags: keystone
-
-- name: run icehouse/havana keystone configuration
-  include: keystone_icehouse_havana.yml
-  when: openstack_release == 'icehouse' or openstack_release == 'havana'
-  tags: keystone

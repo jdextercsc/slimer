@@ -1,130 +1,74 @@
 ---
-- name: havana install keystone packages
-  yum: pkg={{ item }} state=present
+- name: install keystone components
+  yum: pkg={{item}} state=present
   with_items:
     - openstack-keystone
     - openstack-utils
-    - openstack-selinux
+    - httpd
   tags: keystone
 
-- name: generate keystone config file
-  template: src={{ openstack_release }}/keystone.conf.j2
-            dest=/etc/keystone/keystone.conf
-            mode=0640 owner=root group=keystone
-  notify: restart keystone
+# following requires that crudini .5-1 be installed from epel or it will fail.
+
+- name: set keystone configuration
+  command: openstack-config --verbose --set /etc/keystone/keystone.conf {{ item }}
+  with_items:
+    - "DEFAULT verbose true"
+    - "DEFAULT admin_token {{keystone_admin_token}}"
+    - "DEFAULT rabbit_hosts {{rabbit_hosts}}"
+    - "DEFAULT rabbit_ha_queues true"
+    - "DEFAULT admin_endpoint http://{{ keystone_vip }}:35357"
+    - "DEFAULT public_endpoint http://{{ keystone_public_vip }}:{{keystone_public_port}}"
+    - "database connection mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"
+    - "database max_retries -1"
+    - "DEFAULT public_bind_host {{internal_ipaddr}}"
+    - "DEFAULT admin_bind_host {{internal_ipaddr}}"
+  register: cmd
+  changed_when: "'unchanged' not in cmd.stderr"
   tags: keystone
 
-- name: disable the keystone services
-  service: name=openstack-keystone enabled=no
-  tags: keystone
+# create ssl cert if using sha key for token
 
-- name: create certs for keystone
-  command: creates=/etc/keystone/ssl/certs/ca.pem /usr/bin/keystone-manage pki_setup --keystone-user keystone --keystone-group keystone
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='keystone'" -sN
   run_once: true
+  register: mysql_result
   tags: keystone
 
-- name: fetch keystone signing cert from the first controller
-  fetch: src=/etc/keystone/ssl/certs/signing_cert.pem dest=special/keystone-signing_cert.pem flat=yes
+- name: populate keystone database
+  command: su keystone -s /bin/sh -c "keystone-manage -v -d db_sync"
+  when: mysql_result.stdout|int == 0
+  tags: keystone
   run_once: true
-  tags: keystone
 
-- name: fetch keyfile for token signing
-  fetch: src=/etc/keystone/ssl/private/signing_key.pem dest=special/keystone-signing_key.pem flat=yes
-  run_once: true
-  tags: keystone
-
-- name: fetch CA for token signing
-  fetch: src=/etc/keystone/ssl/certs/ca.pem dest=special/keystone-ca.pem flat=yes
-  run_once: true
-  tags: keystone
-
-- name: fetch CA key for token signing
-  fetch: src=/etc/keystone/ssl/private/cakey.pem dest=special/keystone-cakey.pem flat=yes
-  run_once: true
-  when: ansible_distribution_major_version|int == 7
-  tags: keystone
-
-- name: fetch CA key for token signing
-  fetch: src=/etc/keystone/ssl/certs/cakey.pem dest=special/keystone-cakey.pem flat=yes
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
-  tags: keystone
-
-- name: fix keystone certs directory ownership
-  file: path=/etc/keystone/ssl owner=keystone group=keystone state=directory recurse=true
-  tags: keystone
-
-- name: fix keystone certs directory ownership
-  file: path=/etc/keystone/ssl/certs owner=keystone group=keystone state=directory recurse=true
-  tags: keystone
-
-- name: fix keystone certs directory ownership
-  file: path=/etc/keystone/ssl/private owner=keystone group=keystone state=directory recurse=true
-  tags: keystone
-
-- name: fix keystone logs directory ownership
-  file: path=/var/log/keystone owner=keystone group=keystone state=directory recurse=true
-  tags: keystone
-
-- name: distribute keystone signing cert to other controllers
-  copy: src=special/keystone-signing_cert.pem dest=/etc/keystone/ssl/certs/signing_cert.pem mode=0644 owner=keystone group=keystone
-  tags: keystone
-
-- name: distribute keyfile for token signing to other controllers
-  copy: src=special/keystone-signing_key.pem dest=/etc/keystone/ssl/private/signing_key.pem mode=0640 owner=keystone group=keystone
-  tags: keystone
-
-- name: distribute CA for token signing to other controllers
-  copy: src=special/keystone-ca.pem dest=/etc/keystone/ssl/certs/ca.pem mode=0644 owner=keystone group=keystone
-  tags: keystone
-
-- name: distribute CA key for token signing to other controllers
-  copy: src=special/keystone-cakey.pem dest=/etc/keystone/ssl/private/cakey.pem mode=0640 owner=keystone group=keystone
-  when: ansible_distribution_major_version|int == 7
-  tags: keystone
-
-- name: distribute CA key for token signing to other controllers
-  copy: src=special/keystone-cakey.pem dest=/etc/keystone/ssl/certs/cakey.pem mode=0640 owner=keystone group=keystone
-  when: ansible_distribution_major_version|int == 6
-  tags: keystone
-
-# keystone_manage has not been upgraded for Icehouse and does not work for Havana
-#- name: run dbsync for keystone
-#  keystone_manage: action=dbsync
-#  run_once: true
-#  tags: keystone
-
-- name: run dbsync for keystone
-  shell: runuser -s /bin/sh keystone -c '/usr/bin/keystone-manage db_sync'
-  run_once: true
-  tags: keystone
+# Pacemaker operations
 
 - name: create pacemaker resources for keystone
-  pcs_resource: command=create name=keystone type=systemd:openstack-keystone clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
+  pcs_resource: command=create name=keystone type=systemd:openstack-keystone clone=yes interleave=yes
   run_once: true
-  when: ansible_distribution_major_version|int == 7
   tags: keystone
 
-- name: create pacemaker resources for keystone
-  pcs_resource: command=create name=keystone type=lsb:openstack-keystone clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 10s
+- name: create pcs constraints for keystone
+  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
+  with_items:
+    - { id: order-haproxy-clone-keystone-clone, cmd: "order start haproxy-clone then keystone-clone" }
+    - { id: order-galera-master-keystone-clone, cmd: "order start galera-master then keystone-clone" }
+    - { id: order-rabbitmq-clone-keystone-clone, cmd: "order start rabbitmq-clone then keystone-clone" }
+    - { id: order-memcached-clone-keystone-clone, cmd: "order start memcached-clone then keystone-clone" }
   run_once: true
-  when: ansible_distribution_major_version|int == 6
+  register: cmd
+  changed_when: "'{{ item.id }}' not in cmd.stdout"
   tags: keystone
 
-- name: pause to let pacemaker initialize keystone resources
-  pause: seconds=20
-  tags: keystone
+- name: check if keystone is running
+  shell: pcs status xml | xmllint --xpath '//crm_mon/resources/clone[contains(@id, "keystone-clone")]/resource[contains(@active, "true")]' -
+  register: pcs_status_xml
+  until: "'empty' not in pcs_status_xml.stderr"
+  retries: 12
+  delay: 30
+  run_once: true
+  ignore_errors: true
 
+# configure keystone user and roles.
 - name: create admin tenant
   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} tenant=admin
   run_once: true
@@ -140,9 +84,16 @@
   run_once: true
   tags: keystone
 
+
 - name: create the services tenant
   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} tenant=services tenant_description="Services Tenant"
   run_once: true
+  tags: keystone
+
+- name: deploy the keystonerc_admin file
+  template: src=keystonerc_admin.j2
+            dest=/root/keystonerc_admin
+            mode=0750 owner=root group=root
   tags: keystone
 
 - name: create the glance user
@@ -150,8 +101,11 @@
   run_once: true
   tags: keystone
 
-- name: apply the admin role to the glance user
-  keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} user=glance role=admin tenant=services
+- name: apply the admin role and swiftOperator to the glance user
+  keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} user=glance role={{ item }} tenant=services
+  with_items:
+    - admin
+    - SwiftOperator
   run_once: true
   tags: keystone
 
@@ -173,7 +127,10 @@
 - name: apply the admin role to the swift user
   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} user=swift role=admin tenant=services
   run_once: true
-  tags: keystone
+  when: use_swift
+  tags:
+    - keystone
+    - swift
 
 - name: create the neutron user
   keystone_user: token={{ keystone_admin_token }} endpoint={{ keystone_adminurl }} user=neutron tenant=services password={{ neutron_pass }}
@@ -235,11 +192,13 @@
   run_once: true
   tags: keystone
 
-- name: create the swift service
+- name:  create the swift service
   shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-create --name swift --type object-store --description "Swift Storage Service"
   run_once: true
   when: use_swift
-  tags: keystone
+  tags:
+    - keystone
+    - swift
 
 - name: create the neutron service
   shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-get neutron || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-create --name neutron --type network --description "OpenStack Networking Service"
@@ -314,9 +273,10 @@
   when: use_ceilometer
   tags: keystone
 
-- name: deploy the keystonerc_admin file
-  template: src={{ openstack_release }}/keystonerc_admin.j2
-            dest=/root/keystonerc_admin
-            mode=0750 owner=root group=root
-  tags: keystone
-
+- name: create swift endpoints
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service swift  --publicurl "http://{{ swift_public_vip }}:8080/v1/AUTH_%(tenant_id)s" --adminurl "http://{{ swift_admin_vip }}:8080" --internalurl "http://{{swift_private_vip }}:8080/v1/AUTH_%(tenant_id)s"
+  run_once: true
+  when: use_swift
+  tags:
+    - keystone
+    - swift
