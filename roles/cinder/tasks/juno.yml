@@ -87,7 +87,7 @@
     - openstack-cinder-scheduler
     - openstack-cinder-volume
   tags: cinder
-  
+
 - name: create pacemaker resources for cinder services
   pcs_resource: command=create name=cinder-{{ item }} type=systemd:openstack-cinder-{{ item }} clone=yes interleave=yes
   args:

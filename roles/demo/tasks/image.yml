@@ -6,11 +6,11 @@
 
 - name: add image to glance
   command: >
-    glance {{os_admin_auth}}
+    glance {{os_admin_auth}} image-create
     --name {{image_short_name}}
     --file /root/{{image_name}}
     --disk-format {{image_disk_format}}
-    --disk-container bare
+    --container-format bare
     --is-public true
   run_once: true
   tags: demo
@@ -21,11 +21,11 @@
 
 - name: launch an instance
   command: >
-    nova {{os_demo_auth}}
+    nova {{os_demo_auth}} boot
     --flavor {{nova_boot_flavor}}
-    name {{nova_boot_name}}
+    {{nova_boot_name}}
     --user-data /root/cloud_cfg_demo.txt
-    --nic net-id={{internal_id.stdout}}
     --security-groups ssh-icmp
+    --image {{image_short_name}}
   run_once: true
   tags: demo
