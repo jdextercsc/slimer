@@ -79,6 +79,6 @@
 
 - name: create location constraint
   shell: "pcs constraint list --full | grep ipmilan-for-{{ item }} || pcs constraint location ipmilan-for-{{item}} avoids {{item}}"
-  with_items: groups ['controller']
+  with_items: groups['controller']
   run_once: true
   tags: pcs
