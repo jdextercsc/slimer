@@ -1,6 +1,6 @@
 ---
 - name: import OS specific variables
-  include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+  include_vars: Redhat-7.yml
   tags: pcs
 
 - name: install pacemaker packages
@@ -34,17 +34,12 @@
 
 - name: start pcsd
   service: name=pcsd enabled=yes state=started
-  when: ansible_distribution_major_version|int == 7
   tags: pcs
 
-- name: start pacemaker
-  service: name=pacemaker enabled=yes state=started
-  when: ansible_distribution_major_version|int == 6
-  tags: pcs
 
 - name: set pcs cluster auth
   command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ controller_node_names | join(' ') }} --force
-  when: (ansible_distribution_major_version|int == 7) and ("'Already authorized' not in cmd.stdout")
+  when: "'Already authorized' not in cmd.stdout"
   run_once: true
   tags: pcs
 
@@ -58,39 +53,9 @@
 - name: setup pacemaker cluster
   command: pcs cluster setup --name {{ pcs_cluster_name }} {{ controller_node_names | join(' ') }} --enable --start --force
   run_once: true
-  when: (ansible_distribution_major_version|int == 7) and ("'Cluster name' not in cmd.stdout")
+  when: "'Cluster name' not in cmd.stdout"
   tags: pcs
 
-- name: setup pacemaker cluster
-  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ controller_node_names | join(' ') }} --enable --start --force
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
-  tags: pcs
-
-- name: set udpu corosync transport
-  lineinfile: dest=/etc/cluster/cluster.conf regexp='  <cman' line='  <cman transport="udpu"/>'
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
-  tags: pcs
-
-- name: fetch cluster.conf file
-  fetch: src=/etc/cluster/cluster.conf dest=special/cluster.conf flat=yes
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
-  tags: pcs
-
-- name: deploy cluster.conf
-  copy: src=special/cluster.conf dest=/etc/cluster/cluster.conf mode=0644 owner=root group=root
-  when: ansible_distribution_major_version|int == 6
-  tags: pcs
-
-#- name: start pacemaker cluster
-#  command: creates=/var/lib/cluster/cluster.rng pcs cluster start
-#  tags: pcs
-
-#- name: enable pacemaker service
-#  service: name=pacemaker enabled=yes state=started
-#  tags: pcs
 
 - name: pause to let pacemaker initialize resources
   pause: seconds=30

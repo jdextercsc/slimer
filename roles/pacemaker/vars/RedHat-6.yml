@@ -1,9 +1,0 @@
----
-pacemaker_rpms:
-  - pacemaker
-  - resource-agents
-  - pcs
-  - fence-agents
-  - cman
-  - ccs
-
