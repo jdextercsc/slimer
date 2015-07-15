@@ -98,7 +98,7 @@
   tags: nova
 
 - name: create pacemaker resources for nova consoleauth
-  pcs_resource: command=create name=nova-consolueauth type=systemd:openstack-nova-consoleauth
+  pcs_resource: command=create name=nova-consoleauth type=systemd:openstack-nova-consoleauth
   args:
     operations:
       - action: monitor
