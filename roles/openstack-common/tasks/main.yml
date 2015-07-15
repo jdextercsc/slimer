@@ -9,5 +9,4 @@
 
 - name: disable firewalld
   service: name=firewalld enabled=no state=stopped
-  when: ansible_distribution_major_version|int == 7
   tags: openstack-common
