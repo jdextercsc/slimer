@@ -27,3 +27,5 @@ tun_if:
 
 smbios_uuid:
 
+fencing_agent: ipmilan
+fencing_params: "login=root passwd=calvin ipaddr=172.30.0.72 lanplus=1 cipher=1 op monitor=60s" 

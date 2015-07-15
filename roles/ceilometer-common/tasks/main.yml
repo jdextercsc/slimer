@@ -1,4 +1,5 @@
 ---
+
 - name: install & configure ceilometer
   include: juno.yml
   when: openstack_release == 'juno'

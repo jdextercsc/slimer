@@ -78,24 +78,24 @@ swift_nodes:
   - name: wiley-swift-3
     addr_int: 172.17.17.76
 
+# used in haproxy template moved fencing info to host_vars
 controller_nodes:
   - name: wiley-ctlr-1
     fqdn: wiley-ctlr-1.lordbusiness
     addr_pub: 172.17.21.70
     addr_int: 172.17.17.70
-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.70 lanplus='' verbose=''" }
+
 
   - name: wiley-ctlr-2
     fqdn: wiley-ctlr-2.lordbusiness
     addr_pub: 172.17.21.71
     addr_int: 172.17.17.71
-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.71 lanplus='' verbose=''" }
 
   - name: wiley-ctlr-3
     fqdn: wiley-ctlr-3.lordbusiness
     addr_pub: 172.17.21.72
     addr_int: 172.17.17.72
-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.30.0.72 lanplus='' verbose=''" }
+
 
 
 ### Messaging
