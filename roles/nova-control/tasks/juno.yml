@@ -98,7 +98,7 @@
   tags: nova
 
 - name: create pacemaker resources for nova consoleauth
-  pcs_resource: command=create name=nova-{{ item }} type=systemd:openstack-nova-consoleauth
+  pcs_resource: command=create name=nova-consoleauth type=systemd:openstack-nova-consoleauth
   args:
     operations:
       - action: monitor
@@ -109,8 +109,6 @@
 - name: create pacemaker constraints for nova-control
   shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
   with_items:
-    - { id: order-nova-consoleauth-clone-nova-novncproxy-clone-mandatory, cmd: "order start nova-consoleauth-clone then nova-novncproxy-clone" }
-    - { id: colocation-nova-novncproxy-clone-nova-consoleauth-clone, cmd: "colocation add nova-novncproxy-clone with nova-consoleauth-clone" }
     - { id: order-nova-api-clone-nova-novncproxy-clone-mandatory, cmd: "order start nova-api-clone then nova-novncproxy-clone" }
     - { id: colocation-nova-api-clone-nova-novncproxy-clone, cmd: "colocation add nova-api-clone with nova-novncproxy-clone" }
     - { id: order-nova-api-clone-nova-scheduler-clone-mandatory, cmd: "order start nova-api-clone then nova-scheduler-clone" }
