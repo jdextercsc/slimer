@@ -1,44 +1,6 @@
 ---
-- name: install ceilometer packages
-  yum: pkg={{ item }} state=present
-  with_items:
-    - openstack-ceilometer-api
-    - openstack-ceilometer-central
-    - openstack-ceilometer-collector
-    - openstack-ceilometer-alarm
-  tags: ceilometer
-
-- name: disable ceilometer services
-  service: name={{ item }} enabled=no
-  with_items:
-    - openstack-ceilometer-central
-    - openstack-ceilometer-collector
-    - openstack-ceilometer-api
-    - openstack-ceilometer-alarm-evaluator
-    - openstack-ceilometer-alarm-notifier
-  tags: ceilometer
-
-- name: disable ceilometer notification service
-  service: name=openstack-ceilometer-notification enabled=no
-  when: openstack_release == 'icehouse' or openstack_release == 'juno'
-  tags: ceilometer
-
-- include: juno-cluster-resources.yml
+- name: install & configure ceilometer-control
+  include: juno.yml
   when: openstack_release == 'juno'
-  tags: ceilometer
-
-- include: rhel7-icehouse-cluster-resources.yml
-  when: openstack_release == 'icehouse' and ansible_distribution_major_version|int == 7
-  tags: ceilometer
-
-- include: rhel6-icehouse-cluster-resources.yml
-  when: openstack_release == 'icehouse' and ansible_distribution_major_version|int == 6
-  tags: ceilometer
-
-- include: rhel6-havana-cluster-resources.yml
-  when: openstack_release == 'havana' and ansible_distribution_major_version|int == 6
-  tags: ceilometer
-
-- include: cluster-constraints.yml
   tags: ceilometer
 
