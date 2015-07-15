@@ -1,6 +1,6 @@
 ---
 - name: import OS specific variables
-  include_vars: Redhat-7.yml
+  include_vars: RedHat-7.yml
   tags: pcs
 
 - name: install pacemaker packages
@@ -72,13 +72,13 @@
   tags: pcs
 
 - name: create stonith resources
-  shell: "pcs stonith show ipmilan-fence-{{item}} || pcs stonith create ipmilan-fence-{{item}}  fence_{{item.fencing_agent}} {{item.fencing_params}} pcmk_host_list={{item}}"
+  shell: "pcs stonith show ipmilan-fence-{{item}} || pcs stonith create ipmilan-fence-{{item}}  fence_{{hostvars[item]['fencing_agent']}} pcmk_host_list={{item}} {{ hostvars[item]['fencing_params'] }}"
   with_items: groups['controller']
   run_once: true
   tags: pcs
 
 - name: create location constraint
-  shell: "pcs constraint list --full | grep ipmilan-for-{{ item }} || pcs constraint location ipmilan-for-{{item}} avoids {{item}}"
+  shell: "pcs constraint list --full | grep ipmilan-fence-{{ item }} || pcs constraint location ipmilan-fence-{{item}} avoids {{item}}"
   with_items: groups['controller']
   run_once: true
   tags: pcs

@@ -12,13 +12,16 @@
   tags: firewall
 
 - name: apply iptables file
-  template:  src={{item}}_iptables.j2 dest=/etc/sysconfig/iptables backup=yes
-  when: “{{ inventory_hostname }}" in groups['item’]
+  template:
+    src: "{{ item }}_iptables.j2"
+    dest: /etc/sysconfig/iptables
+    backup: yes
+  when: inventory_hostname in groups[item]
   with_items:
-    - controller
-    - compute
-    - swift
-    - scaleio
+    - "controller"
+    - "compute"
+    - "swift"
+    - "scaleio"
   tags: firewall
 
 - name: load new iptables rhel6-icehouse-cluster-resources

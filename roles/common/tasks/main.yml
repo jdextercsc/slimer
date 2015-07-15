@@ -41,8 +41,8 @@
 
 - name: configure ntp service
   template: src=ntp.conf.j2 dest=/etc/ntp.conf force=yes
-  notify:
-    - restart ntpd
+  #notify:
+  #  - restart ntpd
   tags: ntp
 
 - name: stop ntpd service to prepare for time synchronization
