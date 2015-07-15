@@ -13,7 +13,6 @@
 
 - name: increase the number of allowed open file descriptors for rabbitmq
   template: src=limits.conf.j2 dest=/etc/security/limits.d/90-rabbitmq.conf
-  when: ansible_distribution_major_version|int == 7
   tags: rabbitmq
 
 #- name: set custom systemd unit for rabbitmq
@@ -116,7 +115,7 @@
 
 - name: enable plugins
   command: rabbitmq-plugins enable {{ item }}
-  with_items: 
+  with_items:
     - "rabbitmq_management"
     - "rabbitmq_management_agent"
   tags: rabbitmq
@@ -141,16 +140,4 @@
         options:
           start-delay: 20s
   run_once: true
-  when: ansible_distribution_major_version|int == 7
-  tags: rabbitmq
-
-- name: create pacemaker resources for rabbitmq
-  pcs_resource: command=create name=rabbitmq type=lsb:rabbitmq-server clone=yes
-  args:
-    operations:
-      - action: monitor
-        options:
-          start-delay: 20s
-  run_once: true
-  when: ansible_distribution_major_version|int == 6
   tags: rabbitmq
