@@ -63,10 +63,10 @@
   pause: seconds=30
   tags: pcs
 
-- name: disable stonith
-  command: pcs property set stonith-enabled=false
-  run_once: true
-  tags: pcs
+#- name: disable stonith
+#  command: pcs property set stonith-enabled=false
+#  run_once: true
+#  tags: pcs
 
 - name: crm verify
   command: crm_verify -L
