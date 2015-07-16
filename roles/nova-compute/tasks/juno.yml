@@ -207,10 +207,10 @@
     - "service_credentials os_username ceilometer"
     - "service_credentials os_password {{ ceilometer_pass }}"
     - "service_credentials os_tenant_name services"
-    - "database connection mongodb://{{ controller_node_names | join(',') }}:{{ mongodb_port }}/ceilometer?replicaSet=ceilometer"
+    - "database connection mongodb://{{ mongodb_servers }}/ceilometer?replicaSet=ceilometer"
     - "database connection max_retries -1"
     - "database time_to_live {{ ceilometer_time_to_live | default(-1) }}"
-    - "DEFAULT memcache_servers {{ memcached_servers|join(',') }}"
+    - "DEFAULT memcache_servers {{ memcached_servers}}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: nova

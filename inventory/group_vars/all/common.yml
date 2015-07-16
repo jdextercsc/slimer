@@ -13,7 +13,6 @@ use_cinder_nfs_volume_driver: false
 use_netapp: false
 use_netapp_copyoffload: false
 # select Nova Network or Neutron
-use_nova_network: false
 # use nfs for nova ephemeral volumes
 use_nova_nfs_backend: false
 # if use_nova_shared_backend is "true", set nova_shared_volume, nova_shared_fs_type and nova_shared_fs_mount_options
@@ -23,7 +22,6 @@ use_neutron: true
 # icehouse: select ml2 and its plugins or a standalone Neutron plugin like Cisco Nexus
 use_neutron_ml2: true
 use_neutron_ovs: true
-use_neutron_cisco: false
 use_neutron_l3: true
 use_lbaas: true
 use_heat: true
@@ -49,9 +47,6 @@ ntp:
   - 1.rhel.pool.ntp.org
   - 2.rhel.pool.ntp.org
 
-mongo_replSet:
- - wiley-ctlr-2
- - wiley-ctlr-3
 
 ### Pacemaker cluster
 pcs_cluster_name: SOME_CLUSTER_NAME
@@ -59,24 +54,12 @@ pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_clust
 #pcs_cluster_pass_encoded: "{{ lookup('file', inventory_dir + '/credentials/pcs_cluster_pass_encoded') }}"
 #pcs_cluster_pass: password
 # short domain names of the controller nodes
-controller_node_names:
-  - wiley-ctlr-1
-  - wiley-ctlr-2
-  - wiley-ctlr-3
 
 # The value of the fencing parameter below depends from the type of the fencing agent.
 # Here are few examples for different agent types:
 # fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
 # fencing: { agent: cisco_ucs, params: "login=pacemaker passwd='SECRET' ipaddr=10.161.0.50 suborg=org-Controller port=Profile-CT-1-1 ssl=1 ssl_insecure=1" }
 #
-
-swift_nodes:
-  - name: wiley-swift-1
-    addr_int: 172.17.17.74
-  - name: wiley-swift-2
-    addr_int: 172.17.17.75
-  - name: wiley-swift-3
-    addr_int: 172.17.17.76
 
 # used in haproxy template moved fencing info to host_vars
 controller_nodes:
@@ -99,18 +82,14 @@ controller_nodes:
 
 
 ### Messaging
-rabbit_host: 172.17.17.99
-rabbit_hosts: 172.17.17.70:5672,172.17.17.71:5672,172.17.17.72:5672
-rabbit_port: 5672
-rabbit_node_names: "{{ controller_node_names }}"
+rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port}}{% if not loop.last %},{% endif %}{% endfor %}"
 rabbitmq_limit_nofile: 102400
 
 ### Database
 lb_db_vip: 172.17.17.101
 
 # Galera cluster parameters
-wsrep_cluster_name: galera_cluster
-wsrep_cluster_address: "gcomm://{{ controller_node_names | join(',') }}"
+
 #clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
 clustercheck_db_pass: password
 # Passwords for database special users
@@ -125,13 +104,9 @@ swift_db_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_db_pas
 
 
 ### memcache servers
-memcached_servers:
-  - '172.17.17.70:11211'
-  - '172.17.17.71:11211'
-  - '172.17.17.72:11211'
+memcached_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{memcached_port}}{% if not loop.last %},{% endif %}{% endfor %}"
+memcached_port: 11211
 
-### MongoDB servers (use domain names)
-mongodb_servers: "{{ controller_node_names }}"
 
 ### Keystone
 # scalability tuning parameters
@@ -164,10 +139,6 @@ ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer
 #nova_instance_live_migration: true
 #nova_network_device_mtu: 9000
 
-# nova network specific
-#nova_vlan_start: 74
-nova_vlan_interface: "{{ private_if }}"
-
 # specific for neutron based network implementation
 # disable security group
 nova_security_group_api: neutron
@@ -176,7 +147,7 @@ nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
 #nova_ovs_bridge_mappings: "physnet1:br1"
 
 # storage related
-nova_libvirt_images_type: rbd
+nova_libvirt_images_type: raw
 nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
 
 # Define the following parameters to use Nova with ephemeral storage on a shared volume
@@ -208,11 +179,6 @@ glance_registry_port: 9191
 #glance_rbd_pool: images
 #rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
 
-# for Havana only: use qpid or rabbit for communication with ceilometer
-#glance_notifier_strategy: qpid
-#glance_notifier_strategy: rabbit
-
-
 ### Cinder
 # definition of multi-volume backends
 cinder_enabled_backends:
@@ -229,16 +195,6 @@ nfs_path: "/srv"
 #cinder_rbd_pool: volumes
 
 # NetApp driver parameters
-# the volume backend name must match the name given in cinder_enabled_backends
-netapp_volume_backend_name: NetApp
-netapp_login: LOGIN
-netapp_password: SECRET
-netapp_vserver: VSERVER_NAME
-netapp_server_hostname: '10.161.0.220'
-netapp_storage_protocol: iscsi
-netapp_transport_type: https
-#netapp_thick_provisioned: false
-#cinder_nfs_mount_options: 'sec=sys,defaults'
 
 ### HAproxy parameters
 # pacemaker IPaddr2 resources for HAproxy
@@ -387,7 +343,7 @@ neutron_ovs_tunnel_bridge: br-tun
 neutron_ovs_bridges:
   - bridge: br-ex
     port: bond0.1805
-#neutron_ovs_veth_mtu: 9000
+neutron_ovs_veth_mtu: 9000
 # if neutron_external_network_bridge is not set, Neutron will use br-ex by default
 # it is recommended to use empty string with the ml2 plugin
 neutron_external_network_bridge: "br-ex"
@@ -471,9 +427,9 @@ horizon_public_servername: vip-horizon-pub.business
 # A url to make first request and get .secret_key_store generated
 dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 
+
 ### Ceilometer
 ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
-
 # keep last 5 days data only (value is in secs)
 ceilometer_time_to_live: 432000
 

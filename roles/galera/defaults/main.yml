@@ -2,3 +2,5 @@
 use_galera: true
 use_netapp_copyoffload: false
 clustercheck_db_user: clustercheck
+wsrep_cluster_name: galera_cluster
+wsrep_cluster_address: "gcomm://{{ {% for node in groups['controller'] %}{{ hostvars[node]['inventory_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}" }}"
