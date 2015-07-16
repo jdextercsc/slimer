@@ -40,7 +40,7 @@
 
 
 - name: set pcs cluster auth
-  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ hostvars[groups['controller']]['inventory_hostname']| join(' ') }} --force
+  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ hostvars[groups['controller']]['ansible_hostname']| join(' ') }} --force
   when: "'Already authorized' not in cmd.stdout"
   run_once: true
   tags: pcs
@@ -53,7 +53,7 @@
   tags: pcs
 
 - name: setup pacemaker cluster
-  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ hostvars[groups['controller']]['inventory_hostname'] | join(' ') }} --enable --start --force
+  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ hostvars[groups['controller']]['ansible_hostname'] | join(' ') }} --enable --start --force
   run_once: true
   when: "'Cluster name' not in cmd.stdout"
   tags: pcs
