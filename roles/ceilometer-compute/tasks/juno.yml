@@ -1,0 +1,8 @@
+---
+- name: install ceilometer compute software
+  yum: pkg=openstack-ceilometer-compute state=present
+  tags: ceilometer
+
+- name: enable ceilometer-compute
+  service: name=openstack-ceilometer-compute enabled=yes state=started
+  tags: ceilometer

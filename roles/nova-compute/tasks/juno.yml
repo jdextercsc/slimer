@@ -209,7 +209,7 @@
     - "service_credentials os_tenant_name services"
     - "database connection mongodb://{{ mongodb_servers }}/ceilometer?replicaSet=ceilometer"
     - "database connection max_retries -1"
-    - "database time_to_live {{ ceilometer_time_to_live | default(-1) }}"
+    - "database time_to_live {{ ceilometer_time_to_live | default(432000) }}"
     - "DEFAULT memcache_servers {{ memcached_servers}}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"

@@ -1,6 +1,5 @@
 ---
 - name: install & configure ceilometer-control
   include: juno.yml
-  when: openstack_release == 'juno'
+  when: (openstack_release == 'juno') and use_ceilometer
   tags: ceilometer
-

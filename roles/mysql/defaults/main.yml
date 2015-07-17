@@ -1,2 +1,2 @@
 ---
-use_galera: false
+use_galera: true 

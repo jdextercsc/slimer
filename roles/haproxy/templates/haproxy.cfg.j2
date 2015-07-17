@@ -11,35 +11,22 @@ listen stats :8888
     mode http
     stats uri /
     stats enable
-{% if use_ha_db is defined and use_ha_db %}
+
 frontend vip-db
     bind {{ lb_db_vip }}:3306
     timeout client 90s
     default_backend db-galera
 
-{% if use_galera is defined and use_galera %}
 backend db-galera
     option httpchk
     stick-table type ip size 2
     stick on dst
     timeout server 90s
-{% for node in controller_nodes %}
-{% if use_galera_active_active is defined and use_galera_active_active %}
-    server {{ node.name }} {{ node.addr_int }}:3306 check inter 1s port 9200
-{% else %}
-    server {{ node.name }} {{ node.addr_int }}:3306 check inter 1s on-marked-down shutdown-sessions port 9200 {% if node.name  != controller_nodes[0].name %}backup{% endif %}
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address'] }}:3306 check inter 1s port 9200
+{% endfor %}
 
-{% endif %}
-{% endfor %}
-{% else %}
-backend db-mariadb
-    balance roundrobin
-    timeout server 90s
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:3306 check inter 1s
-{% endfor %}
-{% endif %}
-{% endif %}
+
 
 frontend vip-msg
     bind {{ rabbit_host }}:{{ rabbit_port | default(5672) }}
@@ -49,8 +36,8 @@ frontend vip-msg
 backend msg
     balance roundrobin
     timeout server 900m
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:{{ rabbit_port | default(5672) }} check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:{{ rabbit_port | default(5672) }} check inter 1s
 {% endfor %}
 
 frontend vip-keystone-admin
@@ -59,8 +46,8 @@ frontend vip-keystone-admin
 
 backend keystone-admin
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:35357 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:35357 check inter 1s
 {% endfor %}
 
 frontend vip-keystone-pub
@@ -75,8 +62,8 @@ frontend vip-keystone-int
 
 backend keystone
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:5000 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:5000 check inter 1s
 {% endfor %}
 
 frontend  vip-glance-api-pub
@@ -91,27 +78,13 @@ frontend  vip-glance-api-int
 
 backend glance-api
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:9292 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:9292 check inter 1s
 {% endfor %}
 
 frontend vip-glance-registry-pub
     bind {{ glance_public_vip }}:9191
     default_backend glance-registry
-
-frontend vip-scaleio-int
-    bind {{ scaleio_vip }}:8443
-    mode tcp
-    default_backend scaleio
-
-backend scaleio
-   mode tcp
-  balance roundrobin
-  stick-table type ip size 200k expire 30m
-  stick on src
-{% for node in groups['controller'] %}
-    server {{ node }} {{ hostvars[node]['ansible_'+scaleio_interface]['ipv4']['address'] }}:8443 check inter 1s
-{% endfor %}
 
 {% if glance_public_vip != glance_private_vip %}
 frontend vip-glance-registry-int
@@ -121,8 +94,8 @@ frontend vip-glance-registry-int
 
 backend glance-registry
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:9191 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:9191 check inter 1s
 {% endfor %}
 
 frontend vip-cinder-pub
@@ -137,8 +110,8 @@ frontend vip-cinder-int
 
 backend cinder
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:8776 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:8776 check inter 1s
 {% endfor %}
 
 {% if use_neutron is defined and use_neutron %}
@@ -154,8 +127,8 @@ frontend vip-neutron-int
 
 backend neutron
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:9696 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:9696 check inter 1s
 {% endfor %}
 {% endif %}
 
@@ -187,20 +160,20 @@ frontend vip-nova-api-int
 
 backend nova-vnc-novncproxy
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:6080 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:6080 check inter 1s
 {% endfor %}
 
 backend nova-metadata
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:8775 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:8775 check inter 1s
 {% endfor %}
 
 backend nova-api
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:8774 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:8774 check inter 1s
 {% endfor %}
 
 frontend vip-horizon-pub
@@ -220,8 +193,8 @@ frontend vip-horizon-int
 backend horizon
     balance roundrobin
     timeout server 180s
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:80 check inter 1s cookie {{ node.name }}
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:80 check inter 1s cookie {{ hostvars[node]['ansible_hostname'] }}
 {% endfor %}
 
 frontend vip-heat-cfn-pub
@@ -252,20 +225,20 @@ frontend vip-heat-srv-int
 
 backend heat-cfn
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:8000 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:8000 check inter 1s
 {% endfor %}
 
 backend heat-cloudw
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:8003 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:8003 check inter 1s
 {% endfor %}
 
 backend heat-srv
     balance roundrobin
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:8004 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:8004 check inter 1s
 {% endfor %}
 
 frontend vip-ceilometer-pub
@@ -283,8 +256,8 @@ frontend vip-ceilometer-int
 backend ceilometer
     balance roundrobin
     timeout server 90s
-{% for node in controller_nodes %}
-    server {{ node.name }} {{ node.addr_int }}:8777 check inter 1s
+{% for node in groups['controller'] %}
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:8777 check inter 1s
 {% endfor %}
 
 
@@ -294,6 +267,20 @@ frontend vip-swift-int
 
 backend swift
     balance roundrobin
-{% for node in controller_nodes %}
-  server {{ node.name}} {{ node.addr_int }}:8080 check inter 1s
+{% for node in groups['controller'] %}
+  server {{ hostvars[node]['ansible_hostname']}} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address']  }}:8080 check inter 1s
+{% endfor %}
+
+frontend vip-scaleio-int
+    bind {{ scaleio_vip }}:8443
+    mode tcp
+    default_backend scaleio
+
+backend scaleio
+   mode tcp
+  balance roundrobin
+  stick-table type ip size 200k expire 30m
+  stick on src
+{% for node in groups['controller'] %}
+    server {{ node }} {{ hostvars[node]['ansible_'+scaleio_interface]['ipv4']['address'] }}:8443 check inter 1s
 {% endfor %}

@@ -85,10 +85,6 @@
 #  when: ansible_distribution_major_version|int == 7
 #  tags: glance
 
-- name: install rabbitmq driver
-  yum: pkg=python-kombu state=present
-  when: use_rabbit
-  tags: glance
 
 - name: check for tables
   command: mysql -e "select count(*) from information_schema.tables where table_schema='glance'" -sN
