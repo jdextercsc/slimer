@@ -1,6 +1,6 @@
 ---
 use_glance: true
-default_store: {% if use_swift %}swift{% elseif use_ceph%}{% else %}file{% endif %}
+default_store: file
 glance_show_image_direct_url: false
 glance_show_multiple_locations: false
 glance_datadir: /var/lib/glance/images/
