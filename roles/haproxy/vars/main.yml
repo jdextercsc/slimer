@@ -39,26 +39,26 @@ vip_addresses:
   - name: vip-scaleio-int
     addr: {{scaleio_vip}}
 
- - name: vip-keystone-pub
-   addr: {{vip_keystone_pub}}
+  - name: vip-keystone-pub
+    addr: {{vip_keystone_pub}}
 
- - name: vip-glance-pub
-   addr: {{vip_glance_pub}}
+  - name: vip-glance-pub
+    addr: {{vip_glance_pub}}
 
- - name: vip-cinder-pub
-   addr: {{vip_cinder_pub}}
+  - name: vip-cinder-pub
+    addr: {{vip_cinder_pub}}
 
- - name: vip-nova-pub
-   addr: {{vip_nova_pub}}
+  - name: vip-nova-pub
+    addr: {{vip_nova_pub}}
 
- - name: vip-neutron-pub
-   addr: {{vip_neutron_pub}}
+  - name: vip-neutron-pub
+    addr: {{vip_neutron_pub}}
 
- - name: vip-horizon-pub
-   addr: {{vip_horizon_pub}}
+  - name: vip-horizon-pub
+    addr: {{vip_horizon_pub}}
 
- - name: vip-heat-pub
-   addr: {{vip_heat_pub}}
+  - name: vip-heat-pub
+    addr: {{vip_heat_pub}}
 
- - name: vip-ceilometer-pub
-   addr: {{vip_ceilometer_pub}}
+  - name: vip-ceilometer-pub
+    addr: {{vip_ceilometer_pub}}
