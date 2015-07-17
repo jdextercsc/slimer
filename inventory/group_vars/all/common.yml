@@ -58,70 +58,7 @@ heat_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_pass chars=
 ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
 
 keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
-
-### HAproxy parameters
-# pacemaker IPaddr2 resources for HAproxy
-vip_addresses:
-  - name: vip-db
-    addr: 172.17.17.101
-
-  - name: vip-msg
-    addr: 172.17.17.99
-
-  - name: vip-keystone-int
-    addr: 172.17.17.103
-
-  - name: vip-glance-int
-    addr: 172.17.17.104
-
-  - name: vip-cinder-int
-    addr: 172.17.17.105
-
-  - name: vip-nova-int
-    addr: 172.17.17.106
-
-  - name: vip-neutron-int
-    addr: 172.17.17.107
-
-  - name: vip-horizon-int
-    addr: 172.17.17.108
-
-  - name: vip-heat-int
-    addr: 172.17.17.109
-
-  - name: vip-ceilometer-int
-    addr: 172.17.17.110
-
-  - name: vip-swift-int
-    addr: 172.17.17.111
-
-  - name: vip-scaleio-int
-    addr: 172.17.17.112
-
-#  - name: vip-keystone-pub
-#    addr: 172.17.20.103
-
-#  - name: vip-glance-pub
-#    addr: 172.17.20.104
-
-#  - name: vip-cinder-pub
-#    addr: 172.17.20.105
-
-#  - name: vip-nova-pub
-#    addr: 172.17.20.106
-
-#  - name: vip-neutron-pub
-#    addr: 172.17.20.107
-
-#  - name: vip-horizon-pub
-#    addr: 172.17.20.108
-
-#  - name: vip-heat-pub
-#    addr: 172.17.20.109
-
-#  - name: vip-ceilometer-pub
-#    addr: 172.17.20.110
-
+#internal VIPs
 lb_db_vip: 172.17.17.101
 keystone_vip: 172.17.17.103
 glance_vip: 172.17.17.104
@@ -134,40 +71,16 @@ ceilometer_vip: 172.17.17.110
 swift_vip: 172.17.17.111
 scaleio_vip: 172.17.17.112
 
-swift_public_vip: "{{ swift_vip }}"
-swift_admin_vip: "{{ swift_vip }}"
-swift_private_vip: "{{ swift_vip }}"
+vip_keystone_pub: 172.17.20.103
+vip_glance_pub: 172.17.20.104
+vip_cinder_pub: 172.17.20.105
+vip_nova_pub: 172.17.20.106
+vip_neutron_pub: 172.17.20.107
+vip_horizon_pub: 172.17.20.108
+vip_heat_pub: 172.17.20.109
+vip_ceilometer_pub: 172.17.20.110
 
-keystone_public_vip: "{{keystone_vip}}"
-keystone_admin_vip: "{{ keystone_vip }}"
-keystone_private_vip: "{{ keystone_vip }}"
 
-glance_public_vip: "{{glance_vip}}"
-glance_admin_vip: "{{ glance_vip }}"
-glance_private_vip: "{{ glance_vip }}"
-
-cinder_public_vip: "{{ cinder_vip }}"
-cinder_admin_vip: "{{ cinder_vip }}"
-cinder_private_vip: "{{ cinder_vip }}"
-
-nova_public_vip: "{{nova_vip}}"
-nova_admin_vip: "{{ nova_vip }}"
-nova_private_vip: "{{ nova_vip }}"
-
-neutron_public_vip: "{{ neutron_vip}}"
-neutron_admin_vip: "{{ neutron_vip }}"
-neutron_private_vip: "{{ neutron_vip }}"
-
-horizon_public_vip: "{{ horizon_vip }}"
-horizon_private_vip: "{{ horizon_vip }}"
-
-heat_public_vip: "{{ heat_vip }}"
-heat_admin_vip: "{{ heat_vip }}"
-heat_private_vip: "{{ heat_vip }}"
-
-ceilometer_public_vip: "{{ ceilometer_vip}}"
-ceilometer_admin_vip: "{{ ceilometer_vip }}"
-ceilometer_private_vip: "{{ ceilometer_vip }}"
 
 
 ### Horizon

@@ -5,3 +5,5 @@ horizon_bind_host: "{{ internal_ipaddr }}"
 dashboard_first_request_url: "http://{{ horizon_bind_host }}/dashboard"
 rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port}}{% if not loop.last %},{% endif %}{% endfor %}"
 memcached_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{memcached_port | default(11211)}}{% if not loop.last %},{% endif %}{% endfor %}"
+# A url to make first request and get .secret_key_store generated
+dashboard_first_request_url: "http://{{horizon_public_servername}}/dashboard"
