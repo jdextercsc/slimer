@@ -21,7 +21,7 @@
     - "filter:authtoken admin_user swift"
     - "filter:authtoken admin_password {{swift_pass}}"
     - "DEFAULT bind_ip {{internal_ipaddr}}"
-    - "filter:cache memcache_servers {{ memcache_list }}"
+    - "filter:cache memcache_servers {{ memcached_servers}}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: swift

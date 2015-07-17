@@ -1,3 +1,4 @@
 ---
 public_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + primary_if ].ipv4.address }}"
 internal_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + private_if ].ipv4.address }}"
+rabbit_node_names: "hostvars[groups['controller']]['ansible_hostname']"

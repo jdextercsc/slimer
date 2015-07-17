@@ -27,7 +27,7 @@
     - "DEFAULT notification_driver messaging"
     - "DEFAULT control_exchange cinder"
     - "DEFAULT glance_host {{ glance_private_vip }}"
-    - "DEFAULT memcache_servers {{ memcache_list }}"
+    - "DEFAULT memcache_servers {{ memcached_servers }}"
     - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
     - "DEFAULT rabbit_ha_queues true"
     - "DEFAULT host {{ cinder_host }}"

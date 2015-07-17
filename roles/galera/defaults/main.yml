@@ -2,3 +2,4 @@
 use_galera: true
 use_netapp_copyoffload: false
 clustercheck_db_user: clustercheck
+wsrep_cluster_name: galera_cluster

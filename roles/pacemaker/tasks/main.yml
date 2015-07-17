@@ -1,11 +1,13 @@
 ---
-- name: import OS specific variables
-  include_vars: RedHat-7.yml
-  tags: pcs
+
 
 - name: install pacemaker packages
   yum: pkg={{ item }} state=present
-  with_items: pacemaker_rpms
+  with_items:
+    - pacemaker
+    - resource-agents
+    - fence-agents-all
+    - pcs
   tags: pcs
 
 #- name: set password for the hacluster user
@@ -38,7 +40,7 @@
 
 
 - name: set pcs cluster auth
-  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ controller_node_names | join(' ') }} --force
+  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ hostvars[groups['controller']]['ansible_hostname']| join(' ') }} --force
   when: "'Already authorized' not in cmd.stdout"
   run_once: true
   tags: pcs
@@ -51,7 +53,7 @@
   tags: pcs
 
 - name: setup pacemaker cluster
-  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ controller_node_names | join(' ') }} --enable --start --force
+  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ hostvars[groups['controller']]['ansible_hostname'] | join(' ') }} --enable --start --force
   run_once: true
   when: "'Cluster name' not in cmd.stdout"
   tags: pcs
@@ -61,10 +63,10 @@
   pause: seconds=30
   tags: pcs
 
-- name: disable stonith
-  command: pcs property set stonith-enabled=false
-  run_once: true
-  tags: pcs
+#- name: disable stonith
+#  command: pcs property set stonith-enabled=false
+#  run_once: true
+#  tags: pcs
 
 - name: crm verify
   command: crm_verify -L
