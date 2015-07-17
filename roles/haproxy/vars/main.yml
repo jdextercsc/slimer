@@ -4,61 +4,61 @@
 # pacemaker IPaddr2 resources for HAproxy
 vip_addresses:
   - name: vip-db
-    addr: {{lb_db_vip}}
+    addr: "{{lb_db_vip}}"
 
   - name: vip-msg
-    addr: {{rabbit_vip}}
+    addr: "{{rabbit_vip}}"
 
   - name: vip-keystone-int
-    addr: {{keystone_vip}}
+    addr: "{{keystone_vip}}"
 
   - name: vip-glance-int
-    addr: {{glance_vip}}
+    addr: "{{glance_vip}}"
 
   - name: vip-cinder-int
-    addr: {{cinder_vip}}
+    addr: "{{cinder_vip}}"
 
   - name: vip-nova-int
-    addr: {{nova_vip}}
+    addr: "{{nova_vip}}"
 
   - name: vip-neutron-int
-    addr: {{neutron_vip}}
+    addr: "{{neutron_vip}}"
 
   - name: vip-horizon-int
-    addr: {{horizon_vip}}
+    addr: "{{horizon_vip}}"
 
   - name: vip-heat-int
-    addr: {{heat_vip}}
+    addr: "{{heat_vip}}"
 
   - name: vip-ceilometer-int
-    addr: {{ceilometer_vip}}
+    addr: "{{ceilometer_vip}}"
 
   - name: vip-swift-int
-    addr: {{swift_vip}}
+    addr: "{{swift_vip}}"
 
   - name: vip-scaleio-int
-    addr: {{scaleio_vip}}
+    addr: "{{scaleio_vip}}"
 
   - name: vip-keystone-pub
-    addr: {{vip_keystone_pub}}
+    addr: "{{vip_keystone_pub}}"
 
   - name: vip-glance-pub
-    addr: {{vip_glance_pub}}
+    addr: "{{vip_glance_pub}}"
 
   - name: vip-cinder-pub
-    addr: {{vip_cinder_pub}}
+    addr: "{{vip_cinder_pub}}"
 
   - name: vip-nova-pub
-    addr: {{vip_nova_pub}}
+    addr: "{{vip_nova_pub}}"
 
   - name: vip-neutron-pub
-    addr: {{vip_neutron_pub}}
+    addr: "{{vip_neutron_pub}}"
 
   - name: vip-horizon-pub
-    addr: {{vip_horizon_pub}}
+    addr: "{{vip_horizon_pub}}"
 
   - name: vip-heat-pub
-    addr: {{vip_heat_pub}}
+    addr: "{{vip_heat_pub}}"
 
   - name: vip-ceilometer-pub
-    addr: {{vip_ceilometer_pub}}
+    addr: "{{vip_ceilometer_pub}}"
