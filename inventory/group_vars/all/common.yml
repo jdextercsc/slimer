@@ -3,36 +3,8 @@
 
 # select OpenStack release: havana, icehouse, juno
 openstack_release: juno
-use_ha_controller: true
 use_swift: true
-use_rabbit: true
-use_ha_db: true
-use_galera: true
 use_ceph: false
-use_cinder_nfs_volume_driver: false
-use_netapp: false
-use_netapp_copyoffload: false
-# select Nova Network or Neutron
-# use nfs for nova ephemeral volumes
-use_nova_nfs_backend: false
-# if use_nova_shared_backend is "true", set nova_shared_volume, nova_shared_fs_type and nova_shared_fs_mount_options
-#use_nova_shared_backend: "{{ use_nova_nfs_backend }}"
-use_neutron: true
-# havana: select ovs or other Neutron standalone plugin
-# icehouse: select ml2 and its plugins or a standalone Neutron plugin like Cisco Nexus
-use_neutron_ml2: true
-use_neutron_ovs: true
-use_neutron_l3: true
-use_lbaas: true
-use_heat: true
-use_ceilometer: true
-
-
-### Network interface assignment
-# any deviations for individual hosts should be specified in the host_vars or inventory files
-primary_if: bond0.1805
-private_if: bond0.1801
-tunnel_if: bond0.1802
 
 search_domain: ".lordbusiness"
 nameservers:
@@ -40,6 +12,11 @@ nameservers:
  - 192.168.70.3
  - 192.168.70.4
 
+### Network interface assignment
+# any deviations for individual hosts should be specified in the host_vars or inventory files
+primary_if: bond0.1805
+private_if: bond0.1801
+tunnel_if: bond0.1802
 
 ### NTP servers
 ntp:
@@ -47,52 +24,20 @@ ntp:
   - 1.rhel.pool.ntp.org
   - 2.rhel.pool.ntp.org
 
+#neutron
+neutron_ovs_bridges:
+  - bridge: br-ex
+    port: bond0.1805
+#glance
+
+default_store: swift
 
 ### Pacemaker cluster
-pcs_cluster_name: SOME_CLUSTER_NAME
+pcs_cluster_name: automation_cluster
 pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
-#pcs_cluster_pass_encoded: "{{ lookup('file', inventory_dir + '/credentials/pcs_cluster_pass_encoded') }}"
-#pcs_cluster_pass: password
-# short domain names of the controller nodes
 
-# The value of the fencing parameter below depends from the type of the fencing agent.
-# Here are few examples for different agent types:
-# fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
-# fencing: { agent: cisco_ucs, params: "login=pacemaker passwd='SECRET' ipaddr=10.161.0.50 suborg=org-Controller port=Profile-CT-1-1 ssl=1 ssl_insecure=1" }
-#
-
-# used in haproxy template moved fencing info to host_vars
-controller_nodes:
-  - name: wiley-ctlr-1
-    fqdn: wiley-ctlr-1.lordbusiness
-    addr_pub: 172.17.21.70
-    addr_int: 172.17.17.70
-
-
-  - name: wiley-ctlr-2
-    fqdn: wiley-ctlr-2.lordbusiness
-    addr_pub: 172.17.21.71
-    addr_int: 172.17.17.71
-
-  - name: wiley-ctlr-3
-    fqdn: wiley-ctlr-3.lordbusiness
-    addr_pub: 172.17.21.72
-    addr_int: 172.17.17.72
-
-
-
-### Messaging
-rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port}}{% if not loop.last %},{% endif %}{% endfor %}"
-rabbitmq_limit_nofile: 102400
-
-### Database
-lb_db_vip: 172.17.17.101
-
-# Galera cluster parameters
-
-#clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
-clustercheck_db_pass: password
-# Passwords for database special users
+#database users passwords
+clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
 db_root_password: "{{ lookup('password', inventory_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
 keystone_db_pass: "{{ lookup('password', inventory_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
 glance_db_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_db_pass chars=ascii_letters,digits') }}"
@@ -101,20 +46,6 @@ nova_db_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_db_pass 
 neutron_db_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_db_pass chars=ascii_letters,digits') }}"
 heat_db_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
 swift_db_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_db_pass chars=ascii_letters,digits') }}"
-
-
-### memcache servers
-memcached_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{memcached_port}}{% if not loop.last %},{% endif %}{% endfor %}"
-memcached_port: 11211
-
-
-### Keystone
-# scalability tuning parameters
-#keystone_rpc_conn_pool_size: 30
-#keystone_rpc_thread_pool_size: 64
-#keystone_database_min_pool_size: 1
-
-keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
 
 # passwords for special OpenStack users
 admin_pass: "{{ lookup('password', inventory_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
@@ -126,75 +57,7 @@ nova_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_pass chars=
 heat_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_pass chars=ascii_letters,digits') }}"
 ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
 
-
-### Nova
-# scalability tuning parameters
-#nova_rpc_conn_pool_size: 30
-#nova_rpc_thread_pool_size: 64
-#nova_database_min_pool_size: 1
-#nova_conductor_workers: 4
-#nova_osapi_workers: 4
-
-# hypervisor features
-#nova_instance_live_migration: true
-#nova_network_device_mtu: 9000
-
-# specific for neutron based network implementation
-# disable security group
-nova_security_group_api: neutron
-#nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
-#nova_ovs_bridge_mappings: "physnet1:br1"
-
-# storage related
-nova_libvirt_images_type: raw
-nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
-
-# Define the following parameters to use Nova with ephemeral storage on a shared volume
-# For example, to use a NFS share:
-#nova_shared_volume: "nfs-server.example.com:/srv/nova"
-#nova_shared_fs_type: nfs4
-#nova_shared_fs_mount_options: "sec=sys,defaults"
-
-# ceilometer related
-nova_notify_on_state_change: vm_and_task_state
-
-
-### Glance
-default_store: swift
-glance_datadir: /var/lib/glance/images/
-glance_api_port: 9292
-glance_registry_port: 9191
-# define the following parameters to use NetApp as a Glance backend
-#default_store: file
-#glance_show_image_direct_url: true
-#glance_show_multiple_locations: true
-#glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
-# this is necessary to support NetApp copy offload
-#glance_filesystem_store_file_perm: '0644'
-
-# ceph backend settings
-#default_store: rbd
-#glance_rbd_user: images
-#glance_rbd_pool: images
-#rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
-
-### Cinder
-# definition of multi-volume backends
-cinder_enabled_backends:
-#  - LVM_iSCSI
-  - Generic_NFS
-#  - RBD
-#  - GlusterFS
-#  - NetApp
-
-nfs_path: "/srv"
-
-# ceph backend settings
-#cinder_rbd_user: volumes
-#cinder_rbd_pool: volumes
-
-# NetApp driver parameters
+keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
 
 ### HAproxy parameters
 # pacemaker IPaddr2 resources for HAproxy
@@ -259,7 +122,7 @@ vip_addresses:
 #  - name: vip-ceilometer-pub
 #    addr: 172.17.20.110
 
-
+lb_db_vip: 172.17.17.101
 keystone_vip: 172.17.17.103
 glance_vip: 172.17.17.104
 cinder_vip: 172.17.17.105
@@ -307,120 +170,6 @@ ceilometer_admin_vip: "{{ ceilometer_vip }}"
 ceilometer_private_vip: "{{ ceilometer_vip }}"
 
 
-### Neutron parameters
-neutron_core_plugin: neutron.plugins.ml2.plugin.Ml2Plugin
-neutron_service_plugins:
-  - neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
-  - neutron.services.firewall.fwaas_plugin.FirewallPlugin
-  - neutron.services.loadbalancer.plugin.LoadBalancerPlugin
-  - neutron.services.metering.metering_plugin.MeteringPlugin
-
-# scalability tuning parameters
-#neutron_thread_pool_size: 64
-#neutron_rpc_conn_pool_size: 30
-#neutron_database_min_pool_size: 1
-#neutron_database_max_pool_size: 10
-#neutron_api_workers: 0
-#neutron_rpc_workers: 0
-neutron_metadata_workers: 20
-neutron_metadata_backlog: 2048
-
-neutron_metadata_proxy_shared_secret: "{{ lookup('password', inventory_dir + '/credentials/neutron_metadata_proxy_shared_secret chars=hexdigits') }}"
-neutron_dhcp_enable_isolated_metadata: true
-neutron_ml2_type_drivers: vxlan,flat
-neutron_ml2_tenant_network_types: vxlan
-#neutron_network_vlan_ranges: "pnet1:100:200"
-neutron_network_vlan_ranges: "physnet1"
-neutron_vxlan_vni_ranges: 10:10000
-neutron_vxlan_group: 239.1.1.1
-neutron_ovs_tenant_network_type: vxlan
-neutron_ovs_tunnel_type: vxlan
-neutron_ovs_tunnel_id_ranges: 10:10000
-neutron_ovs_bridge_mappings: "physnet1:br-ex"
-#neutron_ovs_bridges:
-neutron_ovs_integration_bridge: br-int
-neutron_ovs_tunnel_bridge: br-tun
-neutron_ovs_bridges:
-  - bridge: br-ex
-    port: bond0.1805
-neutron_ovs_veth_mtu: 9000
-# if neutron_external_network_bridge is not set, Neutron will use br-ex by default
-# it is recommended to use empty string with the ml2 plugin
-neutron_external_network_bridge: "br-ex"
-
-# disable security groups
-neutron_ovs_firewall_driver: "neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver"
-neutron_agent_tunnel_types: vxlan
-
-# Cisco Nexus standalone plugin for Neutron
-cisco_provider_vlan_auto_create: true
-cisco_provider_vlan_auto_trunk: true
-cisco_nexus_l3_enable: true
-cisco_nexus_switches:
-  - ipaddr: 10.161.0.21
-    username: admin
-    password: SECRET
-    ssh_port: 22
-    hosts:
-      - name: compute-01.example.com
-        port: "port-channel:2"
-
-      - name: compute-02.example.com
-        port: "port-channel:2"
-
-      - name: compute-03.example.com
-        port: "port-channel:2"
-
-      - name: compute-04.example.com
-        port: "port-channel:2"
-
-      - name: compute-05.example.com
-        port: "port-channel:2"
-
-      - name: compute-06.example.com
-        port: "port-channel:2"
-
-      - name: controller-01.example.com
-        port: "port-channel:2"
-
-      - name: controller-02.example.com
-        port: "port-channel:2"
-
-      - name: controller-03.example.com
-        port: "port-channel:2"
-
-  - ipaddr: 10.161.0.22
-    username: admin
-    password: SECRET
-    ssh_port: 22
-    hosts:
-      - name: compute-01.example.com
-        port: "port-channel:2"
-
-      - name: compute-02.example.com
-        port: "port-channel:2"
-
-      - name: compute-03.example.com
-        port: "port-channel:2"
-
-      - name: compute-04.example.com
-        port: "port-channel:2"
-
-      - name: compute-05.example.com
-        port: "port-channel:2"
-
-      - name: compute-06.example.com
-        port: "port-channel:2"
-
-      - name: controller-01.example.com
-        port: "port-channel:2"
-
-      - name: controller-02.example.com
-        port: "port-channel:2"
-
-      - name: controller-03.example.com
-        port: "port-channel:2"
-
 ### Horizon
 horizon_internal_servername: vip-horizon-int.business
 horizon_public_servername: vip-horizon-pub.business
@@ -428,18 +177,95 @@ horizon_public_servername: vip-horizon-pub.business
 dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 
 
+
+
+
+#use_galera: true
+#use_cinder_nfs_volume_driver: false
+#use_netapp: false
+#use_netapp_copyoffload: false
+# select Nova Network or Neutron
+# use nfs for nova ephemeral volumes
+#use_nova_nfs_backend: false
+# if use_nova_shared_backend is "true", set nova_shared_volume, nova_shared_fs_type and nova_shared_fs_mount_options
+#use_nova_shared_backend: "{{ use_nova_nfs_backend }}"
+#use_neutron: true
+#### icehouse: select ml2 and its plugins or a standalone Neutron plugin like Cisco Nexus
+# use_neutron_ml2: true
+# use_neutron_ovs: true
+# use_neutron_l3: true
+# use_lbaas: true
+# use_heat: true
+# use_ceilometer: true
+
+### Keystone
+# scalability tuning parameters
+#keystone_rpc_conn_pool_size: 30
+#keystone_rpc_thread_pool_size: 64
+#keystone_database_min_pool_size: 1
+
+### Nova
+# scalability tuning parameters
+#nova_rpc_conn_pool_size: 30
+#nova_rpc_thread_pool_size: 64
+#nova_database_min_pool_size: 1
+#nova_conductor_workers: 4
+#nova_osapi_workers: 4
+
+# hypervisor features
+#nova_instance_live_migration: true
+#nova_network_device_mtu: 9000
+
+# specific for neutron based network implementation
+# disable security group
+#nova_security_group_api: neutron
+#nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+#nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
+#nova_ovs_bridge_mappings: "physnet1:br1"
+
+# storage related (only use with use_ceph: true)
+#nova_libvirt_images_type: raw
+#nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+
+# Define the following parameters to use Nova with ephemeral storage on a shared volume
+# For example, to use a NFS share:
+#nova_shared_volume: "nfs-server.example.com:/srv/nova"
+#nova_shared_fs_type: nfs4
+#nova_shared_fs_mount_options: "sec=sys,defaults"
+
+# ceilometer related
+#nova_notify_on_state_change: vm_and_task_state
+
+
+### Glance
+# default_store: swift
+# define the following parameters to use NetApp as a Glance backend
+#glance_show_image_direct_url: true
+#glance_show_multiple_locations: true
+#glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
+# this is necessary to support NetApp copy offload
+#glance_filesystem_store_file_perm: '0644'
+
+# ceph backend settings
+#default_store: rbd
+#glance_rbd_user: images
+#glance_rbd_pool: images
+#rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+
+# ceph backend settings
+#cinder_rbd_user: volumes
+#cinder_rbd_pool: volumes
+
 ### Ceilometer
-ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
+#ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
 # keep last 5 days data only (value is in secs)
-ceilometer_time_to_live: 432000
+#ceilometer_time_to_live: 432000
 
 
-#### swift
-# part_power = 2 ^ partition power = partition count. ( The partition is rounded up after calculation.)
-part_power: 16
-#replica couunt =  The number of times that your data will be replicated in the cluster.
-replica_count: 3
-# min_part_hours =  Minimum number of hours before a partition can be moved. This parameter increases availability of data by not moving more than one copy of a given data item within that min_part_hours amount of time.
-min_part_hours: 24
-swift_pathprefix: "{{ lookup('password', inventory_dir + '/credentials/swift_prefix chars=ascii_letters,digits') }}"
-swift_pathsuffix: "{{ lookup('password', inventory_dir + '/credentials/swift_suffix chars=ascii_letters,digits') }}"
+# #### swift
+# # part_power = 2 ^ partition power = partition count. ( The partition is rounded up after calculation.)
+# part_power: 16
+# #replica couunt =  The number of times that your data will be replicated in the cluster.
+# replica_count: 3
+# # min_part_hours =  Minimum number of hours before a partition can be moved. This parameter increases availability of data by not moving more than one copy of a given data item within that min_part_hours amount of time.
+# min_part_hours: 24

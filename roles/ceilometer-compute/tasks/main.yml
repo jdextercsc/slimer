@@ -1,8 +1,5 @@
 ---
-- name: install ceilometer compute software
-  yum: pkg=openstack-ceilometer-compute state=present
-  tags: ceilometer
-
-- name: enable ceilometer-compute
-  service: name=openstack-ceilometer-compute enabled=yes state=started
+- name: install & configure ceilometer-compute
+  include: juno.yml
+  when: (openstack_release == 'juno') and use_ceilometer
   tags: ceilometer

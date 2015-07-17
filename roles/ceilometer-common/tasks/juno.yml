@@ -27,7 +27,7 @@
     - "service_credentials os_password {{ ceilometer_pass }}"
     - "database connection mongodb://{{ mongodb_servers }}/ceilometer?replicaSet=ceilometer"
     - "database max_retries -1"
-    - "database time_to_live {{ ceilometer_time_to_live | default(-1) }}"
+    - "database time_to_live {{ ceilometer_time_to_live | default(432000) }}"
     - "api host {{ ceilometer_bind_host }}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"

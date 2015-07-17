@@ -3,3 +3,6 @@ public_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + primary_if ].ipv4.
 internal_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + private_if ].ipv4.address }}"
 tunnel_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + tunnel_if ].ipv4.address }}"
 neutron_bind_host: "{{ internal_ipaddr }}"
+rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port}}{% if not loop.last %},{% endif %}{% endfor %}"
+memcached_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{memcached_port | default(11211)}}{% if not loop.last %},{% endif %}{% endfor %}"
+neutron_metadata_proxy_shared_secret: "{{ lookup('password', inventory_dir + '/credentials/neutron_metadata_proxy_shared_secret chars=hexdigits') }}"

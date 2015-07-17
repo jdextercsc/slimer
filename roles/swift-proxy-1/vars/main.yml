@@ -1,3 +1,6 @@
 ---
 public_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + primary_if ].ipv4.address }}"
 internal_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + private_if ].ipv4.address }}"
+memcached_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{memcached_port | default(11211)}}{% if not loop.last %},{% endif %}{% endfor %}"
+swift_pathprefix: "{{ lookup('password', inventory_dir + '/credentials/swift_prefix chars=ascii_letters,digits') }}"
+swift_pathsuffix: "{{ lookup('password', inventory_dir + '/credentials/swift_suffix chars=ascii_letters,digits') }}"

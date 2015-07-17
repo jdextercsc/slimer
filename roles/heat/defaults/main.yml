@@ -7,3 +7,4 @@ heat_workers: 0
 heat_max_header_line: 16384
 heat_instance_connection_is_secure: 0
 heat_instance_connection_https_validate_certificates: 1
+use_heat: true
