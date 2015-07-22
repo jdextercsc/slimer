@@ -6,7 +6,7 @@
     - "glance_store stores glance.store.swift.Store"
     - "DEFAULT default_store swift"
     - "glance_store swift_store_auth_version 2"
-    - "glance_store swift_store_auth_address {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(5000) }}/v2.0"
+    - "glance_store swift_store_auth_address {{ keystone_auth_protocol | default('http') }}://{{ keystone_vip }}:{{ keystone_auth_port | default(5000) }}/v2.0"
     - "glance_store swift_store_user services:glance"
     - "glance_store swift_store_key {{ glance_pass }}"
     - "glance_store swift_store_container glance"

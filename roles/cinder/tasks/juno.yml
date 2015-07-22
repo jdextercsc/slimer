@@ -52,6 +52,7 @@
 
 - name: create nfs export directory
   file: state=directory path={{nfs_path}}/cinder owner=root group=cinder mode=0640
+  when: use_cinder_nfs_volume_driver
   tags: cinder
 
 - name: create cinder nfs export file

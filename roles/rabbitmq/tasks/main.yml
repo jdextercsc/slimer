@@ -86,8 +86,13 @@
 #  tags: rabbitmq
 #  ignore_errors:
 
+- name: debug rabbit
+  debug: var=rabbit_node_names
+  tags: debug
+
 - name: join rabbitmq cluster from other controller nodes
-  shell: creates=/etc/rabbitmq/step.join_cluster rabbitmqctl join_cluster rabbit@{{ rabbit_node_names[0] }}; touch /etc/rabbitmq/step.join_cluster
+  shell: creates=/etc/rabbitmq/step.join_cluster rabbitmqctl join_cluster rabbit@{{ groups.controller[0] }}; touch /etc/rabbitmq/step.join_cluster
+#  shell: creates=/etc/rabbitmq/step.join_cluster rabbitmqctl join_cluster rabbit@{{ rabbit_node_names[0] }}; touch /etc/rabbitmq/step.join_cluster
   when: inventory_hostname != groups.controller[0]
   tags: rabbitmq
 

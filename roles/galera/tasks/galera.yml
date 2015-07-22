@@ -57,10 +57,11 @@
   service: name=mariadb enabled=no state=stopped
   tags: mysql
 
+
 - name: create pacemaker resource for galera
   shell: "pcs resource --full | grep 'Resource: {{ item.id }}' || pcs resource {{ item.cmd }}"
   with_items:
-    - { id: "galera", cmd: "create galera galera enable_creation=true wsrep_cluster_address='{{ wsrep_cluster_address }}' additional_parameters='--open-files-limit=16384' meta master-max=3 ordered=true op promote timeout=300s on-fail=block --master" }
+    - { id: "galera", cmd: "create galera galera enable_creation=true wsrep_cluster_address='gcomm://{{ wsrep_cluster_address }}' additional_parameters='--open-files-limit=16384' meta master-max=3 ordered=true op promote timeout=300s on-fail=block --master" }
   run_once: true
   register: cmd
   changed_when: "'Resource: {{ item.id }}' not in cmd.stdout"
