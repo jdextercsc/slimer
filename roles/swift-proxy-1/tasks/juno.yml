@@ -14,8 +14,10 @@
   command: openstack-config --set --verbose /etc/swift/proxy-server.conf {{item}}
   with_items:
     - "DEFAULT verbose true"
-    - "filter:authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
-    - "filter:authtoken auth_host {{keystone_public_vip}}"
+    - "filter:authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ vip_keystone_pub }}:{{ keystone_public_port | default(5000) }}/"
+    - "filter:authtoken auth_host {{vip_keystone_pub}}"
+    - "filter:authtoken auth_port {{keystone_public_port | default(5000)}}"
+    - "filter:authtoken auth_protocol {{keystone_public_protocol | default('http')}}"
     - "filter:authtoken cache swift.cache"
     - "filter:authtoken admin_tenant_name services"
     - "filter:authtoken admin_user swift"
@@ -31,7 +33,7 @@
   with_items:
     - "DEFAULT verbose true"
     - "object-expirer concurrency 100"
-    - "filter:cache memcache_servers {{ memcache_list }}"
+    - "filter:cache memcache_servers {{  memcached_servers}}"
   register: cmd
   changed_when: "'unchanged' not in cmd.stderr"
   tags: swift

@@ -1,4 +1,10 @@
 ---
+neutron_ovs_tenant_network_type: vxlan
+neutron_ovs_tunnel_type: vxlan
+neutron_ovs_tunnel_id_ranges: 10:10000
+neutron_ovs_bridge_mappings: "physnet1:br-ex"
+neutron_ovs_integration_bridge: br-int
+neutron_ovs_tunnel_bridge: br-tun
 use_nova_network: false
 use_neutron: true
 use_neutron_l3: true
@@ -31,3 +37,5 @@ neutron_vxlan_udp_port: 4789
 neutron_notify_nova_on_port_status_changes: true
 neutron_notify_nova_on_port_data_changes: true
 neutron_core_plugin: ml2
+use_cinder_nfs_volume_driver: false
+use_nova_nfs_backend: false

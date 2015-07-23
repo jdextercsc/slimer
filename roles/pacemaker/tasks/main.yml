@@ -38,9 +38,11 @@
   service: name=pcsd enabled=yes state=started
   tags: pcs
 
+- debug: msg="{{cluster_nodes}}"
 
 - name: set pcs cluster auth
-  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ hostvars[groups['controller']]['ansible_hostname']| join(' ') }} --force
+#  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ hostvars[groups['controller']]['ansible_hostname']| join(' ') }} --force
+  command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ cluster_nodes }} --force
   when: "'Already authorized' not in cmd.stdout"
   run_once: true
   tags: pcs
@@ -53,7 +55,8 @@
   tags: pcs
 
 - name: setup pacemaker cluster
-  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ hostvars[groups['controller']]['ansible_hostname'] | join(' ') }} --enable --start --force
+#  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ hostvars[groups['controller']]['ansible_hostname'] | join(' ') }} --enable --start --force
+  command: pcs cluster setup --name {{ pcs_cluster_name }} {{ cluster_nodes }} --enable --start --force
   run_once: true
   when: "'Cluster name' not in cmd.stdout"
   tags: pcs
@@ -68,10 +71,10 @@
 #  run_once: true
 #  tags: pcs
 
-- name: crm verify
-  command: crm_verify -L
-  run_once: true
-  tags: pcs
+#- name: crm verify
+#  command: crm_verify -L
+#  run_once: true
+#  tags: pcs
 
 - name: create stonith resources
   shell: "pcs stonith show ipmilan-fence-{{item}} || pcs stonith create ipmilan-fence-{{item}}  fence_{{hostvars[item]['fencing_agent']}} pcmk_host_list={{item}} {{ hostvars[item]['fencing_params'] }}"

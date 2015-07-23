@@ -59,6 +59,7 @@ ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer
 
 keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
 #internal VIPs
+rabbit_hosts: 172.17.17.100
 lb_db_vip: 172.17.17.101
 keystone_vip: 172.17.17.103
 glance_vip: 172.17.17.104
@@ -70,7 +71,7 @@ heat_vip: 172.17.17.109
 ceilometer_vip: 172.17.17.110
 swift_vip: 172.17.17.111
 scaleio_vip: 172.17.17.112
-
+vip_swift_pub: 172.17.20.111
 vip_keystone_pub: 172.17.20.103
 vip_glance_pub: 172.17.20.104
 vip_cinder_pub: 172.17.20.105

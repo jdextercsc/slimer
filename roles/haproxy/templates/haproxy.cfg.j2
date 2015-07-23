@@ -29,7 +29,7 @@ backend db-galera
 
 
 frontend vip-msg
-    bind {{ rabbit_host }}:{{ rabbit_port | default(5672) }}
+    bind {{ rabbit_vip }}:{{ rabbit_port | default(5672) }}
     timeout client 900m
     default_backend msg
 
@@ -41,7 +41,7 @@ backend msg
 {% endfor %}
 
 frontend vip-keystone-admin
-    bind {{ keystone_admin_vip }}:35357
+    bind {{ keystone_vip }}:35357
     default_backend keystone-admin
 
 backend keystone-admin
@@ -51,12 +51,12 @@ backend keystone-admin
 {% endfor %}
 
 frontend vip-keystone-pub
-    bind {{ keystone_public_vip }}:5000
+    bind {{ vip_keystone_pub }}:5000
     default_backend keystone
 
-{% if keystone_public_vip != keystone_private_vip %}
+{% if vip_keystone_pub != keystone_vip %}
 frontend vip-keystone-int
-    bind {{ keystone_private_vip }}:5000
+    bind {{ keystone_vip }}:5000
     default_backend keystone
 {% endif %}
 
@@ -67,12 +67,12 @@ backend keystone
 {% endfor %}
 
 frontend  vip-glance-api-pub
-    bind {{ glance_public_vip }}:9292
+    bind {{ vip_glance_pub }}:9292
     default_backend glance-api
 
-{% if glance_public_vip != glance_private_vip %}
+{% if vip_glance_pub != glance_vip %}
 frontend  vip-glance-api-int
-    bind {{ glance_private_vip }}:9292
+    bind {{ glance_vip }}:9292
     default_backend glance-api
 {% endif %}
 
@@ -83,12 +83,12 @@ backend glance-api
 {% endfor %}
 
 frontend vip-glance-registry-pub
-    bind {{ glance_public_vip }}:9191
+    bind {{ vip_glance_pub }}:9191
     default_backend glance-registry
 
-{% if glance_public_vip != glance_private_vip %}
+{% if vip_glance_pub != glance_vip %}
 frontend vip-glance-registry-int
-    bind {{ glance_private_vip }}:9191
+    bind {{ glance_vip }}:9191
     default_backend glance-registry
 {% endif %}
 
@@ -99,12 +99,12 @@ backend glance-registry
 {% endfor %}
 
 frontend vip-cinder-pub
-    bind {{ cinder_public_vip }}:8776
+    bind {{ vip_cinder_pub }}:8776
     default_backend cinder
 
-{% if cinder_public_vip != cinder_private_vip %}
+{% if vip_cinder_pub != cinder_vip %}
 frontend vip-cinder-int
-    bind {{ cinder_private_vip }}:8776
+    bind {{ cinder_vip }}:8776
     default_backend cinder
 {% endif %}
 
@@ -116,12 +116,12 @@ backend cinder
 
 {% if use_neutron is defined and use_neutron %}
 frontend vip-neutron-pub
-    bind {{ neutron_public_vip }}:9696
+    bind {{ vip_neutron_pub }}:9696
     default_backend neutron
 
-{% if neutron_public_vip != neutron_private_vip %}
+{% if vip_neutron_pub != neutron_vip %}
 frontend vip-neutron-int
-    bind {{ neutron_private_vip }}:9696
+    bind {{ neutron_vip }}:9696
     default_backend neutron
 {% endif %}
 
@@ -133,28 +133,28 @@ backend neutron
 {% endif %}
 
 frontend vip-nova-vnc-novncproxy-pub
-    bind {{ nova_public_vip }}:6080
+    bind {{ vip_nova_pub }}:6080
     default_backend nova-vnc-novncproxy
 
 frontend vip-nova-metadata-pub
-    bind {{ nova_public_vip }}:8775
+    bind {{ vip_nova_pub }}:8775
     default_backend nova-metadata
 
 frontend vip-nova-api-pub
-    bind {{ nova_public_vip }}:8774
+    bind {{ vip_nova_pub }}:8774
     default_backend nova-api
 
-{% if nova_public_vip != nova_private_vip %}
+{% if vip_nova_pub != nova_vip %}
 frontend vip-nova-vnc-novncproxy-int
-    bind {{ nova_private_vip }}:6080
+    bind {{ nova_vip }}:6080
     default_backend nova-vnc-novncproxy
 
 frontend vip-nova-metadata-int
-    bind {{ nova_private_vip }}:8775
+    bind {{ nova_vip }}:8775
     default_backend nova-metadata
 
 frontend vip-nova-api-int
-    bind {{ nova_private_vip }}:8774
+    bind {{ nova_vip }}:8774
     default_backend nova-api
 {% endif %}
 
@@ -177,14 +177,14 @@ backend nova-api
 {% endfor %}
 
 frontend vip-horizon-pub
-    bind {{ horizon_public_vip }}:80
+    bind {{ vip_horizon_pub }}:80
     timeout client 180s
     cookie SERVERID insert indirect nocache
     default_backend horizon
 
-{% if horizon_public_vip != horizon_private_vip %}
+{% if vip_horizon_pub != horizon_vip %}
 frontend vip-horizon-int
-    bind {{ horizon_private_vip }}:80
+    bind {{ horizon_vip }}:80
     timeout client 180s
     cookie SERVERID insert indirect nocache
     default_backend horizon
@@ -198,28 +198,28 @@ backend horizon
 {% endfor %}
 
 frontend vip-heat-cfn-pub
-    bind {{ heat_public_vip }}:8000
+    bind {{ vip_heat_pub }}:8000
     default_backend heat-cfn
 
 frontend vip-heat-cloudw-pub
-    bind {{ heat_public_vip }}:8003
+    bind {{ vip_heat_pub }}:8003
     default_backend heat-cloudw
 
 frontend vip-heat-srv-pub
-    bind {{ heat_public_vip }}:8004
+    bind {{ vip_heat_pub }}:8004
     default_backend heat-srv
 
-{% if heat_public_vip != heat_private_vip %}
+{% if vip_heat_pub != heat_vip %}
 frontend vip-heat-cfn-int
-    bind {{ heat_private_vip }}:8000
+    bind {{ heat_vip }}:8000
     default_backend heat-cfn
 
 frontend vip-heat-cloudw-int
-    bind {{ heat_private_vip }}:8003
+    bind {{ heat_vip }}:8003
     default_backend heat-cloudw
 
 frontend vip-heat-srv-int
-    bind {{ heat_private_vip }}:8004
+    bind {{ heat_vip }}:8004
     default_backend heat-srv
 {% endif %}
 
@@ -242,13 +242,13 @@ backend heat-srv
 {% endfor %}
 
 frontend vip-ceilometer-pub
-    bind {{ ceilometer_public_vip }}:8777
+    bind {{ vip_ceilometer_pub }}:8777
     timeout client 90s
     default_backend ceilometer
 
-{% if ceilometer_public_vip != ceilometer_private_vip %}
+{% if vip_ceilometer_pub != ceilometer_vip %}
 frontend vip-ceilometer-int
-    bind {{ ceilometer_private_vip }}:8777
+    bind {{ ceilometer_vip }}:8777
     timeout client 90s
     default_backend ceilometer
 {% endif %}
@@ -262,7 +262,7 @@ backend ceilometer
 
 
 frontend vip-swift-int
-    bind {{swift_private_vip }}:8080
+    bind {{swift_vip }}:8080
     default_backend swift
 
 backend swift

@@ -14,7 +14,7 @@ use_neutron_l3: true
 use_neutron_ml2: true
 use_neutron_ovs: true
 use_neutron_cisco: false
-
+use_ha_controller: false
 neutron_ml2_type_drivers: vxlan,flat,vlan,local
 neutron_ml2_tenant_network_types: vxlan
 neutron_ml2_mechanism_drivers: openvswitch,l2population

@@ -1,9 +1,10 @@
 - name: install mongodb packages
   yum: pkg={{ item }} state=present
   with_items:
-    - mongodb-2.6.5-2.el7ost.x86_64
-    - mongodb-server-2.6.5-2.el7ost.x86_64
+    - mongodb
+    - mongodb-server
   tags: mongodb
+
 
 - name: start mongodb
   service: name=mongod state=started

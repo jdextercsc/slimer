@@ -7,37 +7,38 @@ keystone_adminurl: "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ k
 rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port}}{% if not loop.last %},{% endif %}{% endfor %}"
 memcached_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{memcached_port | default(11211)}}{% if not loop.last %},{% endif %}{% endfor %}"
 
-swift_public_vip: "{% if swift_vip != swift_vip_pub %}{{ swift_vip_pub }}{% else %}{{swift_vip}}{% endif %}"
+#swift_public_vip: "{% if swift_vip != vip_swift_pub %}{{ vip_swift_pub }}{% else %}{{swift_vip}}{% endif %}"
+swift_public_vip: "{{ swift_vip}}"
 swift_admin_vip: "{{ swift_vip }}"
 swift_private_vip: "{{ swift_vip }}"
 
-keystone_public_vip: "{% if keystone_vip != keystone_vip_pub %}{{ keystone_vip_pub }}{% else %}{{keystone_vip}}{% endif %}"
+keystone_public_vip: "{% if keystone_vip != vip_keystone_pub %}{{ vip_keystone_pub }}{% else %}{{keystone_vip}}{% endif %}"
 keystone_admin_vip: "{{ keystone_vip }}"
 keystone_private_vip: "{{ keystone_vip }}"
 
-glance_public_vip: "{% if glance_vip != glance_vip_pub %}{{ glance_vip_pub }}{% else %}{{glance_vip}}{% endif %}"
+glance_public_vip: "{% if glance_vip != vip_glance_pub %}{{ vip_glance_pub }}{% else %}{{glance_vip}}{% endif %}"
 glance_admin_vip: "{{ glance_vip }}"
 glance_private_vip: "{{ glance_vip }}"
 
-cinder_public_vip: "{% if cinder_vip != cinder_vip_pub %}{{ cinder_vip_pub }}{% else %}{{cinder_vip}}{% endif %}"
+cinder_public_vip: "{% if cinder_vip != vip_cinder_pub %}{{ vip_cinder_pub }}{% else %}{{cinder_vip}}{% endif %}"
 cinder_admin_vip: "{{ cinder_vip }}"
 cinder_private_vip: "{{ cinder_vip }}"
 
-nova_public_vip: "{% if nova_vip != nova_vip_pub %}{{ nova_vip_pub }}{% else %}{{nova_vip}}{% endif %}"
+nova_public_vip: "{% if nova_vip != vip_nova_pub %}{{ vip_nova_pub }}{% else %}{{nova_vip}}{% endif %}"
 nova_admin_vip: "{{ nova_vip }}"
 nova_private_vip: "{{ nova_vip }}"
 
-neutron_public_vip: "{% if neutron_vip != neutron_vip_pub %}{{ neutron_vip_pub }}{% else %}{{neutron_vip}}{% endif %}"
+neutron_public_vip: "{% if neutron_vip != vip_neutron_pub %}{{ vip_neutron_pub }}{% else %}{{neutron_vip}}{% endif %}"
 neutron_admin_vip: "{{ neutron_vip }}"
 neutron_private_vip: "{{ neutron_vip }}"
 
-horizon_public_vip: "{% if horizon_vip != horizon_vip_pub %}{{ horizon_vip_pub }}{% else %}{{horizon_vip}}{% endif %}"
+horizon_public_vip: "{% if horizon_vip != vip_horizon_pub %}{{ vip_horizon_pub }}{% else %}{{horizon_vip}}{% endif %}"
 horizon_private_vip: "{{ horizon_vip }}"
 
-heat_public_vip: "{% if heat_vip != heat_vip_pub %}{{ heat_vip_pub }}{% else %}{{heat_vip}}{% endif %}"
+heat_public_vip: "{% if heat_vip != vip_heat_pub %}{{ vip_heat_pub }}{% else %}{{heat_vip}}{% endif %}"
 heat_admin_vip: "{{ heat_vip }}"
 heat_private_vip: "{{ heat_vip }}"
 
-ceilometer_public_vip: "{% if ceilometer_vip != ceilometer_vip_pub %}{{ ceilometer_vip_pub }}{% else %}{{ceilometer_vip}}{% endif %}"
+ceilometer_public_vip: "{% if ceilometer_vip != vip_ceilometer_pub %}{{ vip_ceilometer_pub }}{% else %}{{ceilometer_vip}}{% endif %}"
 ceilometer_admin_vip: "{{ ceilometer_vip }}"
 ceilometer_private_vip: "{{ ceilometer_vip }}"

@@ -24,6 +24,6 @@
     - "scaleio"
   tags: firewall
 
-- name: load new iptables rhel6-icehouse-cluster-resources
+- name: load new iptables
   service: name=iptables  state=restarted
   tags: firewall
