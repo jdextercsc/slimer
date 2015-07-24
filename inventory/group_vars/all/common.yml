@@ -32,32 +32,33 @@ neutron_ovs_bridges:
 
 default_store: swift
 
+credentials_dir: /var/lib/ansible
 ### Pacemaker cluster
 pcs_cluster_name: automation_cluster
-pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
+pcs_cluster_pass: "{{ lookup('password', credentials_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
 
 #database users passwords
-clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
-db_root_password: "{{ lookup('password', inventory_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
-keystone_db_pass: "{{ lookup('password', inventory_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
-glance_db_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_db_pass chars=ascii_letters,digits') }}"
-cinder_db_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_db_pass chars=ascii_letters,digits') }}"
-nova_db_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_db_pass chars=ascii_letters,digits') }}"
-neutron_db_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_db_pass chars=ascii_letters,digits') }}"
-heat_db_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
-swift_db_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_db_pass chars=ascii_letters,digits') }}"
+clustercheck_db_pass: "{{ lookup('password', credentials_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
+db_root_password: "{{ lookup('password', credentials_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
+keystone_db_pass: "{{ lookup('password', credentials_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
+glance_db_pass: "{{ lookup('password', credentials_dir + '/credentials/glance_db_pass chars=ascii_letters,digits') }}"
+cinder_db_pass: "{{ lookup('password', credentials_dir + '/credentials/cinder_db_pass chars=ascii_letters,digits') }}"
+nova_db_pass: "{{ lookup('password', credentials_dir + '/credentials/nova_db_pass chars=ascii_letters,digits') }}"
+neutron_db_pass: "{{ lookup('password', credentials_dir + '/credentials/neutron_db_pass chars=ascii_letters,digits') }}"
+heat_db_pass: "{{ lookup('password', credentials_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
+swift_db_pass: "{{ lookup('password', credentials_dir + '/credentials/swift_db_pass chars=ascii_letters,digits') }}"
 
 # passwords for special OpenStack users
-admin_pass: "{{ lookup('password', inventory_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
-glance_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_pass chars=ascii_letters,digits') }}"
-cinder_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_pass chars=ascii_letters,digits') }}"
-swift_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_pass chars=ascii_letters,digits') }}"
-neutron_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_pass chars=ascii_letters,digits') }}"
-nova_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_pass chars=ascii_letters,digits') }}"
-heat_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_pass chars=ascii_letters,digits') }}"
-ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
+admin_pass: "{{ lookup('password', credentials_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
+glance_pass: "{{ lookup('password', credentials_dir + '/credentials/glance_pass chars=ascii_letters,digits') }}"
+cinder_pass: "{{ lookup('password', credentials_dir + '/credentials/cinder_pass chars=ascii_letters,digits') }}"
+swift_pass: "{{ lookup('password', credentials_dir + '/credentials/swift_pass chars=ascii_letters,digits') }}"
+neutron_pass: "{{ lookup('password', credentials_dir + '/credentials/neutron_pass chars=ascii_letters,digits') }}"
+nova_pass: "{{ lookup('password', credentials_dir + '/credentials/nova_pass chars=ascii_letters,digits') }}"
+heat_pass: "{{ lookup('password', credentials_dir + '/credentials/heat_pass chars=ascii_letters,digits') }}"
+ceilometer_pass: "{{ lookup('password', credentials_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
+keystone_admin_token: "{{ lookup('password', credentials_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
 
-keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
 #internal VIPs
 rabbit_hosts: 172.17.17.100
 lb_db_vip: 172.17.17.101
@@ -81,18 +82,16 @@ vip_horizon_pub: 172.17.20.108
 vip_heat_pub: 172.17.20.109
 vip_ceilometer_pub: 172.17.20.110
 
-
-
-
 ### Horizon
 horizon_internal_servername: vip-horizon-int.business
 horizon_public_servername: vip-horizon-pub.business
+
 # A url to make first request and get .secret_key_store generated
 dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 
 
 
-
+# VAriables not used in the current configuration
 
 #use_galera: true
 #use_cinder_nfs_volume_driver: false
@@ -171,7 +170,7 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 #cinder_rbd_pool: volumes
 
 ### Ceilometer
-#ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
+#ceilometer_metering_secret: "{{ lookup('password', credentials_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
 # keep last 5 days data only (value is in secs)
 #ceilometer_time_to_live: 432000
 
