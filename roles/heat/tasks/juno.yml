@@ -40,7 +40,7 @@
     - { section: "heat_api_cfn", option: "bind_host", value: "{{ heat_bind_host }}"}
     - { section: "heat_api_cloudwatch", option: "bind_host", value: "{{ heat_bind_host }}"}
     - { section: "database", option: "connection", value: "mysql://heat:{{ heat_db_pass }}@{{ lb_db_vip }}/heat"}
-    - { section: "database", option: "max_retries", value:"-1"}
+    - { section: "database", option: "max_retries", value: "-1"}
   tags: heat
 
 - name: check for tables
