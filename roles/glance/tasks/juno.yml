@@ -25,7 +25,7 @@
     #- { section: "DEFAULT", option: "bind_port", value: "{{ glance_bind_port }}"}
     - { section: "database", option: "connection", value: "mysql://glance:{{ glance_db_pass }}@{{ lb_db_vip }}/glance"}
     - { section: "database", option: "max_retries", value: "-1"}
-    - { section: "paste_deploy", option: "flavor", value:"keystone"}
+    - { section: "paste_deploy", option: "flavor", value: "keystone"}
     - { section: "keystone_authtoken", option: "identity_uri", value: "http://{{ keystone_vip }}:{{ keystone_auth_port | default(35357)}}"}
     - { section: "keystone_authtoken", option: "admin_user", value: "glance"}
     - { section: "keystone_authtoken", option: "admin_password", value: "{{ glance_pass }}"}
