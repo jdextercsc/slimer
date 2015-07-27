@@ -29,7 +29,7 @@
     - { section: "service_credentials", option: "os_username", value: "ceilometer"}
     - { section: "service_credentials", option: "os_password", value: "{{ ceilometer_pass }}"}
     - { section: "database", option: "connection", value: "mongodb://{{ mongodb_servers }}/ceilometer?replicaSet=ceilometer"}
-    - { section: "database", option: "max_retries", value:"-1"}
+    - { section: "database", option: "max_retries", value: "-1"}
     - { section: "database", option: "time_to_live", value: "{{ ceilometer_time_to_live | default(432000) }}"}
     - { section: "api", option: "host", value: "{{ ceilometer_bind_host }}"}
   tags: ceilometer
