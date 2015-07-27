@@ -1,7 +1,8 @@
 ---
-
 - name: install swift packages
-  yum: pkg={{ item }} state=present
+  yum:
+    pkg: "{{ item }}"
+    state: present
   with_items:
     - openstack-swift-proxy
     - openstack-swift
@@ -10,38 +11,41 @@
     - openstack-swift-container
   tags: swift
 
-- name: configure /etc/swift/proxy-server.conf
-  command: openstack-config --set --verbose /etc/swift/proxy-server.conf {{item}}
+- name: configure the proxy-server.conf file
+  ini_file:
+    dest: /etc/swift/proxy-server.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "filter:authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ vip_keystone_pub }}:{{ keystone_public_port | default(5000) }}/"
-    - "filter:authtoken auth_host {{vip_keystone_pub}}"
-    - "filter:authtoken auth_port {{keystone_public_port | default(5000)}}"
-    - "filter:authtoken auth_protocol {{keystone_public_protocol | default('http')}}"
-    - "filter:authtoken cache swift.cache"
-    - "filter:authtoken admin_tenant_name services"
-    - "filter:authtoken admin_user swift"
-    - "filter:authtoken admin_password {{swift_pass}}"
-    - "DEFAULT bind_ip {{internal_ipaddr}}"
-    - "filter:cache memcache_servers {{ memcached_servers}}"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "bind_ip", value: "{{internal_ipaddr}}"}
+    - { section: "filter:authtoken", option: "auth_uri", value: "{{ keystone_public_protocol | default('http') }}://{{ vip_keystone_pub }}:{{ keystone_public_port | default(5000) }}/"}
+    - { section: "filter:authtoken", option: "auth_host", value: "{{vip_keystone_pub}}"}
+    - { section: "filter:authtoken", option: "auth_port", value: "{{keystone_public_port | default(5000)}}"}
+    - { section: "filter:authtoken", option: "auth_protocol", value: "{{keystone_public_protocol | default('http')}}"}
+    - { section: "filter:authtoken", option: "cache", value: "swift.cache"}
+    - { section: "filter:authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "filter:authtoken", option: "admin_user", value: "swift"}
+    - { section: "filter:authtoken", option: "admin_password", value: "{{ swift_pass }}"}
+    - { section: "filter:authtoken", option: "memcache_servers", value: "{{ memcached_servers}}"}
   tags: swift
 
-- name: configure /etc/swift/proxy-server.conf
-  command: openstack-config --set --verbose /etc/swift/object-expirer.conf {{item}}
+- name: configure the object-expirer.conf file
+  ini_file:
+    dest: /etc/swift/object-expirer.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "object-expirer concurrency 100"
-    - "filter:cache memcache_servers {{  memcached_servers}}"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "object-expirer", option: "concurrency", value: "100"}
+    - { section: "filter:cache", option: "memcache_servers", value: "{{ memcached_servers }}"}
   tags: swift
 
 - name: create swift.conf
   template: src=swift.conf.j2 dest=/etc/swift/swift.conf
   tags: swift
-
 
 - name: create the rings
   command: swift-ring-builder {{ item }} create {{ part_power | default( 16 )}} {{replica_count | default ( 3 ) }} {{min_part_hours | default ( 24 ) }}
