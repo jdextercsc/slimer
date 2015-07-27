@@ -11,43 +11,46 @@
   - nfs-utils
   tags: cinder
 
-- name: configure base cinder via openstack-config utility
-  command: openstack-config --set --verbose /etc/cinder/cinder.conf {{item}}
+- name: Update cinder config file
+  ini_file:
+    dest: /etc/cinder/cinder.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "DEFAULT debug true"
-    - "database connection mysql://cinder:{{ cinder_db_pass }}@{{ lb_db_vip}}/cinder"
-    - "database max_retries -1"
-    - "DEFAULT auth_strategy keystone"
-    - "keystone_authtoken identity_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/"
-    - "keystone_authtoken auth_uri {{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/"
-    - "keystone_authtoken admin_tenant_name services"
-    - "keystone_authtoken admin_user cinder"
-    - "keystone_authtoken admin_password {{ cinder_pass }}"
-    - "DEFAULT notification_driver messaging"
-    - "DEFAULT control_exchange cinder"
-    - "DEFAULT glance_host {{ glance_private_vip }}"
-    - "DEFAULT memcache_servers {{ memcached_servers }}"
-    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
-    - "DEFAULT rabbit_ha_queues true"
-    - "DEFAULT host {{ cinder_host }}"
-    - "DEFAULT osapi_volume_listen {{ cinder_osapi_volume_listen }}"
-    - "DEFAULT osapi_volume_listen_port {{ cinder_osapi_volume_listen_port }}"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "debug", value: "true"}
+    - { section: "DEFAULT", option: "auth_startegy", value: "keystone"}
+    - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "memcached_servers", value: "{{ memcached_servers }}"}
+    - { section: "DEFAULT", option: "notification_driver", value: "messaging"}
+    - { section: "DEFAULT", option: "control_exchange", value: "cinder"}
+    - { section: "DEFAULT", option: "glance_host", value: "{{ glance_private_vip }}"}
+    - { section: "DEFAULT", option: "host", value: "{{ cinder_host }}"}
+    - { section: "DEFAULT", option: "osapi_volume_listen", value: "{{ cinder_osapi_volume_listen }}"}
+    - { section: "DEFAULT", option: "osapi_volume_listen_port", value: "{{ cinder_osapi_volume_listen_port }}"}
+    - { section: "keystone_authtoken", option: "identity_uri", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/"}
+    - { section: "keystone_authtoken", option: "auth_uri", value: "{{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default(5000) }}/}
+    - { section: "keystone_authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "keystone_authtoken", option: "admin_user", value: "cinder"}
+    - { section: "keystone_authtoken", option: "admin_password", value: "{{ cinder_pass }}"}
+    - { section: "database", option: "connection", value: "mysql://cinder:{{ cinder_db_pass }}@{{ lb_db_vip}}/cinder"}
+    - { section: "database", option: "max_retries", value: "-1"}
   tags: cinder
 
-- name: configure cinder nfs driver via openstack-config utility
-  command: openstack-config --set --verbose /etc/cinder/cinder.conf {{item}}
+- name: Update configure cinder nfs driver via openstack-config utility
+  ini_file:
+    dest: /etc/cinder/cinder.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "DEFAULT nfs_shares_config /etc/cinder/nfs_exports"
-    - "DEFAULT nfs_sparsed_volumes true"
-    - "DEFAULT nfs_mount_options v3"
-    - "DEFAULT volume_driver cinder.volume.drivers.nfs.NfsDriver"
-  register: cmd
-  when: use_cinder_nfs_volume_driver
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "nfs_shares_config", value: "/etc/cinder/nfs_exports"}
+    - { section: "DEFAULT", option: "nfs_sparsed_volumes", value: "true"}
+    - { section: "DEFAULT", option: "nfs_mount_options", value: "v3"}
+    - { section: "DEFAULT", option: "volume_driver", value: "cinder.volume.drivers.nfs.NfsDriver"}
   tags: cinder
 
 - name: create nfs export directory
@@ -59,7 +62,6 @@
   template: src=nfs_exports.j2 dest=/etc/cinder/nfs_exports owner=root group=cinder mode=0640
   when: use_cinder_nfs_volume_driver
   tags: cinder
-
 
 - name: check for tables
   command: mysql -e "select count(*) from information_schema.tables where table_schema='cinder'" -sN
