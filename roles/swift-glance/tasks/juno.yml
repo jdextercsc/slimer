@@ -9,7 +9,7 @@
     - { section: "DEFAULT", option: "verbose", value: "true"}
     - { section: "DEFAULT", option: "default_store", value: "swift"}
     - { section: "glance_store", option: "stores", value: "glance.store.swift.Store"}
-    - { section: "glance_store", option: "wift_store_auth_version", value: "2"}
+    - { section: "glance_store", option: "swift_store_auth_version", value: "2"}
     - { section: "glance_store", option: "swift_store_auth_address", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_vip }}:{{ keystone_auth_port | default(5000) }}/v2.0"}
     - { section: "glance_store", option: "swift_store_user", value: "services:glance"}
     - { section: "glance_store", option: "swift_store_key", value: "{{ glance_pass }}"}
