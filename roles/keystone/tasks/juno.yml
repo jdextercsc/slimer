@@ -1,6 +1,8 @@
 ---
 - name: install keystone components
-  yum: pkg={{item}} state=present
+  yum:
+    pkg: "{{item}}"
+    state: present
   with_items:
     - openstack-keystone
     - openstack-utils
@@ -9,21 +11,23 @@
 
 # following requires that crudini .5-1 be installed from epel or it will fail.
 
-- name: set keystone configuration
-  command: openstack-config --verbose --set /etc/keystone/keystone.conf {{ item }}
+- name: configure the keystone.conf file
+  ini_file:
+    dest: /etc/keystone/keystone.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "DEFAULT admin_token {{keystone_admin_token}}"
-    - "DEFAULT rabbit_hosts {{rabbit_hosts}}"
-    - "DEFAULT rabbit_ha_queues true"
-    - "DEFAULT admin_endpoint http://{{ keystone_vip }}:35357"
-    - "DEFAULT public_endpoint http://{{ keystone_public_vip }}:{{keystone_public_port}}"
-    - "database connection mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"
-    - "database max_retries -1"
-    - "DEFAULT public_bind_host {{internal_ipaddr}}"
-    - "DEFAULT admin_bind_host {{internal_ipaddr}}"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "admin_token", value: "{{keystone_admin_token}}"}
+    - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "admin_endpoint", value: "http://{{ keystone_vip }}:{{ keystone_admin_port | default (35357)}}"}
+    - { section: "DEFAULT", option: "public_endpoint", value: "http://{{ keystone_public_vip }}:{{ keystone_public_port | default (5000)}}"}
+    - { section: "DEFAULT", option: "admin_bind_host", value: "{{ internal_ipaddr }}"}
+    - { section: "DEFAULT", option: "public_bind_host", value: "{{ internal_ipaddr }}"}
+    - { section: "database", option: "connection", value: "mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"}
+    - { section: "database", option: "max_retries", value: "-1"}
   tags: keystone
 
 # create ssl cert if using sha key for token
