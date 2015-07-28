@@ -22,8 +22,8 @@
     - { section: "DEFAULT", option: "admin_token", value: "{{keystone_admin_token}}"}
     - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
     - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
-    - { section: "DEFAULT", option: "admin_endpoint", value: "http://{{ keystone_vip }}:35357"}
-    - { section: "DEFAULT", option: "public_endpoint", value: "http://{{ keystone_public_vip }}:{{keystone_public_port}}"}
+    - { section: "DEFAULT", option: "admin_endpoint", value: "http://{{ keystone_vip }}:{{ keystone_admin_port | default (35357)}}"}
+    - { section: "DEFAULT", option: "public_endpoint", value: "http://{{ keystone_public_vip }}:{{ keystone_public_port | default (5000)}}"}
     - { section: "DEFAULT", option: "admin_bind_host", value: "{{ internal_ipaddr }}"}
     - { section: "DEFAULT", option: "public_bind_host", value: "{{ internal_ipaddr }}"}
     - { section: "database", option: "connection", value: "mysql://keystone:{{keystone_db_pass}}@{{lb_db_vip}}/keystone"}
