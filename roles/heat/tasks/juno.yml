@@ -14,31 +14,33 @@
   tags: heat
 
 - name: Update heat config file
-  command: openstack-config --verbose --set /etc/heat/heat.conf {{ item }}
+  ini_file:
+    dest: /etc/heat/heat.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "database connection mysql://heat:{{ heat_db_pass }}@{{ lb_db_vip }}/heat"
-    - "database max_retries -1"
-    - "keystone_authtoken admin_tenant_name services"
-    - "keystone_authtoken admin_user heat"
-    - "keystone_authtoken admin_password {{ heat_pass }}"
-    - "keystone_authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
-    - "keystone_authtoken auth_port {{ keystone_auth_port | default(35357) }}"
-    - "keystone_authtoken auth_protocol {{ keystone_auth_protocol | default('http') }}"
-    - "keystone_authtoken auth_uri {{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"
-    - "DEFAULT memcached_servers {{ memcached_servers }}"
-    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
-    - "DEFAULT rabbit_ha_queues true"
-    - "heat_api bind_host {{ heat_bind_host }}"
-    - "heat_api_cfn bind_host {{ heat_bind_host }}"
-    - "heat_api_cloudwatch bind_host {{ heat_bind_host }}"
-    - "DEFAULT heat_metadata_server_url {{ heat_metadata_server_url }}"
-    - "DEFAULT heat_waitcondition_server_url {{ heat_waitcondition_server_url }}"
-    - "DEFAULT heat_watch_server_url {{ heat_watch_server_url }}"
-    - "DEFAULT rpc_backend heat.openstack.common.rpc.impl_kombu"
-    - "DEFAULT notification_driver heat.openstack.common.notifier.rpc_notifier"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "memcached_servers", value: "{{ memcached_servers }}"}
+    - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "heat_metadata_server_url", value: "{{ heat_metadata_server_url }}"}
+    - { section: "DEFAULT", option: "heat_waitcondition_server_url", value: "{{ heat_waitcondition_server_url }}"}
+    - { section: "DEFAULT", option: "heat_watch_server_url", value: "{{ heat_watch_server_url }}"}
+    - { section: "DEFAULT", option: "rpc_backend", value: "heat.openstack.common.rpc.impl_kombu"}
+    - { section: "DEFAULT", option: "notification_driver", value: "heat.openstack.common.notifier.rpc_notifier"}
+    - { section: "keystone_authtoken", option: "auth_host", value: "{{ keystone_admin_vip | default('127.0.0.1') }}"}
+    - { section: "keystone_authtoken", option: "auth_port", value: "{{ keystone_auth_port | default(35357) }}"}
+    - { section: "keystone_authtoken", option: "auth_protocol", value: "{{ keystone_auth_protocol | default('http') }}"}
+    - { section: "keystone_authtoken", option: "auth_uri", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"}
+    - { section: "keystone_authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "keystone_authtoken", option: "admin_user", value: "heat"}
+    - { section: "keystone_authtoken", option: "admin_password", value: "{{ heat_pass }}"}
+    - { section: "heat_api", option: "bind_host", value: "{{ heat_bind_host }}"}
+    - { section: "heat_api_cfn", option: "bind_host", value: "{{ heat_bind_host }}"}
+    - { section: "heat_api_cloudwatch", option: "bind_host", value: "{{ heat_bind_host }}"}
+    - { section: "database", option: "connection", value: "mysql://heat:{{ heat_db_pass }}@{{ lb_db_vip }}/heat"}
+    - { section: "database", option: "max_retries", value: "-1"}
   tags: heat
 
 - name: check for tables
@@ -54,7 +56,10 @@
   tags: heat
 
 - name: restart and disable heat
-  service: name={{ item }} state=restarted enabled=no
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: no
   with_items:
     - openstack-heat-api
     - openstack-heat-api-cfn
