@@ -1,7 +1,8 @@
 ---
-
 - name: install swift node packages
-  yum: pkg={{ item }} state=present
+  yum:
+    pkg: "{{ item }}"
+    state: present
   with_items:
     - openstack-swift-object
     - openstack-swift-container
@@ -15,42 +16,48 @@
   tags: swift
 
 - name: configure swift-object-server
-  command: openstack-config --set --verbose /etc/swift/object-server.conf {{item}}
+  ini_file:
+    dest: /etc/swift/object-server.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "DEFAULT bind_ip {{internal_ipaddr}}"
-    - "DEFAULT log_name object-server"
-    - "DEFAULT log_facility LOG_LOCAL2"
-    - "DEFUALT log_level INFO"
-    - "DEFAULT log_address /dev/log"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "bind_ip", value: "{{internal_ipaddr}}"}
+    - { section: "DEFAULT", option: "log_name", value: "object-server"}
+    - { section: "DEFAULT", option: "log_facility", value: "LOG_LOCAL2"}
+    - { section: "DEFAULT", option: "log_level", value: "INFO"}
+    - { section: "DEFAULT", option: "log_address", value: "/dev/log"}
   tags: swift
 
-- name: configure swift-object-server
-  command: openstack-config --set --verbose /etc/swift/account-server.conf {{item}}
+- name: configure swift-account-server
+  ini_file:
+    dest: /etc/swift/account-server.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "DEFAULT bind_ip {{internal_ipaddr}}"
-    - "DEFAULT log_name account-server"
-    - "DEFAULT log_facility LOG_LOCAL2"
-    - "DEFUALT log_level INFO"
-    - "DEFAULT log_address /dev/log"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "bind_ip", value: "{{internal_ipaddr}}"}
+    - { section: "DEFAULT", option: "log_name", value: "account-server"}
+    - { section: "DEFAULT", option: "log_facility", value: "LOG_LOCAL2"}
+    - { section: "DEFAULT", option: "log_level", value: "INFO"}
+    - { section: "DEFAULT", option: "log_address", value: "/dev/log"}
   tags: swift
 
-- name: configure swift-object-server
-  command: openstack-config --set --verbose /etc/swift/container-server.conf {{item}}
+- name: configure swift-container-server
+  ini_file:
+    dest: /etc/swift/acontainer-server.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "DEFAULT bind_ip {{internal_ipaddr}}"
-    - "DEFAULT log_name container-server"
-    - "DEFAULT log_facility LOG_LOCAL2"
-    - "DEFUALT log_level INFO"
-    - "DEFAULT log_address /dev/log"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "bind_ip", value: "{{internal_ipaddr}}"}
+    - { section: "DEFAULT", option: "log_name", value: "container-server"}
+    - { section: "DEFAULT", option: "log_facility", value: "LOG_LOCAL2"}
+    - { section: "DEFAULT", option: "log_level", value: "INFO"}
+    - { section: "DEFAULT", option: "log_address", value: "/dev/log"}
   tags: swift
 
 - name: check to see if swift disk is configured
