@@ -286,9 +286,10 @@
   run_once: true
   tags: neutron
 
-- name: disable neutron services
+- name: disable neutron services for pacemaker
   service:
     name: "{{ item }}"
+    state: stopped
     enabled: no
   with_items:
     - neutron-server
@@ -314,21 +315,6 @@
     - neutron-openvswitch-agent
   when: use_neutron and not use_ha_controller
   run_once: true
-  tags: neutron
-
-- name: disable neutron services
-  service:
-    name: "{{ item }}"
-    state: stopped
-    enabled: no
-  with_items:
-    - neutron-server
-    - neutron-dhcp-agent
-    - neutron-metadata-agent
-    - neutron-l3-agent
-    - neutron-lbaas-agent
-    - neutron-openvswitch-agent
-  when: use_neutron and not use_ha_controller
   tags: neutron
 
 - name: create pacemaker resources for neutron-server
