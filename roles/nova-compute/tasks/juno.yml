@@ -1,6 +1,8 @@
 ---
 - name: install nova compute packages
-  yum: pkg={{ item }} state=present
+  yum:
+    pkg: "{{ item }}"
+    state: present
   with_items:
     - openstack-nova-compute
     - openstack-utils
@@ -11,12 +13,17 @@
   tags: nova
 
 - name: install ceph package
-  yum: name=ceph-common state=present
+  yum:
+    name: ceph-common
+    state: present
   when: use_ceph
   tags: nova
 
 - name: enable nfs support services
-  service: name={{ item }} enabled=yes state=started
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
   with_items:
     - rpcbind
     - nfslock
@@ -24,7 +31,10 @@
   tags: nova
 
 - name: enable nfs-idmap
-  service: name=nfs-idmap enabled=yes state=started
+  service:
+    name: nfs-idmap
+    state: started
+    enabled: yes
   when: use_cinder_nfs_volume_driver or use_nova_nfs_backend
   tags: nova
 
@@ -106,113 +116,125 @@
   tags: nova
 
 - name: Update neutron.conf file
-  command: openstack-config --verbose --set /etc/neutron/neutron.conf {{ item }}
+  ini_file:
+    dest: /etc/neutron/neutron.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "DEFAULT auth_strategy keystone"
-    - "keystone_authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
-    - "keystone_authtoken auth_port {{ keystone_auth_port | default(35357) }}"
-    - "keystone_authtoken auth_protocol {{ keystone_auth_protocol | default('http') }}"
-    - "keystone_authtoken admin_tenant_name services"
-    - "keystone_authtoken admin_user neutron"
-    - "keystone_authtoken admin_password {{ neutron_pass }}"
-    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
-    - "DEFAULT rabbit_ha_queues true"
-    - "DEFAULT notification_driver neutron.openstack.common.notifier.rpc_notifier"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "auth_strategy", value: "keystone"}
+    - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "notification_driver", value: "neutron.openstack.common.notifier.rpc_notifier"}
+    - { section: "keystone_authtoken", option: "auth_host", value: "{{ keystone_admin_vip | default ('127.0.0.1') }}"}
+    - { section: "keystone_authtoken", option: "auth_port", value: "{{ keystone_auth_port | default (35357) }}"}
+    - { section: "keystone_authtoken", option: "auth_protocol", value: "{{ keystone_auth_protocol | default ('http') }}"}
+    - { section: "keystone_authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "keystone_authtoken", option: "admin_user", value: "neutron"}
+    - { section: "keystone_authtoken", option: "admin_password", value: "{{ neutron_pass }}"}
   tags: nova
 
 - name: Update ovs_neutron_plugin.ini file
-  command: openstack-config --verbose --set /etc/neutron//plugins/openvswitch/ovs_neutron_plugin.ini {{ item }}
+  ini_file:
+    dest: /etc/neutron//plugins/openvswitch/ovs_neutron_plugin.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "agent tunnel_types {{ neutron_ovs_tunnel_type }}"
-    - "agent veth_mtu 9000"
-    - "agent vxlan_udp_port {{ neutron_vxlan_udp_port }}"
-    - "ovs enable_tunneling True"
-    - "ovs tunnel_id_ranges {{ neutron_ovs_tunnel_id_ranges }}"
-    - "ovs tenant_network_type {{ neutron_ovs_tenant_network_type }}"
-    - "ovs integration_bridge {{ neutron_ovs_integration_bridge }}"
-    - "ovs tunnel_bridge {{ neutron_ovs_tunnel_bridge }}"
-    - "ovs local_ip {{ tunnel_ipaddr }}"
-    - "securitygroup firewall_driver {{ neutron_ovs_firewall_driver }}"
-    - "agent l2_population False"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "agent", option: "tunnel_types", value: "{{ neutron_ovs_tunnel_type }}"}
+    - { section: "agent", option: "veth_mtu", value: "9000"}
+    - { section: "agent", option: "vxlan_udp_port", value: "{{ neutron_vxlan_udp_port }}"}
+    - { section: "agent", option: "l2_population", value: "False"}
+    - { section: "ovs", option: "enable_tunneling", value: "True"}
+    - { section: "ovs", option: "tunnel_id_ranges", value: "{{ neutron_ovs_tunnel_id_ranges }}"}
+    - { section: "ovs", option: "tenant_network_type", value: "{{ neutron_ovs_tenant_network_type }}"}
+    - { section: "ovs", option: "integration_bridge", value: "{{ neutron_ovs_integration_bridge }}"}
+    - { section: "ovs", option: "tunnel_bridge", value: "{{ neutron_ovs_tunnel_bridge }}"}
+    - { section: "ovs", option: "local_ip", value: "{{ tunnel_ipaddr }}"}
+    - { section: "securitygroup", option: "firewall_driver", value: "{{ neutron_ovs_firewall_driver }}"}
   tags: nova
 
-- name: Update nova.conf file
-  command: openstack-config --verbose --set /etc/nova/nova.conf {{ item }}
+- name: Update nova config file
+  ini_file:
+    dest: /etc/nova/nova.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT vif_plugging_is_fatal False"
-    - "DEFAULT vif_plugging_timeout 0"
-    - "DEFAULT verbose true"
-    - "DEFAULT vncserver_proxyclient_address {{ internal_ipaddr }}"
-    - "DEFAULT vncserver_listen 0.0.0.0"
-    - "DEFAULT novncproxy_base_url http://{{ vip_nova_pub }}:6080/vnc_auto.html"
-    - "database connection mysql://nova:{{ nova_db_pass }}@{{ lb_db_vip }}/nova"
-    - "database max_retries -1"
-    - "DEFAULT auth_strategy keystone"
-    - "DEFAULT memcache_servers {{ memcached_servers}}"
-    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
-    - "DEFAULT rabbit_ha_queues true"
-    - "DEFAULT metadata_host {{ nova_vip }}"
-    - "DEFAULT metadata_listen {{ internal_ipaddr }}"
-    - "DEFAULT metadata_listen_port {{ nova_port| default(8775) }}"
-    - "neutron service_neutron_metadata_proxy True"
-    - "neutron neutron_metadata_proxy_shared_secret {{ neutron_metadata_proxy_shared_secret }}"
-    - "DEFAULT glance_host {{ glance_vip }}"
-    - "DEFAULT glance_port {{ glance_port | default(9292) }}"
-    - "DEFAULT network_api_class nova.network.neutronv2.api.API"
-    - "DEFAULT neutron_url http://{{ neutron_vip | default('127.0.0.1') }}:{{ neutron_port | default(9696) }}/"
-    - "DEFAULT neutron_admin_tenant_name services"
-    - "DEFAULT neutron_admin_username neutron"
-    - "DEFAULT neutron_admin_password {{ neutron_pass }}"
-    - "DEFAULT neutron_admin_auth_url http://{{ keystone_vip | default('127.0.0.1') }}:{{ keystone_private_port | default(5000) }}/v2.0"
-    - "DEFAULT ovs_bridge br-int"
-    - "DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver"
-    - "DEFAULT libvirt_vif_driver nova.virt.libvirt.vif.LibvirtGenericVIFDriver"
-    - "DEFAULT security_group_api {{ nova_security_group_api }}"
-    - "conductor use_local false"
-    - "DEFAULT scheduler_host_subset_size 30"
-    - "DEFAULT instance_usage_audit True"
-    - "DEFAULT instance_usage_audit_period hour"
-    - "DEFAULT notify_on_state_change vm_and_task_state"
-    - "DEFAULT notification_topics notifications"
-    - "DEFAULT notification_driver ceilometer.compute.nova_notifier"
-    - "DEFUALT notification_driver nova.openstack.common.notifier.rpc_notifier"
-    - "DEFAULT rpc_backend nova.openstack.common.rpc.impl_kombu"
-    - "DEFAULT instance_usage_audit True"
-    - "DEFAULT notify_on_state_change vm_and_task_state"
-    - "DEFAULT notification_driver nova.openstack.common.notifier.rpc_notifier"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "memcached_servers", value: "{{ memcached_servers }}"}
+    - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "heat_metadata_server_url", value: "{{ heat_metadata_server_url }}"}
+    - { section: "DEFAULT", option: "heat_waitcondition_server_url", value: "{{ heat_waitcondition_server_url }}"}
+    - { section: "DEFAULT", option: "heat_watch_server_url", value: "{{ heat_watch_server_url }}"}
+    - { section: "DEFAULT", option: "rpc_backend", value: "heat.openstack.common.rpc.impl_kombu"}
+    - { section: "DEFAULT", option: "notification_driver", value: "heat.openstack.common.notifier.rpc_notifier"}
+    - { section: "DEFAULT", option: "vif_plugging_is_fatal", value: "False"}
+    - { section: "DEFAULT", option: "vif_plugging_timeout", value: "0"}
+    - { section: "DEFAULT", option: "vncserver_proxyclient_address", value: "{{ internal_ipaddr }}"}
+    - { section: "DEFAULT", option: "vncserver_listen", value: "0.0.0.0"}
+    - { section: "DEFAULT", option: "novncproxy_base_url", value: "http://{{ vip_nova_pub }}:6080/vnc_auto.html"}
+    - { section: "DEFAULT", option: "auth_startegy", value: "keystone"}
+    - { section: "DEFAULT", option: "metadata_host", value: "{{ nova_vip }}"}
+    - { section: "DEFAULT", option: "metadata_listen", value: "{{ internal_ipaddr }}"}
+    - { section: "DEFAULT", option: "metadata_listen_port", value: "{{ nova_port| default(8775) }}"}
+    - { section: "DEFAULT", option: "glance_host", value: "{{ glance_vip }}"}
+    - { section: "DEFAULT", option: "glance_port", value: "{{ glance_port | default(9292) }}"}
+    - { section: "DEFAULT", option: "network_api_class", value: "nova.network.neutronv2.api.API"}
+    - { section: "DEFAULT", option: "neutron_url", value: "http://{{ neutron_vip | default('127.0.0.1') }}:{{ neutron_port | default(9696) }}/"}
+    - { section: "DEFAULT", option: "neutron_admin_tenant_name", value: "services"}
+    - { section: "DEFAULT", option: "neutron_admin_username", value: "neutron"}
+    - { section: "DEFAULT", option: "neutron_admin_password", value: "{{ neutron_pass }}"}
+    - { section: "DEFAULT", option: "neutron_admin_auth_url ", value: "http://{{ keystone_vip | default('127.0.0.1') }}:{{ keystone_private_port | default(5000) }}/v2.0"}
+    - { section: "DEFAULT", option: "ovs_bridge", value: "br-int"}
+    - { section: "DEFAULT", option: "firewall_driver", value: "nova.virt.firewall.NoopFirewallDriver"}
+    - { section: "DEFAULT", option: "libvirt_vif_driver", value: "nova.virt.libvirt.vif.LibvirtGenericVIFDriver"}
+    - { section: "DEFAULT", option: "security_group_api", value: "{{ nova_security_group_api }}"}
+    - { section: "DEFAULT", option: "scheduler_host_subset_size", value: "30"}
+    - { section: "DEFAULT", option: "instance_usage_audit", value: "True"}
+    - { section: "DEFAULT", option: "instance_usage_audit_period", value: "hour"}
+    - { section: "DEFAULT", option: "notify_on_state_change", value: "vm_and_task_state"}
+    - { section: "DEFAULT", option: "notification_topics", value: "notifications"}
+    - { section: "DEFAULT", option: "notification_driver", value: "nova.openstack.common.notifier.rpc_notifier"}
+    - { section: "DEFAULT", option: "rpc_backend", value: "nova.openstack.common.rpc.impl_kombu"}
+    - { section: "DEFAULT", option: "instance_usage_audit", value: "True"}
+    - { section: "DEFAULT", option: "notify_on_state_change", value: "vm_and_task_state"}
+    - { section: "neutron", option: "service_neutron_metadata_proxy", value: "True"}
+    - { section: "neutron", option: "neutron_metadata_proxy_shared_secret", value: "{{ neutron_metadata_proxy_shared_secret }}"}
+    - { section: "conductor", option: "use_local", value: "False"}
+    - { section: "database", option: "connection", value: "mysql://nova:{{ nova_db_pass }}@{{ lb_db_vip }}/nova"}
+    - { section: "database", option: "max_retries", value: "-1"}
   tags: nova
 
 - name: Update ceilometer.conf file
-  command: openstack-config --verbose --set /etc/ceilometer/ceilometer.conf {{ item }}
+  ini_file:
+    dest: /etc/ceilometer/ceilometer.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "keystone_authtoken auth_host {{ keystone_admin_vip | default('127.0.0.1') }}"
-    - "keystone_authtoken auth_port {{ keystone_auth_port | default(35357) }}"
-    - "keystone_authtoken auth_protocol {{ keystone_auth_protocol | default('http') }}"
-    - "keystone_authtoken admin_tenant_name services"
-    - "keystone_authtoken admin_user ceilometer"
-    - "keystone_authtoken admin_password {{ ceilometer_pass }}"
-    - "DEFAULT rabbit_hosts {{ rabbit_hosts }}"
-    - "DEFAULT rabbit_ha_queues true"
-    - "publisher_rpc metering_secret {{ ceilometer_metering_secret }}"
-    - "service_credentials os_auth_url http://{{ keystone_vip }}:{{ keystone_private_port | default(35357) }}/v2.0"
-    - "service_credentials os_username ceilometer"
-    - "service_credentials os_password {{ ceilometer_pass }}"
-    - "service_credentials os_tenant_name services"
-    - "database connection mongodb://{{ mongodb_servers }}/ceilometer?replicaSet=ceilometer"
-    - "database connection max_retries -1"
-    - "database time_to_live {{ ceilometer_time_to_live | default(44320) }}"
-    - "DEFAULT memcache_servers {{ memcached_servers}}"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "memcached_servers", value: "{{ memcached_servers }}"}
+    - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "keystone_authtoken", option: "auth_host", value: "{{ keystone_admin_vip | default('127.0.0.1') }}"}
+    - { section: "keystone_authtoken", option: "auth_port", value: "{{ keystone_auth_port | default(35357) }}"}
+    - { section: "keystone_authtoken", option: "auth_protocol", value: "{{ keystone_auth_protocol | default('http') }}"}
+    - { section: "keystone_authtoken", option: "auth_uri", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default (35357) }}/v2.0"}
+    - { section: "keystone_authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "keystone_authtoken", option: "admin_user", value: "ceilometer"}
+    - { section: "keystone_authtoken", option: "admin_password", value: "{{ ceilometer_pass }}"}
+    - { section: "database", option: "connection", value: "mongodb://{{ mongodb_servers }}/ceilometer?replicaSet=ceilometer"}
+    - { section: "database", option: "max_retries", value: "-1"}
+    - { section: "database", option: "time_to_live", value: "{{ ceilometer_time_to_live | default(44320) }}"}
+    - { section: "service_credentials", option: "os_auth_url", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_private_vip }}:{{ keystone_private_port | default (5000) }}/v2.0"}
+    - { section: "service_credentials", option: "os_username", value: "ceilometer"}
+    - { section: "service_credentials", option: "os_password", value: "{{ ceilometer_pass }}"}
+    - { section: "service_credentials", option: "os_tenant_name", value: "services"}
+    - { section: "publisher_rpc", option: "metering_secret", value: "{{ ceilometer_metering_secret }}"}
   tags: nova
 
 - name: create a directory for cisco plugins
@@ -229,7 +251,9 @@
   tags: nova
 
 - name: restart neutron openvswitch agent
-  service: name=neutron-openvswitch-agent state=restarted
+  service:
+    name: neutron-openvswitch-agent
+    state: restarted
   tags: nova
 
 - name: create a directory for the cisco nexus ssh keys
@@ -262,7 +286,10 @@
   tags: nova
 
 - name: start neutron networking
-  service: name={{ item }} enabled=yes state=started
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
   with_items:
     - neutron-ovs-cleanup
     - neutron-openvswitch-agent
@@ -270,10 +297,16 @@
   tags: nova
 
 - name: start nova-compute services
-  service: name=openstack-nova-compute enabled=yes state=started
+  service:
+    name: openstack-nova-compute
+    state: started
+    enabled: yes
   tags: nova
 
 - name: start nova network
-  service: name=openstack-nova-network enabled=yes state=started
+  service:
+    name: openstack-nova-network
+    state: started
+    enabled: yes
   when: use_nova_network
   tags: nova
