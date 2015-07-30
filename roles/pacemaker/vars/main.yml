@@ -1,0 +1,2 @@
+---
+cluster_nodes: "{% for node in groups['controller'] %} {{hostvars[node]['ansible_hostname']}} {% endfor %}"
