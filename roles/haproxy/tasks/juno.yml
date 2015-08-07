@@ -1,0 +1,45 @@
+---
+- name: install haproxy
+  yum: pkg=haproxy state=present
+  tags: haproxy
+
+- name: set sysctl parameters
+  copy: src=haproxy-sysctl.conf dest=/etc/sysctl.d/haproxy.conf mode=0644 owner=root group=root
+  tags: haproxy
+
+- name: reload kernel parameters with systemctl
+  command: systemctl restart systemd-sysctl
+  tags: haproxy
+
+- name: set haproxy config file
+  template: src={{openstack_release}}.haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+  tags: haproxy
+
+- name: restart and disable haproxy
+  service: name=haproxy state=restarted enabled=no
+  tags: haproxy
+
+- name: create haproxy pacemaker cloned resources
+  pcs_resource: command=create name=haproxy type=systemd:haproxy clone=yes
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  tags: haproxy
+
+- name: create pacemaker controlled VIP addresses
+  pcs_resource: command=create name={{ item.name }} type=IPaddr2
+  args:
+    options:
+      ip: "{{ item.addr }}"
+  with_items: vip_addresses
+  run_once: true
+  tags: haproxy
+
+- name: move public vip to node1
+  command: pcs resource move vip-horizon-pub {{controller1}}
+  run_once: true
+  tags: haproxy
+  ignore_errors: true

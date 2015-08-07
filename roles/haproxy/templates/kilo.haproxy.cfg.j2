@@ -6,7 +6,7 @@ defaults
     timeout connect 2s
     timeout client 10s
     timeout server 10s
-    
+
 
 listen stats :8888
     mode http
@@ -14,7 +14,7 @@ listen stats :8888
     stats uri /
     stats enable
     stats auth admin:wileyfuse
- 
+
 frontend vip-db
     bind {{ lb_db_vip }}:3306
     timeout client 90s
