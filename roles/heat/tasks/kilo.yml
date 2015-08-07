@@ -1,0 +1,163 @@
+---
+- name: install heat packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - openstack-heat-common
+    - openstack-heat-api
+    - openstack-heat-api-cfn
+    - openstack-heat-api-cloudwatch
+    - openstack-heat-engine
+    - python-heatclient
+    - python-glanceclient
+    - openstack-utils
+    - openstack-selinux
+  tags: heat
+
+#Configure Heat domain
+- name: create role for heat_stack_user
+  command: openstack {{os_admin_auth3}} role create heat_stack_user
+  run_once: true
+  tags: heat
+
+- name: issue token_id
+  shell: openstack {{os_admin_auth3}} token issue | grep "| id" | gawk -F' ' '{print $4}'
+  register: result
+  failed_when: "'ERROR' in result.stdout or ' ' in result.stdout"
+  tags: heat
+
+- name: set token_id fact
+  set_fact:
+    token_id: {{result.stdout}}
+  tags: heat
+
+- name: create heat domain
+  shell: openstack --os-token={{ token_id }} {{os_admin_auth3}} --os-identity-api-version=3 domain create heat --description "Owns users and projects created by heat" | grep "| id" | gawk -F' ' '{print $4}'
+  tags: heat
+  register: result
+  failed_when: "'ERROR' in result.stdout or ' ' in result.stdout"
+  run_once: true
+
+- name: set domain_id fact
+  set_fact:
+    domain_id: {{result.stdout}}
+  tags: heat
+
+- name: create heat domain user
+  command: >
+    openstack --os-token={{ token_id }}
+    {{os_admin_auth3}}
+    --os-identity-api-version=3
+  user create
+  --password {{ heat_admin_pass }}
+  --domain heat
+  --description "Manages users and projects created by heat" heat_domain_admin
+  tags: heat
+  run_once: true
+
+- name: add admin role to heat admin
+  command: >
+    openstack --os-token={{ token_id }}
+    {{os_admin_auth3}}
+    --os-identity-api-version=3
+    role add
+    --user heat_domain_admin
+    --domain heat admin
+  tags: heat
+  run_once: true
+#End Heat domain config
+
+- name: Update heat config file
+  ini_file:
+    dest: /etc/heat/heat.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "stack_domain_admin_password", value: "{{ heat_admin_pass }}"}
+    - { section: "DEFAULT", option: "stack_domain_admin", value: "heat_domain_admin"}
+    - { section: "DEFAULT", option: "stack_user_domain_id ", value: "{{domain_id}}"}
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "memcached_servers", value: "{{ memcached_servers }}"}
+    - { section: "oslo_messaging_rabbit", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "oslo_messaging_rabbit", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "heat_metadata_server_url", value: "{{ heat_metadata_server_url }}"}
+    - { section: "DEFAULT", option: "heat_waitcondition_server_url", value: "{{ heat_waitcondition_server_url }}"}
+    - { section: "DEFAULT", option: "heat_watch_server_url", value: "{{ heat_watch_server_url }}"}
+    - { section: "DEFAULT", option: "rpc_backend", value: "heat.openstack.common.rpc.impl_kombu"}
+    - { section: "DEFAULT", option: "notification_driver", value: "heat.openstack.common.notifier.rpc_notifier"}
+    - { section: "DEFAULT", option: "enable_cloud_watch_lite", value: "false"}
+    - { section: "keystone_authtoken", option: "auth_host", value: "{{ keystone_admin_vip | default('127.0.0.1') }}"}
+    - { section: "keystone_authtoken", option: "auth_port", value: "{{ keystone_auth_port | default(35357) }}"}
+    - { section: "keystone_authtoken", option: "auth_protocol", value: "{{ keystone_auth_protocol | default('http') }}"}
+    - { section: "keystone_authtoken", option: "auth_uri", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"}
+    - { section: "keystone_authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "keystone_authtoken", option: "admin_user", value: "heat"}
+    - { section: "keystone_authtoken", option: "admin_password", value: "{{ heat_pass }}"}
+    - { section: "heat_api", option: "bind_host", value: "{{ heat_bind_host }}"}
+    - { section: "heat_api_cfn", option: "bind_host", value: "{{ heat_bind_host }}"}
+    - { section: "heat_api_cloudwatch", option: "bind_host", value: "{{ heat_bind_host }}"}
+    - { section: "database", option: "connection", value: "mysql://heat:{{ heat_db_pass }}@{{ lb_db_vip }}/heat"}
+    - { section: "database", option: "max_retries", value: "-1"}
+  tags: heat
+
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='heat'" -sN
+  run_once: true
+  register: mysql_result
+  tags: heat
+
+- name: run dbsync for heat
+  shell: su -s /bin/sh -c '/usr/bin/heat-manage db_sync' heat
+  when: mysql_result.stdout|int == 0
+  run_once: true
+  tags: heat
+
+- name: restart and disable heat
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: no
+  with_items:
+    - openstack-heat-api
+    - openstack-heat-api-cfn
+    - openstack-heat-api-cloudwatch
+    - openstack-heat-engine
+  tags: heat
+
+- name: create pacemaker resources for heat
+  pcs_resource: command=create name={{ item }} type=systemd:openstack-{{ item }} clone=yes
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  with_items:
+    - heat-api
+    - heat-api-cfn
+    - heat-api-cloudwatch
+  tags: heat
+
+- name: create pacemaker resource for heat-engine
+  pcs_resource: command=create name=heat-engine type=systemd:openstack-heat-engine
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  tags: heat
+
+- name: create pacemaker constraints for heat
+  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
+  with_items:
+    - { id: order-heat-api-clone-heat-api-cfn-clone-mandatory, cmd: "order start heat-api-clone then heat-api-cfn-clone" }
+    - { id: colocation-heat-api-clone-heat-api-cfn-clone, cmd: "colocation add heat-api-cfn-clone with heat-api-clone" }
+    - { id: order-heat-api-cfn-clone-heat-api-cloudwatch-clone-mandatory, cmd: "order start heat-api-cfn-clone then heat-api-cloudwatch-clone" }
+    - { id: colocation-heat-api-cloudwatch-clone-heat-api-cfn-clone, cmd: "colocation add heat-api-cloudwatch-clone with heat-api-cfn-clone" }
+    - { id: order-heat-api-cloudwatch-clone-heat-engine-mandatory, cmd: "order start heat-api-cloudwatch-clone then heat-engine" }
+    - { id: colocation-heat-engine-heat-api-cloudwatch-clone, cmd: "colocation add heat-engine with heat-api-cloudwatch-clone" }
+  run_once: true
+  register: cmd
+  changed_when: "'{{ item.id }}' not in cmd.stdout"
+  tags: heat
