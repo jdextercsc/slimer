@@ -1,0 +1,35 @@
+---
+- name: install ceilometer packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - openstack-ceilometer-common
+    - python-ceilometer
+    - python-ceilometerclient
+  tags: ceilometer
+
+- name: Update ceilometer config file
+  ini_file:
+    dest: /etc/ceilometer/ceilometer.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "memcached_servers", value: "{{ memcached_servers }}"}
+    - { section: "oslo_messaging_rabbit", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}i
+    - { section: "oslo_messaging_rabbit", option: "rabbit_ha_queues", value: "true"}
+    - { section: "keystone_authtoken", option: "auth_host", value: "{{ keystone_admin_vip | default('127.0.0.1') }}"}
+    - { section: "keystone_authtoken", option: "auth_port", value: "{{ keystone_auth_port | default(35357) }}"}
+    - { section: "keystone_authtoken", option: "auth_protocol", value: "{{ keystone_auth_protocol | default('http') }}"}
+    - { section: "keystone_authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "keystone_authtoken", option: "admin_user", value: "ceilometer"}
+    - { section: "keystone_authtoken", option: "admin_password", value: "{{ ceilometer_pass }}"}
+    - { section: "publisher", option: "telemetry_secret", value: "{{ ceilometer_metering_secret }}"}
+    - { section: "service_credentials", option: "os_auth_url", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_private_vip }}:{{ keystone_private_port | default(5000) }}/v2.0"}
+    - { section: "service_credentials", option: "os_username", value: "ceilometer"}
+    - { section: "service_credentials", option: "os_password", value: "{{ ceilometer_pass }}"}
+    - { section: "database", option: "connection", value: "mongodb://{{ mongodb_servers }}/ceilometer?replicaSet=ceilometer"}
+    - { section: "database", option: "max_retries", value: "-1"}
+    - { section: "database", option: "metering_time_to_live", value: "{{ ceilometer_time_to_live | default(432000) }}"}
+    - { section: "api", option: "host", value: "{{ ceilometer_bind_host }}"}
+  tags: ceilometer
