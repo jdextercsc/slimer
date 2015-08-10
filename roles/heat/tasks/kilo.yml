@@ -47,11 +47,11 @@
     openstack --os-token={{ token_id }}
     {{os_admin_auth3}}
     --os-identity-api-version=3
-  user create
-  --password {{ heat_admin_pass }}
-  --domain heat
-  --description "Manages users and projects created by heat" heat_domain_admin
-  tags: heat
+    user create
+    --password {{ heat_admin_pass }}
+    --domain heat
+    --description "Manages users and projects created by heat" heat_domain_admin
+    tags: heat
   run_once: true
 
 - name: add admin role to heat admin
