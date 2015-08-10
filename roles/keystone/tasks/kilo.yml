@@ -148,7 +148,7 @@
   tags: keystone
 
 - name: deploy the keystonerc_admin file
-  template: src=keystonerc_admin.j2
+  template: src=kilo_keystonerc_admin.j2
             dest=/root/keystonerc_admin
             mode=0750 owner=root group=root
   tags: keystone
@@ -249,6 +249,11 @@
   run_once: true
   tags: keystone
 
+- name: create the cinder v2 service
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-get cinder || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-create --name cinder --type volume --description "Cinder Volume Service v2"
+  run_once: true
+  tags: keystone
+
 - name:  create the swift service
   shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} service-create --name swift --type object-store --description "Swift Storage Service"
   run_once: true
@@ -287,51 +292,56 @@
   tags: keystone
 
 - name: create keystone endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get identity || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service keystone --publicurl "http://{{ keystone_public_vip }}:5000/v2.0" --adminurl "http://{{ keystone_admin_vip }}:35357/v2.0" --internalurl "http://{{ keystone_private_vip }}:5000/v2.0"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get identity || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service keystone --publicurl "http://{{ keystone_public_vip }}:5000/v2.0" --adminurl "http://{{ keystone_admin_vip }}:35357/v2.0" --internalurl "http://{{ keystone_private_vip }}:5000/v2.0"  --region {{ region | default(regionOne) }}
   run_once: true
   tags: keystone
 
 - name: create glance endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get image || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service glance --publicurl "http://{{ glance_public_vip }}:9292" --adminurl "http://{{ glance_admin_vip }}:9292" --internalurl "http://{{ glance_private_vip }}:9292"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get image || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service glance --publicurl "http://{{ glance_public_vip }}:9292" --adminurl "http://{{ glance_admin_vip }}:9292" --internalurl "http://{{ glance_private_vip }}:9292" --region {{ region | default(regionOne) }}
   run_once: true
   tags: keystone
 
 - name: create cinder endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get volume || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service cinder --publicurl "http://{{ cinder_public_vip }}:8776/v1/\$(tenant_id)s" --adminurl "http://{{ cinder_admin_vip }}:8776/v1/\$(tenant_id)s" --internalurl "http://{{ cinder_private_vip }}:8776/v1/\$(tenant_id)s"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get volume || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service cinder --publicurl "http://{{ cinder_public_vip }}:8776/v1/\$(tenant_id)s" --adminurl "http://{{ cinder_admin_vip }}:8776/v1/\$(tenant_id)s" --internalurl "http://{{ cinder_private_vip }}:8776/v1/\$(tenant_id)s" --region {{ region | default(regionOne) }}
+  run_once: true
+  tags: keystone
+
+- name: create cinder v2 endpoints
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get volume || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service cinder --publicurl "http://{{ cinder_public_vip }}:8776/v2/\$(tenant_id)s" --adminurl "http://{{ cinder_admin_vip }}:8776/v2/\$(tenant_id)s" --internalurl "http://{{ cinder_private_vip }}:8776/v2/\$(tenant_id)s" --region {{ region | default(regionOne) }}
   run_once: true
   tags: keystone
 
 - name: create neutron endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get network || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service neutron --publicurl "http://{{ neutron_public_vip }}:9696" --adminurl "http://{{ neutron_admin_vip }}:9696" --internalurl "http://{{ neutron_private_vip }}:9696"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get network || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service neutron --publicurl "http://{{ neutron_public_vip }}:9696" --adminurl "http://{{ neutron_admin_vip }}:9696" --internalurl "http://{{ neutron_private_vip }}:9696" --region {{ region | default(regionOne) }}
   run_once: true
   when: use_neutron
   tags: keystone
 
 - name: create compute endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get compute || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service compute --publicurl "http://{{ nova_public_vip }}:8774/v2/\$(tenant_id)s" --adminurl "http://{{ nova_admin_vip }}:8774/v2/\$(tenant_id)s" --internalurl "http://{{ nova_private_vip }}:8774/v2/\$(tenant_id)s"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get compute || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service compute --publicurl "http://{{ nova_public_vip }}:8774/v2/\$(tenant_id)s" --adminurl "http://{{ nova_admin_vip }}:8774/v2/\$(tenant_id)s" --internalurl "http://{{ nova_private_vip }}:8774/v2/\$(tenant_id)s" --region {{ region | default(regionOne) }}
   run_once: true
   tags: keystone
 
 - name: create heat endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get orchestration || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service heat --publicurl "http://{{ heat_public_vip }}:8004/v1/%(tenant_id)s" --adminurl "http://{{ heat_admin_vip }}:8004/v1/%(tenant_id)s" --internalurl "http://{{ heat_private_vip }}:8004/v1/%(tenant_id)s"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get orchestration || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service heat --publicurl "http://{{ heat_public_vip }}:8004/v1/%(tenant_id)s" --adminurl "http://{{ heat_admin_vip }}:8004/v1/%(tenant_id)s" --internalurl "http://{{ heat_private_vip --region {{ region | default(regionOne) }} }}:8004/v1/%(tenant_id)s"
   run_once: true
   when: use_heat
   tags: keystone
 
 - name: create heat-cfn endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get cloudformation || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service heat-cfn --publicurl "http://{{ heat_public_vip }}:8000/v1" --adminurl "http://{{ heat_admin_vip }}:8000/v1" --internalurl "http://{{ heat_private_vip }}:8000/v1"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get cloudformation || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service heat-cfn --publicurl "http://{{ heat_public_vip }}:8000/v1" --adminurl "http://{{ heat_admin_vip }}:8000/v1" --internalurl "http://{{ heat_private_vip }}:8000/v1" --region {{ region | default(regionOne) }}
   run_once: true
   when: use_heat
   tags: keystone
 
 - name: create ceilometer endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get metering || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service ceilometer --publicurl "http://{{ ceilometer_public_vip }}:8777" --adminurl "http://{{ ceilometer_admin_vip }}:8777" --internalurl "http://{{ ceilometer_private_vip }}:8777"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get metering || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service ceilometer --publicurl "http://{{ ceilometer_public_vip }}:8777" --adminurl "http://{{ ceilometer_admin_vip }}:8777" --internalurl "http://{{ ceilometer_private_vip }}:8777" --region {{ region | default(regionOne) }}
   run_once: true
   when: use_ceilometer
   tags: keystone
 
 - name: create swift endpoints
-  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service swift  --publicurl "http://{{ swift_public_vip }}:8080/v1/AUTH_%(tenant_id)s" --adminurl "http://{{ swift_admin_vip }}:8080" --internalurl "http://{{swift_private_vip }}:8080/v1/AUTH_%(tenant_id)s"
+  shell: keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-get swift || keystone --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} endpoint-create --service swift  --publicurl "http://{{ swift_public_vip }}:8080/v1/AUTH_%(tenant_id)s" --adminurl "http://{{ swift_admin_vip }}:8080" --internalurl "http://{{swift_private_vip }}:8080/v1/AUTH_%(tenant_id)s" --region {{ region | default(regionOne) }}
   run_once: true
   when: use_swift
   tags:
