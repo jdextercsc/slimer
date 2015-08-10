@@ -45,14 +45,14 @@
   tags: keystone
 
 - name: configure httpd.conf
-  lininfile:
+  lineinfile:
     regexp: ^Listen.*
     dest: /etc/httpd/conf/httpd.conf
     line: Listen {{internal_ipaddr}}:80
   tags: keystone
 
 - name: add 5000 and 35357 to httpd.conf
-  lininfile:
+  lineinfile:
     line: "{{ item }}"
     dest: /etc/httpd/conf/httpd.conf
     insertafter: EOF

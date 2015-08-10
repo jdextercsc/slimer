@@ -27,7 +27,7 @@
 
 - name: set token_id fact
   set_fact:
-    token_id: {{result.stdout}}
+    token_id: "{{ result.stdout }}"
   tags: heat
 
 - name: create heat domain
@@ -39,7 +39,7 @@
 
 - name: set domain_id fact
   set_fact:
-    domain_id: {{result.stdout}}
+    domain_id: "{{result.stdout}}"
   tags: heat
 
 - name: create heat domain user
