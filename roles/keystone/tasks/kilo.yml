@@ -53,7 +53,7 @@
 
 - name: add 5000 and 35357 to httpd.conf
   lininfile:
-    line: {{ item }}
+    line: "{{ item }}"
     dest: /etc/httpd/conf/httpd.conf
     insertafter: EOF
   with_items:
