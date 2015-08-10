@@ -1,0 +1,24 @@
+---
+- name: install common nova packages
+  yum:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - openstack-nova-common
+    - python-nova
+    - python-novaclient
+  tags: nova
+
+- name: Update api-paste.ini file
+  ini_file:
+    dest: /etc/nova/api-paste.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "filter:authtoken", option: "auth_host", value: "{{ keystone_admin_vip | default('127.0.0.1') }}"}
+    - { section: "filter:authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "filter:authtoken", option: "admin_user", value: "compute"}
+    - { section: "filter:authtoken", option: "admin_password", value: "{{ nova_pass }}"}
+  tags: nova

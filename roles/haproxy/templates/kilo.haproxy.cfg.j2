@@ -7,10 +7,13 @@ defaults
     timeout client 10s
     timeout server 10s
 
+
 listen stats :8888
     mode http
+    stats realm Haproxy\ Statistics
     stats uri /
     stats enable
+    stats auth admin:wileyfuse
 
 frontend vip-db
     bind {{ lb_db_vip }}:3306
@@ -19,11 +22,11 @@ frontend vip-db
 
 backend db-galera
     option httpchk
-    stick-table type ip size 2
+    stick-table type ip size 1000
     stick on dst
-    timeout server 90s
+    timeout server 90m
 {% for node in groups['controller'] %}
-    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address'] }}:3306 check inter 1s port 9200
+    server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address'] }}:3306 check inter 1s port 9200 backup on-mark-down shutdown-sessions
 {% endfor %}
 
 

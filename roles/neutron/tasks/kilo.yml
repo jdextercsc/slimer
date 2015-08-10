@@ -1,0 +1,390 @@
+---
+- name: install neutron packages
+  yum:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - openstack-neutron
+    - openstack-utils
+    - openstack-selinux
+    - openvswitch
+  when: use_neutron
+  tags: neutron
+
+- name: install ml2 plugin
+  yum:
+    pkg: openstack-neutron-ml2
+    state: present
+  when: use_neutron_ml2
+  tags: neutron
+
+- name: install openvswitch plugin
+  yum:
+    pkg: openstack-neutron-openvswitch
+    state: present
+  when: use_neutron_ovs
+  tags: neutron
+
+- name: install cisco plugin
+  yum:
+    pkg: openstack-neutron-cisco
+    state: present
+  when: use_neutron_cisco
+  tags: neutron
+
+- name: start openvswitch
+  service:
+    name: openvswitch
+    state: started
+    enabled: yes
+  when: use_neutron
+  tags: neutron
+
+- name: get tenant services uuid
+  shell: source /root/keystonerc_admin; keystone tenant-get services | awk '/id/ { print $4 }'
+  register: tenant_services_uuid
+  when: use_neutron
+  tags: neutron
+
+- name: link plugin.ini to the ml2 plugin config file
+  file: src=/etc/neutron/plugins/ml2/ml2_conf.ini dest=/etc/neutron/plugin.ini state=link
+  when: use_neutron_ml2
+  tags: neutron
+
+- name: link plugin.ini to the ovs plugin config file
+  file: src=/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini dest=/etc/neutron/plugin.ini state=link
+  when: (use_neutron_ovs and not use_neutron_ml2)
+  tags: neutron
+
+#- name: get services id
+#  shell: "keystone tenant-list --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} | grep services | gawk -F' ' '{print $2}'"
+#  register: services
+#  run_once: true
+
+- name: get services id
+  keystone_user:
+    tenant: services
+    endpoint: "{{ keystone_adminurl }}"
+    token: "{{ keystone_admin_token }}"
+  register: keystone
+  run_once: true
+
+- name: configure the neutron.conf file
+  ini_file:
+    dest: /etc/neutron/neutron.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "rabbit_userid", value: "guest"}
+    - { section: "DEFAULT", option: "rabbit_password", value: "guest"}
+    - { section: "DEFAULT", option: "bind_host", value: "{{ neutron_bind_host }}"}
+    - { section: "DEFAULT", option: "auth_strategy", value: "{{ neutron_auth_strategy }}"}
+    - { section: "DEFAULT", option: "notification_driver", value: "{{ neutron_notification_driver }}"}
+    - { section: "DEFAULT", option: "nova_url", value: "http://{{ nova_private_vip | default('127.0.0.1') }}:{{ nova_osapi_compute_listen_port | default (8774) }}/v2"}
+    - { section: "DEFAULT", option: "notify_nova_on_port_status_changes", value: "{{ neutron_notify_nova_on_port_status_changes }}"}
+    - { section: "DEFAULT", option: "notify_nova_on_port_data_changes", value: "{{ neutron_notify_nova_on_port_data_changes }}"}
+    - { section: "DEFAULT", option: "nova_admin_auth_url", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default(35357) }}/v2.0"}
+    - { section: "DEFAULT", option: "nova_region_name", value: "{{ nova_region_name | default('regionOne') }}"}
+    - { section: "DEFAULT", option: "nova_admin_username", value: "compute"}
+    - { section: "DEFAULT", option: "nova_admin_tenant_id", value: "{{ keystone.id }}"}
+    - { section: "DEFAULT", option: "nova_admin_password", value: "{{ nova_pass }}"}
+    - { section: "DEFAULT", option: "core_plugin", value: "{{ neutron_core_plugin }}"}
+    - { section: "DEFAULT", option: "service_plugins", value: "{{ neutron_service_plugins | join(',') }}"}
+    - { section: "DEFAULT", option: "router_scheduler_driver", value: "{{ neutron_router_scheduler_driver }}"}
+    - { section: "DEFAULT", option: "l3_ha", value: "True"}
+    - { section: "DEFAULT", option: "max_l3_agents_per_router", value: "0"}
+    - { section: "DEFAULT", option: "min_l3_agents_per_router", value: "2"}
+    - { section: "DEFAULT", option: "dhcp_agents_per_network", value: "{{ neutron_dhcp_agents_per_network }}"}
+    - { section: "keystone_authtoken", option: "admin_tenant_name", value: "services"}
+    - { section: "keystone_authtoken", option: "admin_user", value: "neutron"}
+    - { section: "keystone_authtoken", option: "admin_password", value: "{{ neutron_pass }}"}
+    - { section: "keystone_authtoken", option: "auth_uri", value: "{{ keystone_public_protocol | default('http') }}://{{ keystone_public_vip }}:{{ keystone_public_port | default (5000) }}/"}
+    - { section: "keystone_authtoken", option: "identity_uri", value: "{{ keystone_auth_protocol | default('http') }}://{{ keystone_admin_vip }}:{{ keystone_auth_port | default (35357) }}/"}
+    - { section: "database", option: "connection", value: "mysql://neutron:{{ neutron_db_pass }}@{{ lb_db_vip }}/neutron"}
+    - { section: "database", option: "max_retries", value: "-1"}
+  tags: neutron
+
+
+
+- name: configure the ml2_conf.ini file
+  ini_file:
+    dest: /etc/neutron/plugins/ml2/ml2_conf.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "ml2", option: "type_drivers", value: "{{ neutron_ml2_type_drivers }}"}
+    - { section: "ml2", option: "tenant_network_types", value: "{{ neutron_ml2_tenant_network_types }}"}
+    - { section: "ml2", option: "mechanism_drivers", value: "openvswitch"}
+    - { section: "ml2_type_flat", option: "flat_networks", value: "\"*\""}
+    - { section: "ml2_type_vxlan", option: "vni_ranges", value: "{{ neutron_vxlan_vni_ranges }}"}
+    - { section: "ml2_type_vxlan", option: "vxlan_group", value: "{{ neutron_vxlan_group }}"}
+    - { section: "ml2_type_vlan", option: "network_vlan_ranges", value: "{{ neutron_network_vlan_ranges }}"}
+    - { section: "securitygroup", option: "enable_security_group", value: "{{ neutron_enable_security_group }}"}
+  tags: neutron
+
+- name: configure the ovs_neutron_plugin.ini file
+  ini_file:
+    dest: /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "agent", option: "tunnel_types", value: "{{ neutron_agent_tunnel_types }}"}
+    - { section: "agent", option: "vxlan_udp_port", value: "{{ neutron_vxlan_udp_port }}"}
+    - { section: "agent", option: "veth_mtu", value: "9000"}
+    - { section: "ovs", option: "local_ip", value: "{{ tunnel_ipaddr }}"}
+    - { section: "ovs", option: "enable_tunneling", value: "True"}
+    - { section: "ovs", option: "integration_bridge", value: "br-int"}
+    - { section: "ovs", option: "tunnel_bridge", value: "br-tun"}
+    - { section: "ovs", option: "bridge_mappings", value: "{{ neutron_ovs_bridge_mappings }}"}
+    - { section: "ovs", option: "network_vlan_ranges", value: "{{ neutron_network_vlan_ranges }}"}
+    - { section: "securitygroup", option: "firewall_driver", value: "{{ neutron_ovs_firewall_driver }}"}
+    - { section: "agent", option: "arp_responder", value: "False"}
+    - { section: "agent", option: "l2_population", value: "False"}
+  tags: neutron
+
+- name: configure the metadata_agent.ini file
+  ini_file:
+    dest: /etc/neutron/metadata_agent.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "auth_strategy", value: "{{ neutron_auth_strategy }}"}
+    - { section: "DEFAULT", option: "auth_url", value: "{{ keystone_private_protocol | default('http') }}://{{ keystone_private_vip | default('localhost') }}:{{ keystone_private_port | default (5000) }}/v2.0"}
+    - { section: "DEFAULT", option: "auth_host", value: "{{ keystone_admin_vip | default('127.0.0.1') }}"}
+    - { section: "DEFAULT", option: "auth_region", value: "{{ nova_region_name | default('regionOne') }}"}
+    - { section: "DEFAULT", option: "admin_tenant_name", value: "services"}
+    - { section: "DEFAULT", option: "admin_user", value: "neutron"}
+    - { section: "DEFAULT", option: "admin_password", value: "{{ neutron_pass }}"}
+    - { section: "DEFAULT", option: "nova_metadata_ip", value: "{{ nova_private_vip | default('127.0.0.1') }}"}
+    - { section: "DEFAULT", option: "nova_metadata_port", value: "{{ nova_metadata_port | default (8775) }}"}
+    - { section: "DEFAULT", option: "metadata_proxy_shared_secret", value: "{{ neutron_metadata_proxy_shared_secret }}"}
+    - { section: "DEFAULT", option: "metadata_workers", value: "{{ neutron_metadata_workers }}"}
+    - { section: "DEFAULT", option: "metadata_backlog", value: "{{ neutron_metadata_backlog }}"}
+  tags: neutron
+
+- name: configure the dhcp_agent.ini file
+  ini_file:
+    dest: /etc/neutron/dhcp_agent.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "interface_driver", value: "neutron.agent.linux.interface.OVSInterfaceDriver"}
+    - { section: "DEFAULT", option: "dhcp_delete_namespaces", value: "{{ neutron_dhcp_delete_namespaces }}"}
+  tags: neutron
+
+- name: configure the l3_agent.ini file
+  ini_file:
+    dest: /etc/neutron/l3_agent.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "interface_driver", value: "neutron.agent.linux.interface.OVSInterfaceDriver"}
+    - { section: "DEFAULT", option: "handle_internal_only_routers", value: "{{ neutron_l3_handle_internal_only_routers }}"}
+    - { section: "DEFAULT", option: " send_arp_for_ha", value: "{{ neutron_l3_send_arp_for_ha }}"}
+    - { section: "DEFAULT", option: "router_delete_namespaces", value: "{{ neutron_l3_router_delete_namespaces }}"}
+    - { section: "DEFAULT", option: "metadata_ip", value: "{{ nova_private_vip | default('127.0.0.1') }}"}
+    - { section: "DEFAULT", option: "external_network_bridge", value: "{{ neutron_external_network_bridge }}"}
+  tags: neutron
+
+- name: configure the fwaas_driver.ini file
+  ini_file:
+    dest: /etc/neutron/fwaas_driver.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "fwaas", option: "driver", value: "neutron_fwaas.services.firewall.drivers.linux.iptables_fwaas.IptablesFwaasDriver"}
+    - { section: "fwaas", option: "enabled", value: "true"}
+  when: use_fwaas
+  tags: neutron
+
+- name: configure the lbaas_agent.ini file
+  ini_file:
+    dest: /etc/neutron/lbaas_agent.ini
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "interface_driver", value: "neutron.agent.linux.interface.OVSInterfaceDriver"}
+    - { section: "DEFAULT", option: "device_driver", value: "neutron_lbaas.services.loadbalancer.drivers.haproxy.namespace_driver.HaproxyNSDriver"}
+  when: use_lbaas
+  tags: neutron
+
+- name: create integration bridge
+  openvswitch_bridge: bridge=br-int state=present
+  when: use_neutron
+  tags: neutron
+
+- name: create tunneling bridge
+  openvswitch_bridge: bridge=br-tun state=present
+  when: neutron_ovs_tunnel_type is defined
+  tags: neutron
+
+- name: create external network bridge
+  openvswitch_bridge: bridge={{ neutron_external_network_bridge | default('br-ex') }} state=present
+  when: use_neutron_l3
+  tags: neutron
+
+- name: create ovs bridges
+  openvswitch_bridge: bridge={{ item.bridge }} state=present
+  with_items: neutron_ovs_bridges
+  when: neutron_ovs_bridges is defined
+  tags: neutron
+
+- name: configure ovs ports
+  openvswitch_port: bridge={{ item.bridge }} port={{ item.port }} state=present
+  with_items: neutron_ovs_bridges
+  when: neutron_ovs_bridges is defined
+  tags: neutron
+
+- name: bring up bridge interfaces
+  command: ifup {{ item }}
+  with_items:
+    - "{{ neutron_external_network_bridge }}"
+  when: neutron_ovs_bridges is defined
+  tags: neutron
+
+- name: bring up bridge with ifconfig
+  command: ip link set {{ item }} up
+  with_items:
+    - "{{ neutron_ovs_tunnel_bridge }}"
+    - "{{ neutron_ovs_integration_bridge }}"
+  when: neutron_ovs_bridges is defined
+  tags: neutron
+
+- name: create a directory for the cisco nexus ssh keys
+  file: dest=/var/lib/neutron/.ssh mode=0700 owner=neutron group=neutron state=directory
+  when: use_neutron_cisco
+  tags: neutron
+
+- name: make cisco nexus switch ssh keys known
+  copy: src=special/cisco_nexus.keys dest=/var/lib/neutron/.ssh/known_hosts mode=0644 owner=neutron group=neutron
+  when: use_neutron_cisco
+  tags: neutron
+
+- name: check for tables
+  command: mysql -e "select count(*) from information_schema.tables where table_schema='neutron'" -sN
+  run_once: true
+  register: mysql_result
+  tags: neutron
+
+- name: stamp neutron database
+  command: /usr/bin/neutron-db-manage --config-file /usr/share/neutron/neutron-dist.conf --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugin.ini upgrade head
+  when: mysql_result.stdout|int <= 1
+  run_once: true
+  tags: neutron
+
+- name: disable neutron services for pacemaker
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - neutron-server
+    - neutron-dhcp-agent
+    - neutron-metadata-agent
+    - neutron-l3-agent
+    - neutron-lbaas-agent
+    - neutron-openvswitch-agent
+  when: use_neutron and use_ha_controller
+  tags: neutron
+
+- name: enable neutron services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - neutron-server
+    - neutron-dhcp-agent
+    - neutron-metadata-agent
+    - neutron-l3-agent
+    - neutron-lbaas-agent
+    - neutron-openvswitch-agent
+  when: use_neutron and not use_ha_controller
+  run_once: true
+  tags: neutron
+
+- name: create pacemaker resources for neutron-server
+  pcs_resource: command=create name=neutron-server type=systemd:neutron-server clone=yes interleave=yes
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  tags: neutron
+
+- name: neutron-scale TEMP
+  command: pcs resource create neutron-scale ocf:neutron:NeutronScale --clone globally-unique=true clone-max=3 interleave=true
+  run_once: true
+  ignore_errors: true
+  tags: neutron
+
+#- name: create pacemaker resource for neutron-scale
+#  pcs_resource: command=create name=neutron-scale type=ocf:neutron:NeutronScale clone=yes interleave=yes
+#  args:
+#    operations:
+#      - action: monitor
+#        options:
+#          start-delay: 10s
+#    options:
+#      globally-unique: true
+#      clone-max: 3
+#  run_once: true
+#  tags: neutron
+
+- name: create pacemaker resource for neutron agents
+  pcs_resource: command=create name={{ item.name }} type={{ item.type }} clone=yes interleave=yes
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  with_items:
+    - { name: 'neutron-ovs-cleanup', type: 'ocf:neutron:OVSCleanup' }
+    - { name: 'neutron-netns-cleanup', type: 'ocf:neutron:NetnsCleanup' }
+    - { name: 'neutron-openvswitch-agent', type: 'systemd:neutron-openvswitch-agent' }
+    - { name: 'neutron-dhcp-agent', type: 'systemd:neutron-dhcp-agent' }
+    - { name: 'neutron-l3-agent', type: 'systemd:neutron-l3-agent' }
+    - { name: 'neutron-metadata-agent', type: 'systemd:neutron-metadata-agent' }
+  tags: neutron
+
+- name: create pacemaker constraints for neutron
+  shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
+  with_items:
+    - { id: order-keystone-clone-neutron-server-clone, cmd: "order start keystone-clone then neutron-server-clone" }
+    - { id: order-neutron-scale-clone-neutron-ovs-cleanup-clone, cmd: "order start neutron-scale-clone then neutron-ovs-cleanup-clone" }
+    - { id: colocation-neutron-ovs-cleanup-clone-neutron-scale-clone, cmd: "colocation add neutron-ovs-cleanup-clone with neutron-scale-clone" }
+    - { id: order-neutron-ovs-cleanup-clone-neutron-netns-cleanup-clone, cmd: "order start neutron-ovs-cleanup-clone then neutron-netns-cleanup-clone" }
+    - { id: colocation-neutron-netns-cleanup-clone-neutron-ovs-cleanup-clone, cmd: "colocation add neutron-netns-cleanup-clone with neutron-ovs-cleanup-clone" }
+    - { id: order-neutron-netns-cleanup-clone-neutron-openvswitch-agent-clone, cmd: "order start neutron-netns-cleanup-clone then neutron-openvswitch-agent-clone" }
+    - { id: colocation-neutron-openvswitch-agent-clone-neutron-netns-cleanup-clone, cmd: "colocation add neutron-openvswitch-agent-clone with neutron-netns-cleanup-clone" }
+    - { id: order-neutron-openvswitch-agent-clone-neutron-dhcp-agent-clone, cmd: "order start neutron-openvswitch-agent-clone then neutron-dhcp-agent-clone" }
+    - { id: colocation-neutron-dhcp-agent-clone-neutron-openvswitch-agent-clone, cmd: "colocation add neutron-dhcp-agent-clone with neutron-openvswitch-agent-clone" }
+    - { id: order-neutron-dhcp-agent-clone-neutron-l3-agent-clone, cmd: "order start neutron-dhcp-agent-clone then neutron-l3-agent-clone" }
+    - { id: colocation-neutron-l3-agent-clone-neutron-dhcp-agent-clone, cmd: "colocation add neutron-l3-agent-clone with neutron-dhcp-agent-clone" }
+    - { id: order-neutron-l3-agent-clone-neutron-metadata-agent-clone, cmd: "order start neutron-l3-agent-clone then neutron-metadata-agent-clone" }
+    - { id: colocation-neutron-metadata-agent-clone-neutron-l3-agent-clone, cmd: "colocation add neutron-metadata-agent-clone with neutron-l3-agent-clone" }
+    - { id: order-neutron-server-clone-neutron-scale-clone, cmd: "order start neutron-server-clone then neutron-scale-clone" }
+  run_once: true
+  register: cmd
+  changed_when: "'{{ item.id }}' not in cmd.stdout"
+  tags: neutron
