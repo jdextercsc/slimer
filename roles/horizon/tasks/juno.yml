@@ -35,6 +35,15 @@
   run_once: true
   tags: horizon
 
+- name: wait for httpd to be available
+  wait_for:
+    host: "{{ horizon_public_servername }}" 
+    port: 80
+    delay: 10
+    timeout: 30
+  run_once: true
+  tags: horizon  
+
 - name: get first http request
   get_url: url={{ dashboard_first_request_url }} dest=/dev/null force=yes use_proxy=no
   ignore_errors: true
@@ -42,12 +51,20 @@
   tags: horizon
 
 - name: get a copy of the .secret_key_store file from the first controller
-  fetch: src=/var/lib/openstack-dashboard/.secret_key_store dest=special/secret_key_store flat=yes
+  fetch: 
+    src: /var/lib/openstack-dashboard/.secret_key_store 
+    dest: "{{ temporary_dir }}/secret_key_store" 
+    flat: yes
   run_once: true
   tags: horizon
 
 - name: distribute a copy of the .secret_key_store file
-  copy: src=special/secret_key_store dest=/var/lib/openstack-dashboard/.secret_key_store mode=0600 owner=apache group=apache
+  copy: 
+    src: "{{ temporary_dir }}/secret_key_store" 
+    dest: /var/lib/openstack-dashboard/.secret_key_store 
+    mode: 0600 
+    owner: apache 
+    group: apache
 #  notify: restart horizon
   tags: horizon
 

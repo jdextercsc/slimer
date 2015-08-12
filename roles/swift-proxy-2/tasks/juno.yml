@@ -10,7 +10,11 @@
   run_once: true
 
 - name: get rings to pass to nodes later
-  fetch: src=/etc/swift/{{item}} dest=special/{{item}} flat=yes fail_on_missing=yes
+  fetch: 
+    src: "/etc/swift/{{ item }}"
+    dest: "{{ temporary_dir }}/{{ item }}"
+    flat: yes
+    fail_on_missing: yes
   with_items:
     - "object.ring.gz"
     - "account.ring.gz"
@@ -19,7 +23,11 @@
   run_once: true
 
 - name: copy ring to all proxy hosts
-  copy: src=special/{{item}} dest=/etc/swift/{{item}} owner=root group=swift
+  copy: 
+    src: "{{ temporary_dir }}/{{ item }}" 
+    dest: "/etc/swift/{{ item }}" 
+    owner: root 
+    group: swift
   with_items:
     - "object.ring.gz"
     - "account.ring.gz"
