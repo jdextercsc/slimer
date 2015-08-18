@@ -56,7 +56,7 @@
 - name: daemon-reload
   command: daemon-reload
   tags: horizon
-  
+
 - name: restart horizon
   service: name={{ item }} state=restarted enabled=yes
   with_items:

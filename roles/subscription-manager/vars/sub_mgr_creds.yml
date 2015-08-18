@@ -1,5 +1,0 @@
----
-# Sample file, place in home directory with proper credentials
-rhn_user: username
-rhn_pass: password
-pool: poolname

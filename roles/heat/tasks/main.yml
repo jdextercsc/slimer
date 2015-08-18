@@ -6,5 +6,5 @@
 
 - name: install & configure heat kilo
   include: kilo.yml
-  when: (openstack_release == 'juno') and use_heat
+  when: (openstack_release == 'kilo') and use_heat
   tags: heat
