@@ -8,6 +8,5 @@ heat_watch_server_url: "http://{{ heat_private_vip }}:8003"
 
 rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port}}{% if not loop.last %},{% endif %}{% endfor %}"
 memcached_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{memcached_port | default(11211)}}{% if not loop.last %},{% endif %}{% endfor %}"
-keystone_adminurl: "{{ keystone_auth_protocol }}://{{ keystone_vip }}:{{ keystone_auth_port }}"
-os_admin_auth2.0: "--os-auth-url {{ keystone_adminurl }}v2 --os-tenant-name {{admin_tenant}} --os-username {{admin_user }}  --os-password {{admin_pass}}"
-os_admin_auth3.0: "--os-auth-url {{ keystone_adminurl }}v3 --os-tenant-name {{admin_tenant}} --os-username {{admin_user }}  --os-password {{admin_pass}}"
+os_admin_auth2: "--os-auth-url {{ keystone_adminurl }}v2 --os-tenant-name {{admin_tenant}} --os-username {{admin_user }}  --os-password {{admin_pass}}"
+os_admin_auth3: "--os-auth-url {{ keystone_adminurl }}v3 --os-tenant-name {{admin_tenant}} --os-username {{admin_user }}  --os-password {{admin_pass}}"

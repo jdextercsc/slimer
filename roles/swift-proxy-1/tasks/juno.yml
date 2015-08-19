@@ -28,7 +28,7 @@
     - { section: "filter:authtoken", option: "admin_tenant_name", value: "services"}
     - { section: "filter:authtoken", option: "admin_user", value: "swift"}
     - { section: "filter:authtoken", option: "admin_password", value: "{{ swift_pass }}"}
-    - { section: "filter:authtoken", option: "memcache_servers", value: "{{ memcached_servers}}"}
+    - { section: "filter:cache", option: "memcache_servers", value: "{{ memcached_servers}}"}
   tags: swift
 
 - name: configure the object-expirer.conf file

@@ -1,5 +1,5 @@
-keystone_auth_protocol: http
-keystone_auth_port: 35357
+#keystone_auth_protocol: http
+#keystone_auth_port: 35357
 admin_user: admin
 admin_tenant: admin
 demo_user: admin
