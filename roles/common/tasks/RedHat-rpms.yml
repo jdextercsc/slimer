@@ -1,4 +1,10 @@
 ---
+
+- name: update all packages
+  yum:
+   name: "*"
+   state: latest 
+
 - name: install base rpms
   yum: name={{ item }} state=present
   with_items:

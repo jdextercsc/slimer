@@ -85,6 +85,7 @@
   with_items:
     - openvswitch
     - openstack-neutron-openvswitch
+    - openstack-neutron
   when: use_neutron
   tags: nova
 
@@ -134,6 +135,16 @@
     - { section: "keystone_authtoken", option: "admin_user", value: "neutron"}
     - { section: "keystone_authtoken", option: "admin_password", value: "{{ neutron_pass }}"}
   tags: nova
+
+- name: create policy.json file
+  copy:
+    src: policy.json
+    dest: "/etc/neutron/policy.json"
+    owner: root
+    group: neutron
+    mode: "o=rw,g=r"
+  tags: nova
+
 
 - name: Update ovs_neutron_plugin.ini file
   ini_file:
