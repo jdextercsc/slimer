@@ -4,7 +4,11 @@
     state: present
     username: "{{ rhn_user }}"
     password: "{{ rhn_pass }}"
-    pool: "{{ pool }}"
+#    pool: "{{ pool }}"
+  tags: sub-mgr
+
+- name: use pool
+  command: subscription-manager attach --pool {{ pool }}
   tags: sub-mgr
 
 - name: enable repos for juno

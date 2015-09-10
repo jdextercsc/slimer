@@ -85,6 +85,7 @@
   with_items:
     - openvswitch
     - openstack-neutron-openvswitch
+    - openstack-neutron
   when: use_neutron
   tags: nova
 
