@@ -23,7 +23,7 @@
         peerdns: '"no"'
         master: bond0
         slave: '"yes"'
-        mtu: 9000
+        mtu: 9000 
 
     - role: iface
       device: bond0

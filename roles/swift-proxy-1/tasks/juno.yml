@@ -21,14 +21,30 @@
     - { section: "DEFAULT", option: "verbose", value: "true"}
     - { section: "DEFAULT", option: "bind_ip", value: "{{internal_ipaddr}}"}
     - { section: "filter:authtoken", option: "auth_uri", value: "{{ keystone_public_protocol | default('http') }}://{{ vip_keystone_pub }}:{{ keystone_public_port | default(5000) }}/"}
-    - { section: "filter:authtoken", option: "auth_host", value: "{{vip_keystone_pub}}"}
-    - { section: "filter:authtoken", option: "auth_port", value: "{{keystone_public_port | default(5000)}}"}
-    - { section: "filter:authtoken", option: "auth_protocol", value: "{{keystone_public_protocol | default('http')}}"}
+    - { section: "filter:authtoken", option: "identity_uri", value: "{{ keystone_public_protocol | default('http') }}://{{ vip_keystone_pub }}:{{ keystone_public_port | default(5000) }}/"}
+    # - { section: "filter:authtoken", option: "auth_host", value: "{{vip_keystone_pub}}"}
+    # - { section: "filter:authtoken", option: "auth_port", value: "{{keystone_public_port | default(5000)}}"}
+    # - { section: "filter:authtoken", option: "auth_protocol", value: "{{keystone_public_protocol | default('http')}}"}
+    - { section: "app:proxy-server", option: "node_timeout", value: "30"}
     - { section: "filter:authtoken", option: "cache", value: "swift.cache"}
+    - { section: "filter:authtoken", option: "include_service_catalog", value: False}
+    - { section: "filter:authtoken", option: "delay_auth_decision", value: "True" }
     - { section: "filter:authtoken", option: "admin_tenant_name", value: "services"}
     - { section: "filter:authtoken", option: "admin_user", value: "swift"}
     - { section: "filter:authtoken", option: "admin_password", value: "{{ swift_pass }}"}
     - { section: "filter:cache", option: "memcache_servers", value: "{{ memcached_servers}}"}
+  tags: swift
+
+- name: remove auth_host auth_port and auth_protocol from proxy-server.conf
+  lineinfile:
+    dest: /etc/swift/proxy-server.conf
+    backup: yes
+    state: absent
+    regexp: "{{item}}"
+  with_items:
+    - "auth_host"
+    - "auth_port"
+    - "auth_protocol"
   tags: swift
 
 - name: configure the object-expirer.conf file
@@ -54,3 +70,4 @@
     - "/etc/swift/account.builder"
     - "/etc/swift/container.builder"
   tags: swift
+  run_once: true

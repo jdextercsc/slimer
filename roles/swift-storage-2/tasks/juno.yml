@@ -12,6 +12,10 @@
     - "container.ring.gz"
   tags: swift
 
+- name: chown etc/swift to root/swift
+  file: state=directory recurse=yes owner=root group=swift path=/etc/swift
+  tags: swift
+
 - name: ensure services are started
   service:
     name: "{{ item }}"
