@@ -43,7 +43,6 @@
   run_once: true
   tags: swift
 
-
 - name: create pcs resource for swift object-expirer
   pcs_resource: command=create name=swift-object-expirer type=systemd:openstack-swift-object-expirer
   run_once: true

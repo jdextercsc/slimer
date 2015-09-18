@@ -32,7 +32,7 @@
         bootproto: none
         bonding_opts: '"miimon=100 mode=802.3ad"'
         onboot: '"yes"'
-        mtu: 9000 
+        mtu: 9000
         peerdns: '"no"'
 
     - role: iface
