@@ -12,7 +12,6 @@
         peerdns: '"no"'
         master: bond0
         slave: '"yes"'
-        mtu: "{{mtu | default (8964) }}"
 
     - role: iface
       device: p4p2
@@ -23,7 +22,6 @@
         peerdns: '"no"'
         master: bond0
         slave: '"yes"'
-        mtu: "{{mtu | default (8964) }}"
 
     - role: iface
       device: bond0
@@ -33,7 +31,6 @@
         bonding_opts: '"miimon=100 mode=802.3ad"'
         onboot: '"yes"'
         peerdns: '"no"'
-        mtu: "{{mtu | default (8964) }}"
 
     - role: iface
       device: "bond0.{{ int_if.vlan }}"
@@ -48,7 +45,6 @@
         defroute: '"yes"'
         onboot: '"yes"'
         peerdns: '"no"'
-        mtu: "{{mtu | default (8964) }}"
 
     - role: iface
       device: "bond0.{{ storage_if.vlan }}"
@@ -61,4 +57,3 @@
         netmask: "{{ storage_if.netmask }}"
         onboot: '"yes"'
         peerdns: '"no"'
-        mtu: "{{mtu | default (8964) }}"

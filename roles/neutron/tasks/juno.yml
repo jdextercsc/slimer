@@ -136,7 +136,7 @@
     - { section: "DEFAULT", option: "verbose", value: "true"}
     - { section: "agent", option: "tunnel_types", value: "{{ neutron_agent_tunnel_types }}"}
     - { section: "agent", option: "vxlan_udp_port", value: "{{ neutron_vxlan_udp_port }}"}
-    - { section: "agent", option: "veth_mtu", value: "9000"}
+    - { section: "agent", option: "veth_mtu", value: "{{mtu | default 1500 }}"}
     - { section: "ovs", option: "local_ip", value: "{{ tunnel_ipaddr }}"}
     - { section: "ovs", option: "enable_tunneling", value: "True"}
     - { section: "ovs", option: "integration_bridge", value: "br-int"}
