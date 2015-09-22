@@ -152,11 +152,11 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 
 ## Glance
 default_store: swift
-define the following parameters to use NetApp as a Glance backend
+# define the following parameters to use NetApp as a Glance backend
 glance_show_image_direct_url: true
 glance_show_multiple_locations: true
 glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
-this is necessary to support NetApp copy offload
+# this is necessary to support NetApp copy offload
 glance_filesystem_store_file_perm: '0644'
 
 # ceph backend settings
@@ -171,7 +171,7 @@ glance_filesystem_store_file_perm: '0644'
 
 ## Ceilometer
 ceilometer_metering_secret: "{{ lookup('password', credentials_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
-keep last 5 days data only (value is in secs)
+# keep last 5 days data only (value is in secs)
 ceilometer_time_to_live: 432000
 
 
