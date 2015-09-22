@@ -144,7 +144,7 @@
   with_items:
     - { section: "DEFAULT", option: "verbose", value: "true"}
     - { section: "agent", option: "tunnel_types", value: "{{ neutron_ovs_tunnel_type }}"}
-    - { section: "agent", option: "veth_mtu", value: "9000"}
+    - { section: "agent", option: "veth_mtu", value: "{{mtu | default (1500) }}"}
     - { section: "agent", option: "vxlan_udp_port", value: "{{ neutron_vxlan_udp_port }}"}
     - { section: "agent", option: "l2_population", value: "False"}
     - { section: "ovs", option: "enable_tunneling", value: "True"}
