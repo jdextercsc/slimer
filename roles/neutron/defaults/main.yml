@@ -16,7 +16,7 @@ use_neutron_ovs: true
 use_neutron_cisco: false
 use_ha_controller: true
 use_lbaas: True
-use_fwaas: true 
+use_fwaas: true
 neutron_ml2_type_drivers: vxlan,flat,vlan,local
 neutron_ml2_tenant_network_types: vxlan
 neutron_ml2_mechanism_drivers: openvswitch,l2population
@@ -48,7 +48,6 @@ neutron_database_pool_timeout: 10
 neutron_use_ssl: false
 neutron_vxlan_udp_port: 4789
 neutron_dhcp_enable_isolated_metadata: false
-neutron_ovs_veth_mtu: 9000
 neutron_notify_nova_on_port_status_changes: true
 neutron_notify_nova_on_port_data_changes: true
 neutron_dhcp_delete_namespaces: false
