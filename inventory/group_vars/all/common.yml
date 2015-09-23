@@ -128,7 +128,6 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 # hypervisor features
 #nova_instance_live_migration: true
 
-
 # specific for neutron based network implementation
 # disable security group
 #nova_security_group_api: neutron
@@ -150,31 +149,31 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 #nova_notify_on_state_change: vm_and_task_state
 
 
-# ## Glance
+### Glance
 # default_store: swift
-# # define the following parameters to use NetApp as a Glance backend
-# glance_show_image_direct_url: true
-# glance_show_multiple_locations: true
-# glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
-# # this is necessary to support NetApp copy offload
-# glance_filesystem_store_file_perm: '0644'
-#
-# # ceph backend settings
-# #default_store: rbd
-# #glance_rbd_user: images
-# #glance_rbd_pool: images
-# #rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
-#
-# # ceph backend settings
-# #cinder_rbd_user: volumes
-# #cinder_rbd_pool: volumes
-#
-# ## Ceilometer
-# ceilometer_metering_secret: "{{ lookup('password', credentials_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
-# # keep last 5 days data only (value is in secs)
-# ceilometer_time_to_live: 432000
-#
-#
+# define the following parameters to use NetApp as a Glance backend
+#glance_show_image_direct_url: true
+#glance_show_multiple_locations: true
+#glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
+# this is necessary to support NetApp copy offload
+#glance_filesystem_store_file_perm: '0644'
+
+# ceph backend settings
+#default_store: rbd
+#glance_rbd_user: images
+#glance_rbd_pool: images
+#rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+
+# ceph backend settings
+#cinder_rbd_user: volumes
+#cinder_rbd_pool: volumes
+
+### Ceilometer
+#ceilometer_metering_secret: "{{ lookup('password', credentials_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
+# keep last 5 days data only (value is in secs)
+#ceilometer_time_to_live: 432000
+
+
 # #### swift
 # # part_power = 2 ^ partition power = partition count. ( The partition is rounded up after calculation.)
 # part_power: 16
