@@ -127,7 +127,6 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 
 # hypervisor features
 #nova_instance_live_migration: true
-#nova_network_device_mtu: 9000
 
 # specific for neutron based network implementation
 # disable security group
