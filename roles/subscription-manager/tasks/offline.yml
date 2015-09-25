@@ -1,0 +1,9 @@
+---
+
+- name: get repo file
+  copy:
+    src: "{{repo_filename}}"
+    dest: /etc/yum.repos.d/kragle_offline.repo
+    owner: root
+    group: root
+    mode: 644
