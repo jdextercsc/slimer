@@ -1,9 +1,7 @@
 ---
 
 - name: get repo file
-  copy:
-    src: "{{repo_filename}}"
+  get_url:
+    url: "http://{{hostvar[deploy_node][0]['ansible_default_ipv4']['address']}}/offline.repo"
     dest: /etc/yum.repos.d/kragle_offline.repo
-    owner: root
-    group: root
-    mode: 644
+    force: yes
