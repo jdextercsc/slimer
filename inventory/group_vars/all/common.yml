@@ -6,6 +6,9 @@ openstack_release: juno
 use_swift: true
 use_ceph: false
 
+#offline var, if true then installation will use an local repo for rpms
+offline: true
+
 search_domain: ".lordbusiness"
 nameservers:
  - 172.17.10.22
