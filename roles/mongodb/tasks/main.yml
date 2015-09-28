@@ -31,8 +31,12 @@
 
 
 - name: load replica set config
-  template: src=repset_init.j2 dest=/tmp/repset_init.js
+  template: 
+    src: "repset_init.j2"
+    dest: "/tmp/repset_init.js"
+    force: yes
   tags: mongodb
+
 
 - name: initialize the replication set
   command: /usr/bin/mongo --host "{{ mongodb_bind_host }}" --port "{{ mongodb_port | default(27017) }}" /tmp/repset_init.js
