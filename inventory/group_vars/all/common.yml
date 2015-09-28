@@ -89,7 +89,8 @@ horizon_public_servername: vip-horizon-pub.business
 # A url to make first request and get .secret_key_store generated
 dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 
-
+# Toggle whether or not the demo role should be run
+run_demo: true
 
 # VAriables not used in the current configuration
 

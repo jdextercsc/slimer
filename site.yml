@@ -27,3 +27,4 @@
     - firewall
 
 - include: demo.yml
+  when: run_demo
