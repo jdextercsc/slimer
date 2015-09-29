@@ -66,17 +66,26 @@
   pause: seconds=30
   tags: pcs
 
+- name: disable stonith                
+  command: pcs property set stonith-enabled=false              
+  run_once: true               
+  ignore_errors: true          
+  tags: pcs
+  when: not use_stonith
+
 - name: create stonith resources
   shell: "pcs stonith show ipmilan-fence-{{item}} || pcs stonith create ipmilan-fence-{{item}}  fence_{{hostvars[item]['fencing_agent']}} pcmk_host_list={{item}} {{ hostvars[item]['fencing_params'] }}"
   with_items: groups['controller']
   run_once: true
   tags: pcs
+  when: use_stonith
 
 - name: create location constraint
   shell: "pcs constraint list --full | grep ipmilan-fence-{{ item }} || pcs constraint location ipmilan-fence-{{item}} avoids {{item}}"
   with_items: groups['controller']
   run_once: true
   tags: pcs
+  when: use_stonith
 
 - name: crm verify
   command: crm_verify -L
