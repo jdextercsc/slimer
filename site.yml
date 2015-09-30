@@ -1,8 +1,4 @@
 ---
-- name: getfacts for all
-  hosts: deploy_node
-  gather_facts: true
-
 - name: Base RHEL Configuration
   hosts:
     - openstack

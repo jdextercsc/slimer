@@ -1,6 +1,6 @@
 ---
 - name: get repo file
   get_url:
-    url: "http://{{hostvars['wiley-kragle']['ansible_default_ipv4']['address']}}/offline.repo"
+    url: "http://{{auto_deploy_node}}/offline.repo"
     dest: /etc/yum.repos.d/kragle_offline.repo
     force: yes
