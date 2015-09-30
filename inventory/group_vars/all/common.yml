@@ -1,19 +1,27 @@
----
-### OpenStack control plane configuration
+#Slimer Variables
+mtu: 8964
+# subscription manager vars:
+rhn_pass: 'rhn-password'
+rhn_user: 'rhn-user-name'
+pool: 'Red Hat Enterprise Linux OpenStack Platform Developer Supported Business Partner NFR'
 
-# select OpenStack release: havana, icehouse, juno
+### OpenStack control plane configuration
+admin_tenant: admin
+admin_user: admin
 openstack_release: juno
 use_swift: true
 use_ceph: false
+use_stonith: false
+keystone_auth_port: 35357
+keystone_auth_protocol: http
+keystone_adminurl: "{{ keystone_auth_protocol }}://{{ keystone_vip }}:{{ keystone_auth_port }}/v2.0"
 
 #offline var, if true then installation will use an local repo for rpms
 offline: true
 
 search_domain: ".lordbusiness"
 nameservers:
- - 172.17.10.22
  - 192.168.70.3
- - 192.168.70.4
 
 ### Network interface assignment
 # any deviations for individual hosts should be specified in the host_vars or inventory files
@@ -27,20 +35,19 @@ ntp:
   - 1.rhel.pool.ntp.org
   - 2.rhel.pool.ntp.org
 
-#neutron
 neutron_ovs_bridges:
   - bridge: br-ex
     port: bond0.1805
-#glance
 
 default_store: swift
-
+temporary_dir: /var/lib/ansible
 credentials_dir: /var/lib/ansible
-### Pacemaker cluster
 pcs_cluster_name: automation_cluster
 pcs_cluster_pass: "{{ lookup('password', credentials_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
+rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:5672{% if not loop.last %},{% endif %}{% endfor %}"
+memcache_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:11211{% if not loop.last %},{% endif %}{% endfor %}"
 
-#database users passwords
+#database user passwords
 clustercheck_db_pass: "{{ lookup('password', credentials_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
 db_root_password: "{{ lookup('password', credentials_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
 keystone_db_pass: "{{ lookup('password', credentials_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
@@ -51,7 +58,7 @@ neutron_db_pass: "{{ lookup('password', credentials_dir + '/credentials/neutron_
 heat_db_pass: "{{ lookup('password', credentials_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
 swift_db_pass: "{{ lookup('password', credentials_dir + '/credentials/swift_db_pass chars=ascii_letters,digits') }}"
 
-# passwords for special OpenStack users
+#openstack service user passwords
 admin_pass: "{{ lookup('password', credentials_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
 glance_pass: "{{ lookup('password', credentials_dir + '/credentials/glance_pass chars=ascii_letters,digits') }}"
 cinder_pass: "{{ lookup('password', credentials_dir + '/credentials/cinder_pass chars=ascii_letters,digits') }}"
@@ -61,9 +68,13 @@ nova_pass: "{{ lookup('password', credentials_dir + '/credentials/nova_pass char
 heat_pass: "{{ lookup('password', credentials_dir + '/credentials/heat_pass chars=ascii_letters,digits') }}"
 ceilometer_pass: "{{ lookup('password', credentials_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
 keystone_admin_token: "{{ lookup('password', credentials_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
+swift_pathprefix: "{{ lookup('password', credentials_dir + '/credentials/swift_prefix chars=ascii_letters,digits') }}"
+swift_pathsuffix: "{{ lookup('password', credentials_dir + '/credentials/swift_suffix chars=ascii_letters,digits') }}"
+demo_pass: "{{ lookup('password', credentials_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
+neutron_metadata_proxy_shared_secret: "{{ lookup('password', credentials_dir + '/credentials/neutron_metadata_proxy_shared_secret chars=hexdigits') }}"
 
-#internal VIPs
-rabbit_hosts: 172.17.17.100
+#Internal VIPs
+rabbit_vip: 172.17.17.100
 lb_db_vip: 172.17.17.101
 keystone_vip: 172.17.17.103
 glance_vip: 172.17.17.104
@@ -75,113 +86,21 @@ heat_vip: 172.17.17.109
 ceilometer_vip: 172.17.17.110
 swift_vip: 172.17.17.111
 scaleio_vip: 172.17.17.112
-vip_swift_pub: 172.17.20.111
-vip_keystone_pub: 172.17.20.103
-vip_glance_pub: 172.17.20.104
-vip_cinder_pub: 172.17.20.105
-vip_nova_pub: 172.17.20.106
-vip_neutron_pub: 172.17.20.107
-vip_horizon_pub: 172.17.20.108
-vip_heat_pub: 172.17.20.109
-vip_ceilometer_pub: 172.17.20.110
+#vip_swift_pub: 172.17.17.113
+vip_keystone_pub: 172.17.17.114
+vip_glance_pub: 172.17.17.115
+vip_cinder_pub: 172.17.17.116
+vip_nova_pub: 172.17.17.117
+vip_neutron_pub: 172.17.17.118
+vip_horizon_pub: 172.17.17.119
+vip_heat_pub: 172.17.17.120
+vip_ceilometer_pub: 172.17.17.121
 
 ### Horizon
-horizon_internal_servername: vip-horizon-int.business
-horizon_public_servername: vip-horizon-pub.business
-
-# A url to make first request and get .secret_key_store generated
-dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
+#horizon_internal_servername: vip-horizon-int.business
+#horizon_public_servername: vip-horizon-pub.business
+horizon_internal_servername: 172.17.17.108
+horizon_public_servername: 172.17.17.119
 
 # Toggle whether or not the demo role should be run
 run_demo: true
-
-# VAriables not used in the current configuration
-
-#use_galera: true
-#use_cinder_nfs_volume_driver: false
-#use_netapp: false
-#use_netapp_copyoffload: false
-# select Nova Network or Neutron
-# use nfs for nova ephemeral volumes
-#use_nova_nfs_backend: false
-# if use_nova_shared_backend is "true", set nova_shared_volume, nova_shared_fs_type and nova_shared_fs_mount_options
-#use_nova_shared_backend: "{{ use_nova_nfs_backend }}"
-#use_neutron: true
-#### icehouse: select ml2 and its plugins or a standalone Neutron plugin like Cisco Nexus
-# use_neutron_ml2: true
-# use_neutron_ovs: true
-# use_neutron_l3: true
-# use_lbaas: true
-# use_heat: true
-# use_ceilometer: true
-
-### Keystone
-# scalability tuning parameters
-#keystone_rpc_conn_pool_size: 30
-#keystone_rpc_thread_pool_size: 64
-#keystone_database_min_pool_size: 1
-
-### Nova
-# scalability tuning parameters
-#nova_rpc_conn_pool_size: 30
-#nova_rpc_thread_pool_size: 64
-#nova_database_min_pool_size: 1
-#nova_conductor_workers: 4
-#nova_osapi_workers: 4
-
-# hypervisor features
-#nova_instance_live_migration: true
-
-# specific for neutron based network implementation
-# disable security group
-#nova_security_group_api: neutron
-#nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-#nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
-#nova_ovs_bridge_mappings: "physnet1:br1"
-
-# storage related (only use with use_ceph: true)
-#nova_libvirt_images_type: raw
-#nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
-
-# Define the following parameters to use Nova with ephemeral storage on a shared volume
-# For example, to use a NFS share:
-#nova_shared_volume: "nfs-server.example.com:/srv/nova"
-#nova_shared_fs_type: nfs4
-#nova_shared_fs_mount_options: "sec=sys,defaults"
-
-# ceilometer related
-#nova_notify_on_state_change: vm_and_task_state
-
-
-### Glance
-# default_store: swift
-# define the following parameters to use NetApp as a Glance backend
-#glance_show_image_direct_url: true
-#glance_show_multiple_locations: true
-#glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
-# this is necessary to support NetApp copy offload
-#glance_filesystem_store_file_perm: '0644'
-
-# ceph backend settings
-#default_store: rbd
-#glance_rbd_user: images
-#glance_rbd_pool: images
-#rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
-
-# ceph backend settings
-#cinder_rbd_user: volumes
-#cinder_rbd_pool: volumes
-
-### Ceilometer
-#ceilometer_metering_secret: "{{ lookup('password', credentials_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
-# keep last 5 days data only (value is in secs)
-#ceilometer_time_to_live: 432000
-
-
-# #### swift
-# # part_power = 2 ^ partition power = partition count. ( The partition is rounded up after calculation.)
-# part_power: 16
-# #replica couunt =  The number of times that your data will be replicated in the cluster.
-# replica_count: 3
-# # min_part_hours =  Minimum number of hours before a partition can be moved. This parameter increases availability of data by not moving more than one copy of a given data item within that min_part_hours amount of time.
-# min_part_hours: 24
