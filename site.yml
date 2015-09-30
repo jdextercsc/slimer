@@ -1,5 +1,4 @@
 ---
-
 - name: Base RHEL Configuration
   hosts:
     - openstack
