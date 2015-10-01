@@ -95,8 +95,6 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 
 #use_galera: true
 #use_cinder_nfs_volume_driver: false
-#use_netapp: false
-#use_netapp_copyoffload: false
 # select Nova Network or Neutron
 # use nfs for nova ephemeral volumes
 #use_nova_nfs_backend: false
@@ -110,15 +108,6 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 # use_lbaas: true
 # use_heat: true
 
-### Keystone
-# scalability tuning parameters
-#keystone_rpc_conn_pool_size: 30
-#keystone_rpc_thread_pool_size: 64
-#keystone_database_min_pool_size: 1
-
-### Nova
-#nova_conductor_workers: 4
-#nova_osapi_workers: 4
 
 # hypervisor features
 #nova_instance_live_migration: true
@@ -126,10 +115,6 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 # specific for neutron based network implementation
 # disable security group
 #nova_security_group_api: neutron
-#nova_ovs_bridge_mappings: "physnet1:br1"
-
-# storage related (only use with use_ceph: true)
-#nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
 
 # Define the following parameters to use Nova with ephemeral storage on a shared volume
 # For example, to use a NFS share:
@@ -140,23 +125,10 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 
 
 ### Glance
-# default_store: swift
-# define the following parameters to use NetApp as a Glance backend
-#glance_show_image_direct_url: true
-#glance_show_multiple_locations: true
-#glance_filesystem_store_metadata_file: /etc/glance/filesystem_store_metadata.json
-# this is necessary to support NetApp copy offload
-#glance_filesystem_store_file_perm: '0644'
-
-# ceph backend settings
-#default_store: rbd
-#glance_rbd_user: images
-#glance_rbd_pool: images
-#rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+# default_store: swift , file
 
 # ceph backend settings
 #cinder_rbd_user: volumes
-#cinder_rbd_pool: volumes
 
 ### Ceilometer
 #ceilometer_metering_secret: "{{ lookup('password', credentials_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
