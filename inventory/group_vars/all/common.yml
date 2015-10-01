@@ -117,10 +117,6 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 #keystone_database_min_pool_size: 1
 
 ### Nova
-# scalability tuning parameters
-#nova_rpc_conn_pool_size: 30
-#nova_rpc_thread_pool_size: 64
-#nova_database_min_pool_size: 1
 #nova_conductor_workers: 4
 #nova_osapi_workers: 4
 
@@ -130,12 +126,9 @@ dashboard_first_request_url: "http://vip-horizon-pub.business/dashboard"
 # specific for neutron based network implementation
 # disable security group
 #nova_security_group_api: neutron
-#nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-#nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
 #nova_ovs_bridge_mappings: "physnet1:br1"
 
 # storage related (only use with use_ceph: true)
-#nova_libvirt_images_type: raw
 #nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
 
 # Define the following parameters to use Nova with ephemeral storage on a shared volume
