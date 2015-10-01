@@ -4,12 +4,9 @@ internal_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + private_if ].ipv
 keystone_public_bind_host: "{{ public_ipaddr }}"
 keystone_admin_bind_host: "{{ internal_ipaddr }}"
 
-#keystone_adminurl: "{{ keystone_auth_protocol }}://{{ keystone_admin_vip }}:{{ keystone_auth_port }}/v2.0"
-
 rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port}}{% if not loop.last %},{% endif %}{% endfor %}"
 memcached_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{memcached_port | default(11211)}}{% if not loop.last %},{% endif %}{% endfor %}"
 
-#swift_public_vip: "{% if swift_vip != vip_swift_pub %}{{ vip_swift_pub }}{% else %}{{swift_vip}}{% endif %}"
 swift_public_vip: "{{ swift_vip}}"
 swift_admin_vip: "{{ swift_vip }}"
 swift_private_vip: "{{ swift_vip }}"
