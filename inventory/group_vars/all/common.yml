@@ -1,4 +1,4 @@
-#Slimer Variables
+---
 mtu: 8964
 # subscription manager vars:
 rhn_pass: 'rhn-password'
