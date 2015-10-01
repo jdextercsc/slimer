@@ -1,8 +1,5 @@
 ---
-
-#
 # If pcs has galera listed and is master. do not run include
-#
 - name: check for galera-master in pcs
   shell: pcs status | grep galera -a1 | tail -n1
   register: pcs_result
@@ -11,8 +8,5 @@
 
 - name: start galera deploy
   include: galera.yml
-  #command: wall {{pcs_result.stdout}}
   when: '"Masters" not in pcs_result.stdout'
   tags: mysql
-
-

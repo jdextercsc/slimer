@@ -22,7 +22,6 @@
     - { section: "DEFAULT", option: "notification_driver", value: "messaging"}
     - { section: "DEFAULT", option: "registry_host", value: "{{ glance_vip }}"}
     - { section: "DEFAULT", option: "bind_host", value: "{{ glance_bind_host }}"}
-    #- { section: "DEFAULT", option: "bind_port", value: "{{ glance_bind_port }}"}
     - { section: "database", option: "connection", value: "mysql://glance:{{ glance_db_pass }}@{{ lb_db_vip }}/glance"}
     - { section: "database", option: "max_retries", value: "-1"}
     - { section: "paste_deploy", option: "flavor", value: "keystone"}
@@ -45,7 +44,6 @@
     - { section: "DEFAULT", option: "notification_driver", value: "messaging"}
     - { section: "DEFAULT", option: "registry_host", value: "{{ glance_vip }}"}
     - { section: "DEFAULT", option: "bind_host", value: "{{ glance_bind_host }}"}
-    #- { section: "DEFAULT", option: "bind_port", value: "{{ glance_bind_port }}"}
     - { section: "database", option: "connection", value: "mysql://glance:{{ glance_db_pass }}@{{ lb_db_vip }}/glance"}
     - { section: "database", option: "max_retries", value: "-1"}
     - { section: "paste_deploy", option: "flavor", value: "keystone"}
@@ -86,15 +84,6 @@
   when: default_store == 'file'
   tags: glance
 
-#- name: pause for nfs
-#  pause: seconds=15
-#  when: ansible_distribution_major_version|int == 7
-#  tags: glance
-
-#- name: enable nfs-idmapd
-#  service: name=nfs-idmapd enabled=yes state=started
-#  when: ansible_distribution_major_version|int == 7
-#  tags: glance
 
 
 - name: check for tables
@@ -108,10 +97,6 @@
   when: mysql_result.stdout|int == 0
   run_once: true
   tags: glance
-
-#- name: open firewall ports
-#  firewalld: port=9191-9192/tcp permanent=true immediate=true state=enabled
-#  tags: glance
 
 - name: use pacemaker to mount the NFS share as service.
   pcs_resource: command=create name=glance-fs type=Filesystem clone=yes
