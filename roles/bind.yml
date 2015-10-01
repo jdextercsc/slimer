@@ -1,4 +1,0 @@
----
-- name: bind network
-  command: sysctl -p /etc/sysctl.d/99-sysctl.conf
-  tags: 
