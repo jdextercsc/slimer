@@ -109,8 +109,8 @@
 - name: create pacemaker constraints for nova-control
   shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
   with_items:
-    - { id: order-heat-api-clone-heat-api-cfn-clone, cmd: "order start heat-api-clone then heat-api-cfn-clone" }
-    - { id: colocation-heat-api-cfn-clone-heat-api-clone, cmd: "colocation add heat-api-cfn-clone with heat-api-clone" }
+    - { id: order-nova-api-clone-nova-novncproxy-clone-mandatory, cmd: "order start nova-api-clone then nova-novncproxy-clone" }
+    - { id: colocation-nova-api-clone-nova-novncproxy-clone, cmd: "colocation add nova-api-clone with nova-novncproxy-clone" }
     - { id: order-nova-api-clone-nova-scheduler-clone-mandatory, cmd: "order start nova-api-clone then nova-scheduler-clone" }
     - { id: colocation-nova-scheduler-clone-nova-api-clone, cmd: "colocation add nova-scheduler-clone with nova-api-clone" }
     - { id: order-nova-scheduler-clone-nova-conductor-clone-mandatory, cmd: "order start nova-scheduler-clone then nova-conductor-clone" }
