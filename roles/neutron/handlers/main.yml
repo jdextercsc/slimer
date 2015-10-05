@@ -16,4 +16,3 @@
 
 - name: restart neutron l3 agent
   service: name=neutron-l3-agent state=restarted
-

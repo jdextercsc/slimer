@@ -1,5 +1,4 @@
 ---
-use_rabbit: true
 rabbit_port: 5672
 #rabbitmq_limit_nofile: 1024
 rabbitmq_limit_nofile: 102400

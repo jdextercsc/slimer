@@ -85,17 +85,6 @@
   when: default_store == 'file'
   tags: glance
 
-#- name: pause for nfs
-#  pause: seconds=15
-#  when: ansible_distribution_major_version|int == 7
-#  tags: glance
-
-#- name: enable nfs-idmapd
-#  service: name=nfs-idmapd enabled=yes state=started
-#  when: ansible_distribution_major_version|int == 7
-#  tags: glance
-
-
 - name: check for tables
   command: mysql -e "select count(*) from information_schema.tables where table_schema='glance'" -sN
   run_once: true
@@ -107,10 +96,6 @@
   when: mysql_result.stdout|int == 0
   run_once: true
   tags: glance
-
-#- name: open firewall ports
-#  firewalld: port=9191-9192/tcp permanent=true immediate=true state=enabled
-#  tags: glance
 
 - name: use pacemaker to mount the NFS share as service.
   pcs_resource: command=create name=glance-fs type=Filesystem clone=yes

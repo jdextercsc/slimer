@@ -15,12 +15,6 @@
   template: src=limits.conf.j2 dest=/etc/security/limits.d/90-rabbitmq.conf
   tags: rabbitmq
 
-#- name: set custom systemd unit for rabbitmq
-#  template: src=rabbitmq-server.service.j2 dest=/etc/systemd/system/rabbitmq-server.service
-#  when: ansible_distribution_major_version|int == 7
-#  notify: change selinux context of the custome rabbitmq-server.service file
-#  tags: rabbitmq
-
 - name: remove cookie if exists
   file:
     path: /var/lib/rabbitmq/.erlang.cookie
@@ -46,21 +40,6 @@
     group: rabbitmq
   tags: rabbitmq
 
-#- name: start rabbitmq to generate erlang cookie file on the first controller
-#  service:
-#    name: rabbitmq-server
-#    state: started
-#  tags: rabbitmq
-
-#- name: fetch erlang cookie file from the first controller
-#  fetch: src=/var/lib/rabbitmq/.erlang.cookie dest=special/erlang.cookie flat=yes
-#  run_once: true
-#  tags: rabbitmq
-
-#- name: distribute erlang cookie file to other controller nodes
-#  copy: src=special/erlang.cookie dest=/var/lib/rabbitmq/.erlang.cookie mode=0400 owner=rabbitmq group=rabbitmq
-#  tags: rabbitmq
-
 - name: start rabbitmq servers
   service: name=rabbitmq-server enabled=no state=started
   tags: rabbitmq
@@ -79,20 +58,12 @@
   ignore_errors: true
   tags: rabbitmq
 
-#http://everythingshouldbevirtual.com/ansible-rabbitmq-cluster
-#- name: resetting rabbitmq app
-#  command: rabbitmqctl reset
-#  when: inventory_hostname != groups.controller[0]
-#  tags: rabbitmq
-#  ignore_errors:
-
 - name: debug rabbit
   debug: var=rabbit_node_names
   tags: debug
 
 - name: join rabbitmq cluster from other controller nodes
   shell: creates=/etc/rabbitmq/step.join_cluster rabbitmqctl join_cluster rabbit@{{ groups.controller[0] }}; touch /etc/rabbitmq/step.join_cluster
-#  shell: creates=/etc/rabbitmq/step.join_cluster rabbitmqctl join_cluster rabbit@{{ rabbit_node_names[0] }}; touch /etc/rabbitmq/step.join_cluster
   when: inventory_hostname != groups.controller[0]
   tags: rabbitmq
 

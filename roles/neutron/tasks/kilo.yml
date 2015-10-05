@@ -56,11 +56,6 @@
   when: (use_neutron_ovs and not use_neutron_ml2)
   tags: neutron
 
-#- name: get services id
-#  shell: "keystone tenant-list --os-token {{ keystone_admin_token }} --os-endpoint {{ keystone_adminurl }} | grep services | gawk -F' ' '{print $2}'"
-#  register: services
-#  run_once: true
-
 - name: get services id
   keystone_user:
     tenant: services
