@@ -94,8 +94,8 @@
 - name: create pacemaker constraints for heat
   shell: "pcs constraint list --full | grep id:{{ item.id }} || pcs constraint {{ item.cmd }}"
   with_items:
-    - { id: order-heat-api-clone-heat-api-cfn-clone-mandatory, cmd: "order start heat-api-clone then heat-api-cfn-clone" }
-    - { id: colocation-heat-api-clone-heat-api-cfn-clone, cmd: "colocation add heat-api-cfn-clone with heat-api-clone" }
+    - { id: order-heat-api-clone-heat-api-cfn-clone, cmd: "order start heat-api-clone then heat-api-cfn-clone" }
+    - { id: colocation-heat-api-cfn-clone-heat-api-clone, cmd: "colocation add heat-api-cfn-clone with heat-api-clone" }
     - { id: order-heat-api-cfn-clone-heat-api-cloudwatch-clone-mandatory, cmd: "order start heat-api-cfn-clone then heat-api-cloudwatch-clone" }
     - { id: colocation-heat-api-cloudwatch-clone-heat-api-cfn-clone, cmd: "colocation add heat-api-cloudwatch-clone with heat-api-cfn-clone" }
     - { id: order-heat-api-cloudwatch-clone-heat-engine-mandatory, cmd: "order start heat-api-cloudwatch-clone then heat-engine" }
