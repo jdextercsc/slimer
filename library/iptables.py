@@ -44,8 +44,6 @@ def main():
         ),
         supports_check_mode=True,
     )
-    #todo check incoming options
-
     # build command structure
     if not module.params.has_key('port') or not bool(module.params['port'])
         module.fail_json(msg="missing required arguments: type.")
@@ -76,10 +74,16 @@ def main():
     try:
         rc, out, err = module.run_command(cmd)
     except Exception, e:
-        module.fail_json(msg="failed to add rule %s" % cmd_string)
+        module.fail_json(msg="failed to add rule %s with error" % (cmd_string,err))
     else:
-        module.exit_json(changed=True,
-                         msg=out)
+        out_msg=out
+        try:
+            rc,out, err = module.run_cmd(iptables-save)
+        except Exception, e:
+            module.fail_json(msg="failed save rule %s with error" % (cmd_string,err))
+        else:
+            module.exit_json(changed=True,
+                         msg=out_msg)
 
 
 # import module snippets
