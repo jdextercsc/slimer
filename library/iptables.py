@@ -45,18 +45,18 @@ def main():
         supports_check_mode=True,
     )
     # build command structure
-    if not module.params.has_key('port') or not bool(module.params['port'])
+    if not module.params.has_key('port') or not bool(module.params['port']):
         module.fail_json(msg="missing required arguments: type.")
-    if not module.params.has_key('protocol') or not bool(module.params['protocol'])
+    if not module.params.has_key('protocol') or not bool(module.params['protocol']):
         module.fail_json(msg="missing required arguments: type.")
         ports = ",".join(module.params['port'])
     cmd_string "%(chain)s -p %(protocol)s --dport %s" % (module.params, module.params, ports)
 
-    if module.params.has_key('source') and bool(module.params['source'])
+    if module.params.has_key('source') and bool(module.params['source']):
         cmd_string += "-s %(source)" %  module.params
-    if module.params.has_key('dest') and bool(module.params['dest'])
+    if module.params.has_key('dest') and bool(module.params['dest']):
         cmd_string += "-d %(dest)" %  module.params
-    if module.params.has_key('comment') and bool(module.params['comment'])
+    if module.params.has_key('comment') and bool(module.params['comment']):
         cmd_string += "-m comment --comment '" %(comment)'"' %  module.params
 
     #check if rule exsits
