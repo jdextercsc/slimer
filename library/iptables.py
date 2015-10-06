@@ -49,7 +49,7 @@ def main():
         module.fail_json(msg="missing required arguments: type.")
     if not module.params.has_key('protocol') or not bool(module.params['protocol']):
         module.fail_json(msg="missing required arguments: type.")
-        ports = ",".join(module.params['port'])
+        ports = ",".join(map(str,module.params['port']))
     cmd_string "%(chain)s -p %(protocol)s --dport %s" % (module.params, module.params, ports)
 
     if module.params.has_key('source') and bool(module.params['source']):
