@@ -35,8 +35,8 @@ def main():
     module = AnsibleModule(
         argument_spec = dict(
             # state     = dict(required=true, choices=['absent', 'present']),
-            protocol  = dict(required=true, choices=['tcp', 'udp']),
-            port      = dict(required=true),
+            protocol  = dict(required=False, defualt='tcp', choices=['tcp', 'udp']),
+            port      = dict(required=True),
             source    = dict(required=False),
             dest      = dict(required=False),
             comment   = dict(required=False),
@@ -45,48 +45,54 @@ def main():
         supports_check_mode=True,
     )
     # build command structure
+    if not module.params.has_key('chain'):
+	module.params['chain'] = 'INPUT'
     if not module.params.has_key('port') or not bool(module.params['port']):
         module.fail_json(msg="missing required arguments: type.")
     if not module.params.has_key('protocol') or not bool(module.params['protocol']):
         module.fail_json(msg="missing required arguments: type.")
-        ports = ",".join(map(str,module.params['port']))
-    cmd_string "%(chain)s -p %(protocol)s --dport %s" % (module.params, module.params, ports)
 
+    ports = module.params['port']
+    if isinstance(ports, list):
+        ports = ",".join(map(str, ports))
+    	cmd_string = "%(chain)s" % module.params
+        cmd_string +=" -p %(protocol)s" % module.params
+        cmd_string +=" -m multiport --dport %s" % ports
+    else:
+        cmd_string = "%(chain)s -p %(protocol)s --dport %(port)s" %  module.params
     if module.params.has_key('source') and bool(module.params['source']):
-        cmd_string += "-s %(source)" %  module.params
+        cmd_string += " -s %(source)s" %  module.params
     if module.params.has_key('dest') and bool(module.params['dest']):
-        cmd_string += "-d %(dest)" %  module.params
+        cmd_string += " -d %(dest)s" %  module.params
     if module.params.has_key('comment') and bool(module.params['comment']):
-        cmd_string += "-m comment --comment '" %(comment)'"' %  module.params
-
+        cmd_string += ' -m comment --comment " %(comment)s"' %  module.params
+    
     #check if rule exsits
-    cmd = "iptables -vC %s" % cmd_string
+    cmd = "iptables -vC %s -j ACCEPT" % cmd_string
     rc, out, err = module.run_command(cmd)
-    exists = (rc is 0)
+    exists = (rc is not 0)
 
-    if exists:
+    if (rc is 0):
         module.exit_json(changed=False, msg="rule %s already exists." % cmd_string )
-    elif module.check_mode:
+    elif (rc is 2):
+        module.fail_json(msg=err)
+    elif (rc is 1) and module.check_mode:
         module.exit_json(changed=True)
-
     # if rule does not exist insert rule
-    cmd = "iptables -vI %s" % cmd_string
-    try:
-        rc, out, err = module.run_command(cmd)
-    except Exception, e:
-        module.fail_json(msg="failed to add rule %s with error" % (cmd_string,err))
+    cmd = "iptables -vI %s -j ACCEPT" % cmd_string
+    rc, out, err = module.run_command(cmd)
+    if (rc is 1):
+    	module.fail_json(msg="failed to add rule %s with error %s" % (cmd_string,err))
     else:
         out_msg=out
-        try:
-            rc,out, err = module.run_cmd(iptables-save)
-        except Exception, e:
-            module.fail_json(msg="failed save rule %s with error" % (cmd_string,err))
+        cmd = 'service iptables save'
+        rc, out, err = module.run_command(cmd)
+        
+        if (rc is 1):
+            module.fail_json(msg=err)
         else:
-            module.exit_json(changed=True,
-                         msg=out_msg)
-
+            module.exit_json(changed=True, msg=cmd_string)
 
 # import module snippets
 from ansible.module_utils.basic import *
 main()
-
