@@ -1,13 +1,15 @@
 ---
 - name: insert iptable rules for mongodb
   iptables:
-    ports: "{{item.port}}"
+    port: "{{item.port}}"
     protocol: tcp
     comment: "{{item.comment}}"
   with_items:
     - { port: 27017, comment: "incoming mongodb"}
     - { port: 6379, comment: "redis replication for mongodb"}
-  tags:mongodb, iptables
+  tags:
+    - mongodb
+    - iptables
 
 - name: install mongodb packages
   yum: pkg={{ item }} state=present

@@ -4,9 +4,14 @@
   shell: pcs status | grep galera -a1 | tail -n1
   register: pcs_result
   run_once: yes
-  tags: mysql
+  tags: 
+    - mysql
+    - iptables
 
 - name: start galera deploy
   include: galera.yml
   when: '"Masters" not in pcs_result.stdout'
-  tags: mysql
+  tags: 
+    - mysql
+    - iptables
+   

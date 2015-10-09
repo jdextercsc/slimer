@@ -38,12 +38,14 @@
 
 - name: install ntp and iptables-services
   yum:
-   - name: "{{items}}
-   - state: installed
+   name: "{{item}}"
+   state: installed
   with_items:
     - ntp
-    - iptables-serivces
-  tags: ntp, iptables
+    - iptables-services 
+  tags: 
+    - iptables
+    - ntp
 
 - name: configure ntp service
   template: src=ntp.conf.j2 dest=/etc/ntp.conf force=yes
@@ -69,16 +71,15 @@
 - name: setup ssh iptables rule
   iptables:
     port: 22
-    protocl: 22
-    rule: ACCEPT
+    protocol: tcp 
     comment: "ssh incoming"
   tags: iptables
 
 # have to use command as there is no opt field in module yet.
-- name: setup reject all
-  command: iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited
-  tags: iptables
+#- name: setup reject all
+#  command: iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited
+#  tags: iptables
 
-- name: save reject all rule
-  command: service iptables save
-  tags: iptables
+#- name: save reject all rule
+#  command: service iptables save
+#  tags: iptables
