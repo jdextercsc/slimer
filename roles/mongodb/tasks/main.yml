@@ -2,7 +2,7 @@
 - name: insert iptable rules for mongodb
   iptables:
     ports: "{{item.port}}"
-    protocol:
+    protocol: tcp
     comment: "{{item.comment}}"
   with_items:
     - { port: 27017, comment: "incoming mongodb"}
