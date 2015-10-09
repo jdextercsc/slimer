@@ -1,14 +1,15 @@
 ---
 - name: iptable rules for glance
   iptables:
-    port: "{{ item.port }}
-    protocl: "{{ item.protocol}}"
-    rule: ACCEPT
+    port: "{{ item.port }}"
+    protocol: "{{ item.protocol}}"
     comment: "{{item.comment}}"
   with_items:
     - { port: 9191, protocol: tcp, comment: "glance api" }
     - { port: 9292, protocol: tcp, comment: "glance registry api"}
-  tags: iptables, glance
+  tags:
+    - iptables
+    - glance
 
 - name: install glance packages
   yum: pkg={{ item }} state=present

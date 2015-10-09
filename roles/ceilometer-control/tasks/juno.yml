@@ -2,10 +2,11 @@
 - name: iptable rules for ceilometer-controller
   iptables:
     port: 8777
-    protocl: tcp
-    rule: ACCEPT
+    protocol: tcp
     comment: "Ceilometer incoming"
-  tags: iptables, ceilometer
+  tags:
+   - iptables
+   - ceilometer
 
 
 - name: install ceilometer packages
