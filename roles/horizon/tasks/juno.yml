@@ -1,4 +1,12 @@
 ---
+- name: iptable rules for ceilometer-controller
+  iptables:
+    port: 80
+    protocl: tcp
+    rule: ACCEPT
+    comment: "Dashboard access"
+  tags: iptables, horizon
+
 - name: install horizon packages
   yum: pkg={{ item }} state=present
   with_items:

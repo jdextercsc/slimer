@@ -1,4 +1,11 @@
 ---
+- name: iptable rules for ceilometer-controller
+  iptables:
+    port: 80
+    protocl: tcp
+    rule: ACCEPT
+    comment: "Dashboard access"
+  tags: iptables, horizon
 #no changes, kilo.yml created for place holder and convention purposes.
 
 - name: install horizon packages
