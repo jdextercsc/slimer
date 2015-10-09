@@ -1,4 +1,15 @@
 ---
+- name: insert iptable rules for rabbitmq
+  iptables:
+    ports: "{{item.port}}"
+    protocol: tcp
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 5672, comment: "amqp traffic / rabbitmq" }
+    - { port: 25672, comment: "epmd cluster" }
+    - { port: 4369, comment: "epmd cluster" }
+  tags:rabbitmq, iptables
+
 - name: install rabbitmq-server package
   yum: pkg=rabbitmq-server state=present
   tags: rabbitmq
