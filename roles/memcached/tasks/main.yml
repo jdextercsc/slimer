@@ -1,4 +1,11 @@
 ---
+- name: iptable rules for memcache
+  iptables:
+    port: 11211
+    protocol: tcp
+    comment: "memcache incoming"
+  tags: iptables, memcached
+
 - name: install memcached
   yum: pkg=memcached state=present
   tags: memcached
