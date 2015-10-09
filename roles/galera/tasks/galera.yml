@@ -1,4 +1,15 @@
 ---
+- name: galera iptable rules
+  iptables:
+    port: "{{ item.port }}
+    protocl: "{{ item.protocol}}"
+    rule: ACCEPT
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 3306, protocol: tcp, comment: "mariadb sql incomming 3306" }
+    - { port: 873, protocol: tcp, commnet: "rsync replication traffic"}
+  tags: iptables, mysql
+
 - name: install galera db packages
   yum: pkg=mariadb-galera-server state=present
   tags: mysql
