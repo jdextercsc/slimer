@@ -1,4 +1,13 @@
 ---
+- name: iptable rules for ceilometer-controller
+  iptables:
+    port: 8777
+    protocl: tcp
+    rule: ACCEPT
+    comment: "Ceilometer incoming"
+  tags: iptables, ceilometer
+
+
 - name: install ceilometer packages
   yum: pkg={{ item }} state=present
   with_items:
