@@ -79,7 +79,16 @@
   when: not use_stonith
 
 - name: create stonith resources
-  shell: "pcs stonith show ipmilan-fence-{{item}} || pcs stonith create ipmilan-fence-{{item}}  fence_{{hostvars[item]['fencing_agent']}} pcmk_host_list={{item}} {{ hostvars[item]['fencing_params'] }}"
+  shell: >
+    pcs stonith show ipmilan-fence-{{item}} ||
+    pcs stonith create ipmilan-fence-{{item}} fence_ipmilan
+      pcmk_host_list={{item}}
+      login={{ipmi_username}}
+      passwd={{ipmi_password}}
+      ipaddr={{hostvars[item]['ipmi_ip_address']}}
+      lanplus=1
+      cipher=1
+      op monitor interval=60s
   with_items: groups['controller']
   run_once: true
   tags: pcs
