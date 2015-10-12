@@ -19,11 +19,5 @@
 - include: compute-nodes.yml
 - include: scaleio-nodes.yml
 
-- name: OpenStack Firewall
-  hosts: openstack
-  max_fail_percentage: 0
-  roles:
-    - firewall
-
 - include: demo.yml
   when: run_demo

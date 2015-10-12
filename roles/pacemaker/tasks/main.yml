@@ -1,4 +1,18 @@
 ---
+- name: insert iptable rules for pacemaker
+  iptables:
+    port: "{{item}}"
+    protocol: tcp
+    comment: "Pacemaker ports"
+  with_items:
+    - 2224
+    - 3121
+    - 21064
+    - 5405
+  tags:
+    - pcs
+    - iptables
+
 - name: install pacemaker packages
   yum: pkg={{ item }} state=present
   with_items:

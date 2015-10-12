@@ -36,9 +36,16 @@
   selinux: policy=targeted state=permissive
   tags: selinux
 
-- name: install ntp
-  yum: pkg=ntp state=installed
-  tags: ntp
+- name: install ntp and iptables-services
+  yum:
+   name: "{{item}}"
+   state: installed
+  with_items:
+    - ntp
+    - iptables-services 
+  tags: 
+    - iptables
+    - ntp
 
 - name: configure ntp service
   template: src=ntp.conf.j2 dest=/etc/ntp.conf force=yes
@@ -59,3 +66,20 @@
 - name: Set hostname
   command: hostnamectl set-hostname --static --transient {{ inventory_hostname }}
   tags: dns
+
+# setup base ssh and reject rules
+- name: setup ssh iptables rule
+  iptables:
+    port: 22
+    protocol: tcp 
+    comment: "ssh incoming"
+  tags: iptables
+
+# have to use command as there is no opt field in module yet.
+#- name: setup reject all
+#  command: iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited
+#  tags: iptables
+
+#- name: save reject all rule
+#  command: service iptables save
+#  tags: iptables
