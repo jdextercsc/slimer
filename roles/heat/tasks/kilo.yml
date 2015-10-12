@@ -1,4 +1,17 @@
 ---
+- name: iptable rules for heat
+  iptables:
+    port: "{{ item.port }}"
+    protocol: "{{ item.protocol}}"
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 8003, protocol: tcp, comment: "cloudwatch API" }
+    - { port: 8004, protocol: tcp, comment: "heat api"}
+    - { port: 8000, protocol: tcp, comment: "cfn api"}
+  tags:
+    - iptables
+    - heat
+
 - name: install heat packages
   yum: pkg={{ item }} state=present
   with_items:

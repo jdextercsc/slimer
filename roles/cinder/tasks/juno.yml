@@ -1,4 +1,17 @@
 ---
+- name: iptable rules for cinder
+  iptables:
+    port: "{{ item.port }}"
+    protocol: "{{ item.protocol}}"
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 8776, protocol: tcp, comment: "cinder api 8776" }
+    - { port: 3260, protocol: tcp, comment: "iscsi traffic incoming 3260"}
+  tags:
+    -  iptables
+    -  cinder
+
+
 # Setting up cinder using nfs until a different driver is supplied
 - name: install cinder components
   yum: name={{ item }} state=present

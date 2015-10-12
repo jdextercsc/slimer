@@ -1,4 +1,18 @@
 ---
+- name: iptable rules for neutron
+  iptables:
+    port: "{{ item.port }}"
+    protocol: "{{ item.protocol}}"
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 67, protocol: udp, comment: "dhcp incoming" }
+    - { port: 68, protocol: udp, comment: "dhcp incoming" }    
+    - { port: 9696, protocol: tcp, comment: "neutron api"}
+    - { port: 4789, protocol: tcp, comment: "neutron tunnels"}
+  tags:
+    - iptables
+    - neutron
+
 - name: install neutron packages
   yum:
     pkg: "{{ item }}"

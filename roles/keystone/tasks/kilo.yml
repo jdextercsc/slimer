@@ -1,4 +1,16 @@
 ---
+- name: iptable rules for keystone
+  iptables:
+    port: "{{ item.port }}"
+    protocol: "{{ item.protocol}}"
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 5000, protocol: tcp, comment: "keytone public API" }
+    - { port: 35357, protocol: tcp, comment: "keystone internal and admin api"}
+  tags:
+    - iptables
+    - keystone
+
 - name: install keystone components
   yum:
     pkg: "{{item}}"

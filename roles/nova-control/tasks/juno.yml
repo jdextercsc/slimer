@@ -1,4 +1,18 @@
 ---
+- name: iptable rules for nova-controller
+  iptables:
+    port: "{{ item.port }}"
+    protocol: "{{ item.protocol}}"
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 6080, protocol: tcp, comment: "novncproxy" }
+    - { port: 8774, protocol: tcp, comment: "nova api"}
+    - { port: 8775, protocol: tcp, comment: "nova api"}
+    - { port: 8773, protocol: tcp, comment: "nova api"}
+  tags:
+    - iptables
+    - nova
+
 - name: install nova packages
   yum: pkg={{ item }} state=present
   with_items:
