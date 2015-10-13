@@ -2,8 +2,7 @@
 - name: galera iptable rules
   iptables:
     port: "{{ item.port }}"
-    protocl: "{{ item.protocol}}"
-    rule: ACCEPT
+    protocol: "{{ item.protocol}}"
     comment: "{{item.comment}}"
   with_items:
     - { port: 3306, protocol: tcp, comment: "mariadb sql incomming 3306" }
