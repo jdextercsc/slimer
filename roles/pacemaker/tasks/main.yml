@@ -1,14 +1,12 @@
 ---
 - name: insert iptable rules for pacemaker
   iptables:
-    port: "{{item}}"
-    protocol: tcp
+    port: "{{item.port}}"
+    protocol: "{{item.protocol}}"
     comment: "Pacemaker ports"
   with_items:
-    - 2224
-    - 3121
-    - 21064
-    - 5405
+    - {port: [2224,3121,21064], protocol: tcp}
+    - {port: 5405, protocol: udp}
   tags:
     - pcs
     - iptables
