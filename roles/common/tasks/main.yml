@@ -67,19 +67,29 @@
   command: hostnamectl set-hostname --static --transient {{ inventory_hostname }}
   tags: dns
 
-# setup base ssh and reject rules
-- name: setup ssh iptables rule
-  iptables:
-    port: 22
-    protocol: tcp 
-    comment: "ssh incoming"
+# setup base ssh rules
+- name: turn off firewalld
+  service:
+    name: firewalld
+    state: stopped
   tags: iptables
 
-# have to use command as there is no opt field in module yet.
-#- name: setup reject all
-#  command: iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited
-#  tags: iptables
+- name: iptables start
+  service:
+    name: iptables
+    state: started
+    enabled: yes
+  tags: iptables
 
-#- name: save reject all rule
-#  command: service iptables save
-#  tags: iptables
+- name: setup base ssh rules
+  copy:
+    src: iptables_base
+    dest: /etc/sysconfig/iptables
+  tags: iptables
+
+- name: load iptables
+  service:
+    name: iptables
+    state: restarted
+  tags: iptables
+
