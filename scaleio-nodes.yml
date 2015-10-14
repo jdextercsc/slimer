@@ -60,14 +60,6 @@
 
 - name: iptable rules for scaleIO
   hosts: deploy
-  roles:
-    - role: iptable
-      port: "8443,8081,6611,9011,7072,9099,162"
-      protocl: tcp
-      comment: "ports for scaleIO"
-
-- name: iptable rules for scaleIO
-  hosts: deploy
   tasks:
     - name: scaleIO rules
       iptables:
