@@ -72,6 +72,7 @@
   service:
     name: firewalld
     state: stopped
+    enabled: no
   tags: iptables
 
 - name: iptables start
