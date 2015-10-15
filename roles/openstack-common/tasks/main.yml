@@ -6,7 +6,3 @@
 - name: disable NetworkManager
   service: name=NetworkManager enabled=no state=stopped
   tags: openstack-common
-
-- name: disable firewalld
-  service: name=firewalld enabled=no state=stopped
-  tags: openstack-common

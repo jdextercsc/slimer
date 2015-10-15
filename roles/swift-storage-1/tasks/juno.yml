@@ -1,4 +1,16 @@
 ---
+- name: iptable rules for swift storage nodes nodes
+  iptables:
+    port: "{{item.port}}"
+    protocol: "{{item.protocol}}"
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 873, protocol: tcp, comment: "rsync replication traffic" }
+    - { port: ['6200:6202'], protocol: tcp, comment: "swift services" }
+  tags:
+    - swift
+    - iptables
+
 - name: install swift node packages
   yum:
     pkg: "{{ item }}"

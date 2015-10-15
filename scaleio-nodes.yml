@@ -57,3 +57,15 @@
         netmask: "{{ storage_if.netmask }}"
         onboot: '"yes"'
         peerdns: '"no"'
+
+- name: iptable rules for scaleIO
+  hosts: deploy
+  tasks:
+    - name: scaleIO rules
+      iptables:
+        port: [8443,8081,6611,9011,7072,9099,162]
+        protocol: tcp
+        comment: "ports for scaleIO"
+    - name: insert reject all rule on all nodes
+      command: iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited
+      tags: iptables

@@ -1,4 +1,15 @@
 ---
+- name: iptable rules for swift proxy nodes
+  iptables:
+    port: "{{item.port}}"
+    protocol: "{{item.protocol}}"
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 8080, protocol: tcp, comment: "swift proxy incoming" }
+  tags:
+    - swift
+    - iptables
+
 - name: install swift packages
   yum:
     pkg: "{{ item }}"
