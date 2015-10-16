@@ -2,5 +2,5 @@
 public_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + primary_if ].ipv4.address }}"
 internal_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + private_if ].ipv4.address }}"
 storage_devices: "{{ hostvars[inventory_hostname]['swift-data-disks'] }}"
-pdisk: '[{% for disk in ansible_devices %}{% if disk.partitions is undefined %}"{{ disk }}"{% if not loop.last %}, {% endif %}{% endif %}{% endfor %} ]'
+pdisk: '[{% for disk in ansible_devices %}{% if disk|map(atribute="model") != "Virtual Floppy" %}"{{ disk }}"{% if not loop.last %}, {% endif %}{% endif %}{% endfor %} ]'
 mounted_disk: '[{% for disk in ansible_mounts %}"{{disk.device}}"{% if not loop.last %}, {% endif %}{% endfor %}]'

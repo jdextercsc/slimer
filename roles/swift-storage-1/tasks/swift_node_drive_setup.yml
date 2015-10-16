@@ -1,16 +1,19 @@
-
-
-
-
+---
+- name: debug pdisk
+  debug:
+    msg: "{{item}}"
+  with_items: pdisk
+  when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
+  tags: swift
 
 - name: labeldisks provided to swift in group_vars/all.swift_data_drive
   command: parted -s /dev/{{ item }} mklabel gpt
   with_items: pdisk
-  when: '"/dev/{{item|string()}}1" not in mounted_disk'
+  when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
   tags: swift
 
 - name: create primary partition table on group_vars/all.swift_data_drive
-  command: parted- -s /dev/{{item}} unit mib mkpart primary 1 100%
+  command: parted -s /dev/{{item}} unit mib mkpart primary 1 100%
   with_items: pdisk
   when: '"/dev/{{item|string()}}1" not in mounted_disk'
   tags: swift
