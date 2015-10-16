@@ -85,7 +85,7 @@
 
 - name: setup up disks if not already mounted
   include: swift_node_drive_setup.yml
-  when: "'swiftnode' not in mount_out.stdout"
+  when: "'/srv/node' not in mount_out.stdout"
   tags: swift
 
 - name: chwon srv/node
