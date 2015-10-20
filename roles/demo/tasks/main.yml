@@ -64,10 +64,10 @@
     {{os_admin_auth}}
     subnet-create {{ext_net_name}}
     --gateway {{ext_gateway}}
-    --allocation-pool start={{ext_allocation.start}},end={{ext_allocation.end}}
+    --allocation-pool start={{start_ext_allocation}},end={{end_ext_allocation}}
     --disable-dhcp
-    {{ext_network}}
-  when: '"{{ext_network}}" not in cmd.stdout'
+    {{demo_ext_network}}
+  when: '"{{demo_ext_network}}" not in cmd.stdout'
   run_once: true
   tags: demo
 
@@ -92,9 +92,9 @@
     neutron
     {{os_demo_auth}}
     subnet-create
-    {{int_net_name}} {{int_network}}
+    {{int_net_name}} {{demo_int_network}}
   run_once: true
-  when: '"{{int_network}}" not in cmd.stdout'
+  when: '"{{demo_int_network}}" not in cmd.stdout'
   tags: demo
 
 - name: get internal network ID
