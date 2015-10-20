@@ -14,7 +14,7 @@
         slave: '"yes"'
 
     - role: iface
-      device: "{{bond_device[0]}}"
+      device: "{{bond_device[1]}}"
       params:
         type: Ethernet
         bootproto: none
