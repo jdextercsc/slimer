@@ -4,7 +4,7 @@
   max_fail_percentage: 0
   roles:
     - role: iface
-      device: p4p1
+      device: "{{bond_device[0]}}"
       params:
         type: Ethernet
         bootproto: none
@@ -14,7 +14,7 @@
         slave: '"yes"'
 
     - role: iface
-      device: p4p2
+      device: "{{bond_device[1]}}"
       params:
         type: Ethernet
         bootproto: none

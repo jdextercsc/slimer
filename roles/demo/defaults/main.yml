@@ -5,14 +5,8 @@ admin_tenant: admin
 demo_user: admin
 demo_tenant: demo
 ext_net_name: external
-ext_gateway: 172.17.21.1
-ext_network: 172.17.21.0/24
-ext_allocation:
-  start: 172.17.21.100
-  end: 172.17.21.200
 int_net_name: internal_net
-int_network: 192.168.101.0/24
-router_name: rotuer-1
+router_name: demo_router-1
 copy_image: True
 image_location: /root/
 image_name: rhel-guest-image-7.1-20150224.0.x86_64.qcow2

@@ -2,5 +2,5 @@
 - name: get repo file
   get_url:
     url: "http://{{auto_deploy_node}}/offline.repo"
-    dest: /etc/yum.repos.d/kragle_offline.repo
+    dest: /etc/yum.repos.d/offline.repo
     force: yes

@@ -13,7 +13,7 @@ listen stats :8888
     stats realm Haproxy\ Statistics
     stats uri /
     stats enable
-
+    stats auth admin:{{ haproxy_admin_pass }}
 
 frontend vip-db
     bind {{ lb_db_vip }}:3306

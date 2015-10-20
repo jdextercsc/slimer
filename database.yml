@@ -1,5 +1,0 @@
----
-- hosts: mysql
-  roles:
-    - common
-    - mysql

@@ -1,0 +1,1 @@
+haproxy_admin_pass: "{{ site_password }}"
