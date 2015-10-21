@@ -81,6 +81,6 @@
     - memcached
   tags: horizon
 
-- name: restart openstack-nova-consoleauth
-  command: pcs resource restart openstack-nova-consoleauth
+- name: restart nova-consoleauth
+  command: pcs resource restart nova-consoleauth
   tags: horizon
