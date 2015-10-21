@@ -83,4 +83,5 @@
 
 - name: restart nova-consoleauth
   command: pcs resource restart nova-consoleauth
+  run_once: true  
   tags: horizon
