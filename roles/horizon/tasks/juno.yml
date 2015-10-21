@@ -76,8 +76,12 @@
 - name: restart horizon
   service: name={{ item }} state=restarted
   with_items:
-    - openstack-nova-consoleauth
     - openstack-nova-novncproxy
     - httpd
     - memcached
+  tags: horizon
+
+- name: restart nova-consoleauth
+  command: pcs resource restart nova-consoleauth
+  run_once: true  
   tags: horizon
