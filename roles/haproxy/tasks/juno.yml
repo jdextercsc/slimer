@@ -39,7 +39,7 @@
   tags: haproxy
 
 - name: move public vip to node1
-  command: pcs resource move vip-horizon-pub {{controller1}}
+  command: pcs resource move vip-horizon-pub {{groups['controller'][1:]}}
   run_once: true
   tags: haproxy
   ignore_errors: true
