@@ -21,8 +21,6 @@
     - httpd
   tags: keystone
 
-# following requires that crudini .5-1 be installed from epel or it will fail.
-
 - name: configure the keystone.conf file
   ini_file:
     dest: /etc/keystone/keystone.conf
