@@ -1,6 +1,6 @@
 ---
 - name: get repo file
   get_url:
-    url: "http://{{auto_deploy_node}}/offline.repo"
+    url: "http://{{auto_deploy_node}}/repo/offline.repo"
     dest: /etc/yum.repos.d/offline.repo
     force: yes
