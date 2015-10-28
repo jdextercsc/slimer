@@ -3,7 +3,8 @@
 - name: update all packages
   yum:
    name: "*"
-   state: latest 
+   state: latest
+  when: not offline
 
 - name: install base rpms
   yum: name={{ item }} state=present
