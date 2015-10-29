@@ -71,7 +71,6 @@
     - { section: "DEFUALT", option: "notification_driver", value: "nova.openstack.common.notifier.rpc_notifier" }
     - { section: "DEFAULT", option: "rpc_backend", value: "nova.openstack.common.rpc.impl_kombu" }
   tags: nova
-  tags: nova
 
 - name: add novnc vip /etc/hosts with all nodes
   tags: nova
