@@ -52,7 +52,7 @@
     - { section: "database", option: "max_retries", value: "-1"}
   tags: cinder
 
-- name: Update configure cinder nfs driver via openstack-config utility
+- name: Update configure cinder nfs driver
   ini_file:
     dest: /etc/cinder/cinder.conf
     section: "{{ item.section }}"

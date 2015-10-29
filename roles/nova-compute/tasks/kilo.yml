@@ -59,22 +59,26 @@
   when: use_nova_shared_backend
   tags: nova
 
-- name: modify libvirtd parameters with openstack-config
-  command: openstack-config --verbose --set /etc/sysconfig/libvirtd '' LIBVIRTD_ARGS '"--listen"'
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+- name: modify libvirtd parameters
+  ini_file:
+    dest: /etc/sysconfig/libvirtd
+    section: ""
+    option: 'LIBVERTD_ARGS'
+    value: '"--listen"'
   when: nova_instance_live_migration
   tags: nova
 
-- name: modify libvirtd.conf parameters with openstack-config
-  command: openstack-config --verbose --set /etc/libvirt/libvirtd.conf {{ item }}
+- name: modify libvirtd.conf parameters
+  ini_file:
+    dest: /etc/libvirt/libvirtd.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
   with_items:
-    - "DEFAULT verbose true"
-    - "'' listen_tls 0"
-    - "'' listen_tcp 1"
-    - "'' auth_tcp none"
-  register: cmd
-  changed_when: "'unchanged' not in cmd.stderr"
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "", option: "listen_tls", value: "0"}
+    - { section: "", option: "auth_tcp", value: "none"}
+    - { section: "", option: "listen_tcp", value: "1"}
   when: nova_instance_live_migration
   tags: nova
 
