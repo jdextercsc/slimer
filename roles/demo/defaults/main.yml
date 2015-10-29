@@ -8,7 +8,7 @@ ext_net_name: external
 int_net_name: internal_net
 router_name: demo_router-1
 copy_image: True
-image_location: /root/
+image_location: "/opt/autodeploy/resources/ISO/"
 image_name: rhel-guest-image-7.1-20150224.0.x86_64.qcow2
 image_disk_format: qcow2
 image_short_name: rhel7.1
