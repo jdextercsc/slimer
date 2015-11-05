@@ -31,19 +31,52 @@
     - soe-rhel-6.5-20150511-control.img
   run_once: true
 
+#TODO following are for ansible 2.0 is used
+#- name: add images to glance
+#  os_image_module:
+#    auth:
+#      auth_url: "{{ keystone_adminurl}}"
+#      username: "{{admin_user }}"
+#      password: "{{admin_tenant}}"
+#      project_name: "{{admin_pass}}"
+#    name: "{{item.name}}"
+#    disk_format: "{{item.diskformat}}"
+#    container_format: "{{item.containerformat}"
+#    filename: "/root/{{item.name}}"
+#    min_disk: 5
+#    is_public: true
+#  run_once: true
+#  with_items:
+#    - {name: "soe-rhel-6.5-20150511-client.img", diskformat: "raw", containerformat: "bare" }
+#    - {name: "soe-rhel-6.5-20150511-control.img", diskformat: "raw", containerformat: "bare" }
+#
+#
+#- name: create flavors
+#  os_nova_flavor:
+#    auth:
+#      auth_url: "{{ keystone_adminurl}}"
+#      username: "{{admin_user }}"
+#      password: "{{admin_tenant}}"
+#      project_name: "{{admin_pass}}"
+#    state: present
+#    name: "{{item.name}}"
+#    ram: "{{item.mem}}"
+#    vcpus: "{{item.vcpu}}"
+#    disk: "{{item.disk}}"
+#    is_public: true
+#  with_items:
+#  - { name: "m3.medium", vcpu: "1", mem: "3840", disk: "4" }
+#  - { name: "m3.large", vcpu: "2", mem: "7680", disk: "32" }
+#  - { name: "m3.medium", vcpu: "4", mem: "15360", disk: "80" }
+
 - name: add images to glance
-  os_image_module:
-    auth:
-      auth_url: "{{ keystone_adminurl}}"
-      username: "{{admin_user }}"
-      password: "{{admin_tenant}}"
-      project_name: "{{admin_pass}}"
-    name: "{{item.name}}"
-    disk_format: "{{item.diskformat}}"
-    container_format: "{{item.containerformat}"
-    filename: "/root/{{item.name}}"
-    min_disk: 5
-    is_public: true
+  command: >
+      glance {{os_admin_auth}} image-create
+      --name {{item.name}}
+      --file /root/{{item.name}}
+      --disk-format {{item.diskformat}}
+      --container-format {{item.containerformat}
+      --is-public true
   run_once: true
   with_items:
     - {name: "soe-rhel-6.5-20150511-client.img", diskformat: "raw", containerformat: "bare" }
@@ -51,18 +84,13 @@
 
 
 - name: create flavors
-  os_nova_flavor:
-    auth:
-      auth_url: "{{ keystone_adminurl}}"
-      username: "{{admin_user }}"
-      password: "{{admin_tenant}}"
-      project_name: "{{admin_pass}}"
-    state: present
-    name: "{{item.name}}"
-    ram: "{{item.mem}}"
-    vcpus: "{{item.vcpu}}"
-    disk: "{{item.disk}}"
-    is_public: true
+  command: >
+      nova {{os_admin_auth }} flavor-create
+      name {{item.name}}
+      ram {{item.mem}}
+      vcpus {{item.vcpu}}
+      disk {{item.disk}}
+      --is_public: true
   with_items:
   - { name: "m3.medium", vcpu: "1", mem: "3840", disk: "4" }
   - { name: "m3.large", vcpu: "2", mem: "7680", disk: "32" }

@@ -1,2 +1,3 @@
+os_admin_auth: "--os-auth-url {{ keystone_adminurl}} --os-tenant-name {{admin_tenant}} --os-username {{admin_user }}  --os-password {{admin_pass}}"
 #keystone_adminurl: "{{ keystone_auth_protocol }}://{{ keystone_vip }}:{{ keystone_auth_port }}/v2.0"
 
