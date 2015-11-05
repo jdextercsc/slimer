@@ -1,0 +1,5 @@
+---
+- name: Controller bdpaas Configuration
+  hosts: controller
+  roles:
+    - bdpaas

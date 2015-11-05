@@ -1,0 +1,69 @@
+---
+- name: create heat_stack_admin
+  keystone_user:
+    token: "{{ keystone_admin_token }}"
+    endpoint: "{{ keystone_adminurl }}"
+    user: heat_stack_owner
+    tenant: "{{bdpaas_tenant}}"
+    password: "{{ heat_stack_owner_pass }}"
+    role: "heat_stack_owner"
+  run_once: true
+
+- name: create heat_stack_user role
+  shell: keystone role-get heat_stack_user || keystone role-create --name heat_stack_user
+  run_once: true
+
+- name: patch heat
+  patch:
+    dest: /usr/lib/python2.6/site-packages/heat/engine/resources/instance.py
+    backup: yes
+    src: heat_patch
+
+- name: restart heat
+  command: pcs resource restart heat-engine
+
+- name: copy images
+  copy:
+    src: '/opt/autodeploy/resources/ISO/{{item}}'
+    dest: '/root/'
+  with_items:
+    - soe-rhel-6.5-20150511-client.img
+    - soe-rhel-6.5-20150511-control.img
+  run_once: true
+
+- name: add images to glance
+  os_image_module:
+    auth:
+      auth_url: "{{ keystone_adminurl}}"
+      username: "{{admin_user }}"
+      password: "{{admin_tenant}}"
+      project_name: "{{admin_pass}}"
+    name: "{{item.name}}"
+    disk_format: "{{item.diskformat}}"
+    container_format: "{{item.containerformat}"
+    filename: "/root/{{item.name}}"
+    min_disk: 5
+    is_public: true
+  run_once: true
+  with_items:
+    - {name: "soe-rhel-6.5-20150511-client.img", diskformat: "raw", containerformat: "bare" }
+    - {name: "soe-rhel-6.5-20150511-control.img", diskformat: "raw", containerformat: "bare" }
+
+
+- name: create flavors
+  os_nova_flavor:
+    auth:
+      auth_url: "{{ keystone_adminurl}}"
+      username: "{{admin_user }}"
+      password: "{{admin_tenant}}"
+      project_name: "{{admin_pass}}"
+    state: present
+    name: "{{item.name}}"
+    ram: "{{item.mem}}"
+    vcpus: "{{item.vcpu}}"
+    disk: "{{item.disk}}"
+    is_public: true
+  with_items:
+  - { name: "m3.medium", vcpu: "1", mem: "3840", disk: "4" }
+  - { name: "m3.large", vcpu: "2", mem: "7680", disk: "32" }
+  - { name: "m3.medium", vcpu: "4", mem: "15360", disk: "80" }
