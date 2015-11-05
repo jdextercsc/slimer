@@ -1,4 +1,8 @@
 ---
+- name: create heat_stack_user role
+  shell: keystone {{os_admin_auth}} role-get heat_stack_owner || keystone {{os_admin_auth}} role-create --name heat_stack_owner
+  run_once: true
+
 - name: create heat_stack_admin
   keystone_user:
     token: "{{ keystone_admin_token }}"
@@ -6,21 +10,20 @@
     user: heat_stack_owner
     tenant: "{{bdpaas_tenant}}"
     password: "{{ heat_stack_owner_pass }}"
-    role: "heat_stack_owner"
   run_once: true
 
 - name: create heat_stack_user role
-  shell: keystone role-get heat_stack_user || keystone role-create --name heat_stack_user
+  shell: keystone {{os_admin_auth}} role-get heat_stack_user || keystone {{os_admin_auth}} role-create --name heat_stack_user
   run_once: true
 
-- name: patch heat
-  patch:
-    dest: /usr/lib/python2.6/site-packages/heat/engine/resources/instance.py
-    backup: yes
-    src: heat_patch
-
-- name: restart heat
-  command: pcs resource restart heat-engine
+#- name: patch heat
+#  patch:
+#    dest: /usr/lib/python2.6/site-packages/heat/engine/resources/instance.py
+#    backup: yes
+#    src: heat_patch
+#
+#- name: restart heat
+#  command: pcs resource restart heat-engine
 
 - name: copy images
   copy:
@@ -70,12 +73,12 @@
 #  - { name: "m3.medium", vcpu: "4", mem: "15360", disk: "80" }
 
 - name: add images to glance
-  command: >
+  shell: glance {{os_admin_auth}} image-show {{item.name}} ||
       glance {{os_admin_auth}} image-create
       --name {{item.name}}
       --file /root/{{item.name}}
       --disk-format {{item.diskformat}}
-      --container-format {{item.containerformat}
+      --container-format {{item.containerformat}}
       --is-public true
   run_once: true
   with_items:
@@ -84,14 +87,16 @@
 
 
 - name: create flavors
-  command: >
+  shell: nova {{os_admin_auth }} flavor-show {{item.name}} ||
       nova {{os_admin_auth }} flavor-create
-      name {{item.name}}
-      ram {{item.mem}}
-      vcpus {{item.vcpu}}
-      disk {{item.disk}}
-      --is_public: true
+      --is-public true      
+      {{item.name}} 
+      auto
+      {{item.mem}}
+      {{item.vcpu}}
+      {{item.disk}}
   with_items:
   - { name: "m3.medium", vcpu: "1", mem: "3840", disk: "4" }
   - { name: "m3.large", vcpu: "2", mem: "7680", disk: "32" }
-  - { name: "m3.medium", vcpu: "4", mem: "15360", disk: "80" }
+  - { name: "m3.xlarge", vcpu: "4", mem: "15360", disk: "80" }
+  run_once: true 
