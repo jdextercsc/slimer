@@ -1,0 +1,2 @@
+#keystone_adminurl: "{{ keystone_auth_protocol }}://{{ keystone_vip }}:{{ keystone_auth_port }}/v2.0"
+
