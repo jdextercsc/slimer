@@ -7,6 +7,7 @@
   with_items:
     - { port: ["5900:5999"], protocol: tcp, comment: "vnc incoming" }
     - { port: "4789", protocol: tcp, comment: "neutron tunnel" }
+    - { port: 4789, protocol: udp, comment: "neutron tunnels"}
     - { port: ["16509", "49152:49215"], protocol: tcp, comment: "nova qemu incoming" }
   tags:
     - nova
@@ -138,6 +139,8 @@
     - { section: "DEFAULT", option: "auth_strategy", value: "keystone"}
     - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
     - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "rabbit_userid", value: "guest"}
+    - { section: "DEFAULT", option: "rabbit_password", value: "guest"}
     - { section: "DEFAULT", option: "notification_driver", value: "neutron.openstack.common.notifier.rpc_notifier"}
     - { section: "keystone_authtoken", option: "auth_host", value: "{{ keystone_admin_vip | default ('127.0.0.1') }}"}
     - { section: "keystone_authtoken", option: "auth_port", value: "{{ keystone_auth_port | default (35357) }}"}
