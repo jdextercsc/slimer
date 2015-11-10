@@ -73,6 +73,7 @@
    #     onboot: '"yes"'
    #     ipaddr: "{{ swift_if.ipaddr}}"
    #     netmask: "{{ swift_if.ipaddr}}"
+   #   when: "'controller' not in group_names"
 
 - name: Controller Swift Proxy 1
   hosts: controller
