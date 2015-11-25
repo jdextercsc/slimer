@@ -1,1 +1,2 @@
-haproxy_admin_pass: "{{ site_password }}"
+haproxy_admin_pass:  "{{ lookup('password', credentials_dir + '/credentials/haproxy_pass chars=ascii_letters,digits') }}"
+credentials_dir: /var/lib/ansible
