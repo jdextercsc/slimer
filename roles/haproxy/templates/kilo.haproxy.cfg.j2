@@ -22,9 +22,9 @@ frontend vip-db
 
 backend db-galera
     option httpchk
-    stick-table type ip size 1000
+    stick-table type ip size 2
     stick on dst
-    timeout server 90m
+    timeout server 90s
 {% for node in groups['controller'] %}
     server {{ hostvars[node]['ansible_hostname'] }} {{ hostvars[node]['ansible_' + private_if ]['ipv4']['address'] }}:3306 check inter 1s port 9200 backup on-mark-down shutdown-sessions
 {% endfor %}
