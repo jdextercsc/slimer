@@ -43,8 +43,6 @@
   service: name=pcsd enabled=yes state=started
   tags: pcs
 
-- debug: msg="{{cluster_nodes}}"
-
 - name: set pcs cluster auth
   command: pcs cluster auth -u hacluster -p {{ pcs_cluster_pass }} {{ cluster_nodes }} --force
   when: "'Already authorized' not in cmd.stdout"
