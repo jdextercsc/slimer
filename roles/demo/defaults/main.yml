@@ -9,7 +9,7 @@ int_net_name: internal_net
 router_name: demo_router-1
 copy_image: True
 image_location: "/opt/autodeploy/resources/ISO/"
-image_name: rhel-guest-image-7.1-20150224.0.x86_64.qcow2
+image_name: rhel-guest-image-7.2-20151102.0.x86_64.qcow2
 image_disk_format: qcow2
 image_short_name: rhel7.1
 image_root_password: redhat1234
