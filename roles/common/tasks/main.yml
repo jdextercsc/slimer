@@ -7,6 +7,15 @@
   command: sysctl -p /etc/sysctl.d/99-sysctl.conf
   tags: sysctl
 
+- name: Set default rp_filter
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items: 
+    - { name: net.ipv4.conf.default.rp_filter, value: 2 }
+    - { name: net.ipv4.conf.all.rp_filter, value: 2 }
+
 - name: deploy resolv.conf
   template: src=resolv.conf.j2 dest=/etc/resolv.conf
   tags: dns
