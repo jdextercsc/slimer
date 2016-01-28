@@ -63,17 +63,17 @@
         peerdns: '"no"'
       when: "'controller' not in group_names"
 
-   # - role: iface
-   #   device: "bond0.{{ swift_if.vlan }}"
-   #   params:
-   #     type: ethernet
-   #     vlan: '"yes"'
-   #     nm_controlled: '"no"'
-   #     nozeroconf: '"yes"'
-   #     onboot: '"yes"'
-   #     ipaddr: "{{ swift_if.ipaddr}}"
-   #     netmask: "{{ swift_if.ipaddr}}"
-   #   when: "'controller' not in group_names"
+    - role: iface
+      device: "bond0.{{ swift_if.vlan }}"
+      params:
+        type: ethernet
+        vlan: '"yes"'
+        nm_controlled: '"no"'
+        nozeroconf: '"yes"'
+        onboot: '"yes"'
+        ipaddr: "{{ swift_if.ipaddr}}"
+        netmask: "{{ swift_if.ipaddr}}"
+      when: "'controller' not in group_names"
 
 - name: Controller Swift Proxy 1
   hosts: controller
