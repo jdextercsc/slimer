@@ -42,7 +42,7 @@
 
 - name: wait for httpd to be available
   wait_for:
-    host: "{{ horizon_public_servername }}"
+    host: "{{ horizon_internal_servername }}"
     port: 80
     delay: 10
     timeout: 30

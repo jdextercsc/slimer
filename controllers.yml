@@ -42,6 +42,7 @@
         ipaddr: "{{ int_if.ipaddr }}"
         netmask: "{{ int_if.netmask }}"
         gateway: "{{ int_if.gateway }}"
+        #dns: "{{dns1}}"
         defroute: '"yes"'
         onboot: '"yes"'
         peerdns: '"no"'
@@ -93,6 +94,18 @@
         ipaddr: "{{ ext_if.ipaddr }}"
         netmask: "{{ ext_if.netmask }}"
         peerdns: '"no"'
+    
+    - role: iface
+      device: "bond0.{{ swift_if.vlan }}"
+      params:
+        type: ethernet
+        vlan: '"yes"'
+        nm_controlled: '"no"'
+        nozeroconf: '"yes"'
+        peerdns: '"no"'
+        onboot: '"yes"'
+        ipaddr: "{{ swift_if.ipaddr}}"
+        netmask: "{{ swift_if.netmask}}"
 
 - name: Controller OpenStack Installation
   hosts: controller
