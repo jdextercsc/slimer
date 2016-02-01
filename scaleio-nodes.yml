@@ -12,6 +12,7 @@
         peerdns: '"no"'
         master: bond0
         slave: '"yes"'
+      when: "'compute' not in group_names"
 
     - role: iface
       device: "{{bond_device[1]}}"
@@ -22,6 +23,7 @@
         peerdns: '"no"'
         master: bond0
         slave: '"yes"'
+      when: "'compute' not in group_names"
 
     - role: iface
       device: bond0
@@ -31,6 +33,7 @@
         bonding_opts: '"miimon=100 mode=802.3ad"'
         onboot: '"yes"'
         peerdns: '"no"'
+      when: "'compute' not in group_names"
 
     - role: iface
       device: "bond0.{{ int_if.vlan }}"
@@ -45,6 +48,7 @@
         defroute: '"yes"'
         onboot: '"yes"'
         peerdns: '"no"'
+      when: "'compute' not in group_names"
 
     - role: iface
       device: "bond0.{{ storage_if.vlan }}"
@@ -57,6 +61,7 @@
         netmask: "{{ storage_if.netmask }}"
         onboot: '"yes"'
         peerdns: '"no"'
+      when: "'compute' not in group_names"
 
 - name: iptable rules for scaleIO
   hosts: deploy
