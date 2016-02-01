@@ -19,5 +19,5 @@
 - include: compute-nodes.yml
 - include: scaleio-nodes.yml
 
-- include: demo.yml
-  when: run_demo
+#- include: demo.yml
+#  when: run_demo

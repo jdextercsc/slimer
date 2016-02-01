@@ -1,4 +1,8 @@
 ---
+- name: gather info about all nodes
+  hosts: openstack
+  gather_facts: True
+
 - name: Compute Interface Configruation
   hosts: compute
   max_fail_percentage: 0

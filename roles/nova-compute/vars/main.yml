@@ -5,3 +5,7 @@ tunnel_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + tunnel_if ].ipv4.a
 neutron_bind_host: "{{ internal_ipaddr }}"
 mongodb_servers: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_hostname'] }}:{{ mongodb_port | default(27017) }}{% if not loop.last %},{% endif %}{% endfor %}"
 rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port | default(5672) }}{% if not loop.last %},{% endif %}{% endfor %}"
+heat_waitcondition_server_url: "http://{{ heat_vip }}:8000/v1/waitcondition"
+heat_metadata_server_url: "http://{{ heat_vip }}:8000"
+keystone_admin_vip: "{{ keystone_vip }}"
+heat_watch_server_url: "http://{{ heat_vip }}:8003"

@@ -1,6 +1,12 @@
 ---
 - name: copy and load 99-sysctl.conf
-  copy: src=99-sysctl.conf dest=/etc/sysctl.d/99-sysctl.conf owner=root group=root mode=0644 force
+  copy:
+    src: 99-sysctl.conf
+    dest: /etc/sysctl.d/99-sysctl.conf
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
   tags: sysctl
 
 - name: reload the sysctl file
@@ -22,8 +28,12 @@
 
 - name: create /etc/hosts with all nodes
   tags: dns
-  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].int_if.ipaddr }} {{item}}" state=present
-  when: hostvars[item].int_if.ipaddr is defined
+  lineinfile: 
+    dest: /etc/hosts 
+    regexp: '.*{{ item }}$' 
+    line: '{{ hostvars[item].int_if.ipaddr }} {{item}}' 
+    state: present
+  #when: hostvars[item].int_if.ipaddr is defined
   with_items: groups['all']
 
 - include: "RedHat-rpms.yml"
