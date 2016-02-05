@@ -19,5 +19,7 @@
 - include: compute-nodes.yml
 - include: scaleio-nodes.yml
 
-#- include: demo.yml
-#  when: run_demo
+- name: Controller Demo Configuration
+  hosts: controller
+  roles:
+    - { role: demo, when: run_demo }

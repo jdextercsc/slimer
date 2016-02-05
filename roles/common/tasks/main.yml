@@ -18,7 +18,7 @@
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     state: present
-  with_items: 
+  with_items:
     - { name: net.ipv4.conf.default.rp_filter, value: 2 }
     - { name: net.ipv4.conf.all.rp_filter, value: 2 }
 
@@ -28,13 +28,13 @@
 
 - name: create /etc/hosts with all nodes
   tags: dns
-  lineinfile: 
-    dest: /etc/hosts 
-    regexp: '.*{{ item }}$' 
-    line: '{{ hostvars[item].int_if.ipaddr }} {{item}}' 
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: '{{ hostvars[item].int_if.ipaddr }} {{item}}'
     state: present
-  #when: hostvars[item].int_if.ipaddr is defined
-  with_items: groups['all']
+  when: hostvars[item].int_if.ipaddr is defined
+  with_items: "{{ groups['openstack'] }}"
 
 - include: "RedHat-rpms.yml"
   when: ansible_os_family == "RedHat"
@@ -61,8 +61,8 @@
    state: installed
   with_items:
     - ntp
-    - iptables-services 
-  tags: 
+    - iptables-services
+  tags:
     - iptables
     - ntp
 
