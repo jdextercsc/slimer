@@ -34,7 +34,7 @@
     line: '{{ hostvars[item].int_if.ipaddr }} {{item}}'
     state: present
   when: hostvars[item].int_if.ipaddr is defined
-  with_items: "{{ groups['openstack'] }}"
+  with_items: "{{ groups['all'] }}"
 
 - include: "RedHat-rpms.yml"
   when: ansible_os_family == "RedHat"
