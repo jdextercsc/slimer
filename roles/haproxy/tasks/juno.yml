@@ -34,7 +34,7 @@
   args:
     options:
       ip: "{{ item.addr }}"
-  with_items: vip_addresses
+  with_items: "{{vip_addresses}}"
   run_once: true
   tags: haproxy
 

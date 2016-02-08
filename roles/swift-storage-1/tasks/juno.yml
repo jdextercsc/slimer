@@ -114,7 +114,7 @@
   delegate_to: "{{ groups['controller'][0] }}"
   command: swift-ring-builder account.builder add z{{zone_id}}-{{ int_if.ipaddr }}:6202/{{ item }} 100
            chdir=/etc/swift
-  with_items: pdisk
+  with_items: '{{pdisk}}'
   when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
   ignore_errors: yes
   tags: swift
@@ -125,7 +125,7 @@
   delegate_to: "{{ groups['controller'][0] }}"
   command: swift-ring-builder container.builder add z{{ hostvars[groups['swift'][0]].zone_id }}-{{ hostvars[groups['swift'][0]].int_if.ipaddr }}:6201/{{ item }} 100
            chdir=/etc/swift
-  with_items: pdisk
+  with_items: '{{pdisk}}'
   when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
   run_once: true
   tags: swift
@@ -135,7 +135,7 @@
   delegate_to: "{{ groups['controller'][0] }}"
   command: swift-ring-builder container.builder add z{{ hostvars[groups['swift'][1]].zone_id }}-{{ hostvars[groups['swift'][1]].int_if.ipaddr }}:6201/{{ item }} 100
            chdir=/etc/swift
-  with_items: pdisk
+  with_items:  '{{pdisk}}'
   when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
   run_once: true
   tags: swift
@@ -144,7 +144,7 @@
   delegate_to: "{{ groups['controller'][0] }}"
   command: swift-ring-builder container.builder add z{{ hostvars[groups['swift'][2]].zone_id }}-{{ hostvars[groups['swift'][2]].int_if.ipaddr }}:6201/{{ item }} 100
            chdir=/etc/swift
-  with_items: pdisk
+  with_items:  '{{pdisk}}'
   when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
   run_once: true
   tags: swift
@@ -153,7 +153,7 @@
   delegate_to: "{{ groups['controller'][0] }}"
   command: swift-ring-builder object.builder add z{{hostvars[groups['swift'][0]].zone_id}}-{{ hostvars[groups['swift'][0]].int_if.ipaddr }}:6200/{{ item }} 100
            chdir=/etc/swift
-  with_items: pdisk
+  with_items:  '{{pdisk}}'
   when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
   run_once: true
   tags: swift
@@ -162,7 +162,7 @@
   delegate_to: "{{ groups['controller'][0] }}"
   command: swift-ring-builder object.builder add z{{hostvars[groups['swift'][1]].zone_id}}-{{ hostvars[groups['swift'][1]].int_if.ipaddr }}:6200/{{ item }} 100
            chdir=/etc/swift
-  with_items: pdisk
+  with_items:  '{{pdisk}}'
   when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
   run_once: true
   tags: swift
@@ -171,7 +171,7 @@
   delegate_to: "{{ groups['controller'][0] }}"
   command: swift-ring-builder object.builder add z{{hostvars[groups['swift'][2]].zone_id}}-{{ hostvars[groups['swift'][2]].int_if.ipaddr }}:6200/{{ item }} 100
            chdir=/etc/swift
-  with_items: pdisk
+  with_items:  '{{pdisk}}'
   when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
   run_once: true
   tags: swift

@@ -260,13 +260,13 @@
 
 - name: create ovs bridges
   openvswitch_bridge: bridge={{ item.bridge }} state=present
-  with_items: neutron_ovs_bridges
+  with_items: "{{neutron_ovs_bridges}}"
   when: neutron_ovs_bridges is defined
   tags: neutron
 
 - name: configure ovs ports
   openvswitch_port: bridge={{ item.bridge }} port={{ item.port }} state=present
-  with_items: neutron_ovs_bridges
+  with_items: "{{neutron_ovs_bridges}}"
   when: neutron_ovs_bridges is defined
   tags: neutron
 
