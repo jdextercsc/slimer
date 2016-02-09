@@ -25,4 +25,3 @@ neutron_notify_nova_on_port_status_changes: true
 neutron_notify_nova_on_port_data_changes: true
 neutron_core_plugin: ml2
 use_cinder_nfs_volume_driver: false
-use_nova_nfs_backend: false
