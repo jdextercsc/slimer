@@ -1,0 +1,12 @@
+---
+mgmt_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + private_if ].ipv4.address }}"
+control_ipaddr: "{{ hostvars[inventory_hostname][ 'ansible_' + primary_if.device ].ipv4.address }}"
+cinder_osapi_volume_listen: "{{ mgmt_ipaddr }}"
+cinder_db_pass: "{{ lookup('password', credentials_dir + '/credentials/cinder_db_pass chars=ascii_letters,digits') }}"
+cinder_pass: "{{ lookup('password', credentials_dir + '/credentials/cinder_pass chars=ascii_letters,digits') }}"
+pvs_disks: '{% for disk in pdisk %}{% if disk|string() != "sda" %}{% if disk|string() != "sr0" %}/dev/{{disk}}1 {% endif %}{% endif %}{% endfor %}'
+pdisk_debug: '{% for disk in pdisk %}/dev/{{disk|string()}}1 {% endfor %}'
+pdisk: '[{% for disk in ansible_devices %}{% if disk|map(atribute="model") != "Virtual Floppy" %}"{{ disk }}"{% if not loop.last %}, {% endif %}{% endif %}{% endfor %} ]'
+mounted_disk: '[{% for disk in ansible_mounts %}"{{disk.device}}"{% if not loop.last %}, {% endif %}{% endfor %}]'
+rabbit_hosts: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:{{rabbit_port}}{% if not loop.last %},{% endif %}{% endfor %}"
+memcache_list: "{% for node in groups['controller'] %}{{ hostvars[node]['ansible_'+private_if]['ipv4']['address'] }}:11211{% if not loop.last %},{% endif %}{% endfor %}"
