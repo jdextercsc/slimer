@@ -1,0 +1,84 @@
+---
+# This is only meant to be used on compute systems, this will not provide HA to Volumes.
+- name: iptable rules for iscsi and cinder volume.
+  iptables:
+    port: "{{ item.port }}"
+    protocol: "{{ item.protocol}}"
+    comment: "{{item.comment}}"
+  with_items:
+    - { port: 3260, protocol: tcp, comment: "iscsi traffic incoming 3260"}
+
+- name: install cinder components
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - openstack-cinder
+    - openstack-utils
+    - python-memcached
+    - python-keystonemiddleware
+    - python-openstackclient
+    - nfs-utils
+  tags: cinder
+
+- name: Update cinder config file
+  ini_file:
+    dest: /etc/cinder/cinder.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFAULT", option: "debug", value: "true"}
+    - { section: "DEFAULT", option: "auth_startegy", value: "keystone"}
+    - { section: "DEFAULT", option: "rabbit_hosts", value: "{{ rabbit_hosts }}"}
+    - { section: "DEFAULT", option: "rabbit_ha_queues", value: "true"}
+    - { section: "DEFAULT", option: "memcached_servers", value: "{{ memcache_list }}"}
+    - { section: "DEFAULT", option: "notification_driver", value: "messaging"}
+    - { section: "DEFAULT", option: "control_exchange", value: "cinder"}
+    - { section: "DEFAULT", option: "host", value: "{{ ansible_hostname }}"}
+    - { section: "DEFAULT", option: "osapi_volume_listen", value: "{{ cinder_osapi_volume_listen }}"}
+    - { section: "DEFAULT", option: "osapi_volume_listen_port", value: "{{ cinder_osapi_volume_listen_port | default (8776) }}"}
+    - { section: "database", option: "connection", value: "mysql://cinder:{{ cinder_db_pass }}@{{ lb_db_vip}}/cinder"}
+    - { section: "database", option: "max_retries", value: "-1"}
+  tags: cinder
+
+
+- name: Update configure cinder LVM driver
+  ini_file:
+    dest: /etc/cinder/cinder.conf
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "true"}
+    - { section: "DEFUALT", option: "enabled_backends", value: "lvm"}
+    - { section: "LVM", option: "volume_driver", value: "cinder.volume.drivers.lvm.LVMISCSIDriver"}
+    - { section: "LVM", option: "iscsi_helper", value: "lioadm" }
+    - { section: "LVM", option: "volume_group", value: "{{ cinder_volume_group_name }}" }
+    - { section: "LVM", option: "iscsi_ip_address", value: "{{storage_if.ipaddr}}" }
+    - { section: "LVM", option: "volume_backend_name=", value: "{{cinder_lvm_backend_name}}" }
+
+- name: labeldisks provided to cinder
+  command: parted -s /dev/{{ item }} mklabel gpt
+  with_items: "{{pdisk}}"
+  when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
+
+- name: create primary partition table
+  command: parted -s /dev/{{item}} unit mib mkpart primary 1 100%
+  with_items: "{{pdisk}}"
+  when: '"/dev/{{item|string()}}1" not in mounted_disk  and "{{item|string}}" != "sr0"'
+
+- name: run vgs
+  command: vgs
+  register: vgsoutput
+
+- name: create VG 
+  command: vgcreate {{ cinder_volume_group_name }} {{pvs_disks}} -y 
+  when: '"{{ cinder_volume_group_name }}" not in vgsoutput.stdout'
+- name: enable cinder-volume
+  service:
+    name: openstack-cinder-volume
+    enabled: yes
+    state: restarted
+

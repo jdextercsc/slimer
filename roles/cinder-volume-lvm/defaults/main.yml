@@ -1,0 +1,6 @@
+# Boolean operator to enable cinder installation
+cinder_volume_group_name: cinder-volumes
+cinder_lvm_backend_name: lvm
+
+
+

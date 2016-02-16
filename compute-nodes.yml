@@ -94,3 +94,4 @@
     - ceilometer-compute
     - nova-common
     - nova-compute
+    - cinder-volume-lvm
