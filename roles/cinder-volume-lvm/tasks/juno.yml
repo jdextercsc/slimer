@@ -37,6 +37,7 @@
     - { section: "DEFAULT", option: "notification_driver", value: "messaging"}
     - { section: "DEFAULT", option: "control_exchange", value: "cinder"}
     - { section: "DEFAULT", option: "host", value: "{{ ansible_hostname }}"}
+    - { section: "DEFAULT", option: "glance_host", value: "{{ glance_vip }}"}
     - { section: "DEFAULT", option: "osapi_volume_listen", value: "{{ cinder_osapi_volume_listen }}"}
     - { section: "DEFAULT", option: "osapi_volume_listen_port", value: "{{ cinder_osapi_volume_listen_port | default (8776) }}"}
     - { section: "database", option: "connection", value: "mysql://cinder:{{ cinder_db_pass }}@{{ lb_db_vip}}/cinder"}
